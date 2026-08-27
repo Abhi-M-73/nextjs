@@ -1,0 +1,60 @@
+@font-face {
+  font-family: "HelveticaCustom";
+  src: url("/fonts/Helvetica-Bold.ttf") format("truetype");
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "HelveticaCustom";
+  src: url("/fonts/Helvetica-Bold.ttf") format("truetype");
+  font-weight: 700;
+}
+
+@import "tailwindcss";
+
+:root {
+  /* --primary-color: #0597bf;  */
+  --primary-color: #1f4ffb;
+  --primary-rgb: 234, 179, 8;
+}
+
+body {
+  font-family: "HelveticaCustom", sans-serif;
+}
+
+/* Hide scrollbar globally */
+* {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
+
+/* Chrome, Safari, Edge */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.heading{
+  font-size: 1rem;
+}
+
+.para{
+  font-size: .8rem;
+}
+
+
+@layer utilities {
+  .bg-bg-right {
+    background-image: linear-gradient(to left, #000000 15%, #00d0fc 100%);
+  }
+}
