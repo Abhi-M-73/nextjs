@@ -16,6 +16,10 @@ import {
   Zap,
   UserCircle2,
   CalendarDays,
+  BadgeCheck,
+  ShieldAlert,
+  Banknote,
+  UserCheck,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import useFetchProfile from "../../hooks/useFetchProfile";
@@ -40,7 +44,7 @@ const UserHome = () => {
 
   const overviewCards = [
     {
-      label: "CASH BACK INCOME",
+      label: "CASHBACK",
       sub: "Total Cashback Earnings",
       value: user?.cashbackWallet ?? 0,
       icon: PiggyBank,
@@ -48,36 +52,95 @@ const UserHome = () => {
       iconColor: "text-green-600",
       barColor: "bg-green-500",
       onClick: () => navigate("/user/income/cashback"),
+      type: "currency",
     },
     {
-      label: "DIRECT INCOME",
-      sub: "Total Direct Earnings",
-      value: user?.directReferalAmount ?? 0,
-      icon: UsersRound,
+      label: "TOTAL USERS",
+      sub: "Total Team Members",
+      value: user?.referedUsers?.length ?? 0,
+      icon: Users,
       iconBg: "bg-blue-50",
       iconColor: "text-blue-600",
       barColor: "bg-blue-500",
-      onClick: () => navigate("/user/income/direct"),
+      onClick: () => navigate("/user/team"),
+      type: "count",
+    },
+    {
+      label: "ACTIVE USERS",
+      sub: "Active Direct Referrals",
+      value: user?.directActiveReferrals ?? 0,
+      icon: UserCheck,
+      iconBg: "bg-teal-50",
+      iconColor: "text-teal-600",
+      barColor: "bg-teal-500",
+      onClick: () => navigate("/user/team"),
+      type: "count",
+    },
+    {
+      label: "TODAY INCOME",
+      sub: "Earned Today",
+      value: user?.dailyRoi ?? 0,
+      icon: CalendarDays,
+      iconBg: "bg-amber-50",
+      iconColor: "text-amber-600",
+      barColor: "bg-amber-500",
+      onClick: () => navigate("/user/history"),
+      type: "currency",
     },
     {
       label: "DAILY LEVEL INCOME",
       sub: "Total Level Earnings",
       value: user?.levelIncome ?? 0,
       icon: TrendingUp,
-      iconBg: "bg-blue-50",
-      iconColor: "text-blue-600",
-      barColor: "bg-blue-500",
+      iconBg: "bg-indigo-50",
+      iconColor: "text-indigo-600",
+      barColor: "bg-indigo-500",
       onClick: () => navigate("/user/income/level"),
+      type: "currency",
     },
     {
-      label: "FRANCHISE INCOME",
-      sub: "Total Franchise Earnings",
-      value: user?.franchiseIncome ?? 0,
-      icon: Store,
-      iconBg: "bg-blue-50",
-      iconColor: "text-blue-600",
-      barColor: "bg-blue-500",
-      onClick: () => navigate("/user/income/franchise"),
+      label: "TOTAL EARNING",
+      sub: "Total Earnings So Far",
+      value: user?.totalEarnings ?? 0,
+      icon: TrendingUp,
+      iconBg: "bg-green-50",
+      iconColor: "text-green-600",
+      barColor: "bg-green-500",
+      onClick: () => navigate("/user/profile"),
+      type: "currency",
+    },
+    {
+      label: "WALLET BALANCE",
+      sub: "Available Balance",
+      value: user?.totalEarnings ?? 0,
+      icon: Wallet,
+      iconBg: "bg-purple-50",
+      iconColor: "text-purple-600",
+      barColor: "bg-purple-500",
+      onClick: () => navigate("/user/wallet"),
+      type: "currency",
+    },
+    {
+      label: "WITHDRAWAL AMOUNT",
+      sub: "Total Withdrawn",
+      value: user?.totalPayouts ?? 0,
+      icon: Banknote,
+      iconBg: "bg-orange-50",
+      iconColor: "text-orange-600",
+      barColor: "bg-orange-500",
+      onClick: () => navigate("/user/history"),
+      type: "currency",
+    },
+    {
+      label: "KYC VERIFIED",
+      sub: user?.isVerified ? "Your KYC is verified" : "KYC pending",
+      value: user?.isVerified ? "Verified" : "Pending",
+      icon: user?.isVerified ? BadgeCheck : ShieldAlert,
+      iconBg: user?.isVerified ? "bg-green-50" : "bg-red-50",
+      iconColor: user?.isVerified ? "text-green-600" : "text-red-500",
+      barColor: user?.isVerified ? "bg-green-500" : "bg-red-400",
+      onClick: () => navigate("/user/kyc"),
+      type: "status",
     },
   ];
 
@@ -162,8 +225,10 @@ const UserHome = () => {
                       <p className="text-[11px] font-semibold text-gray-500 tracking-wide">
                         {card.label}
                       </p>
-                      <p className="text-2xl font-extrabold text-gray-900 mt-1">
-                        ₹{card.value}
+                      <p className="text-xl font-extrabold text-gray-900 mt-1">
+                        {card.type === "currency" && `₹${Number(card.value).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                        {card.type === "count" && card.value}
+                        {card.type === "status" && card.value}
                       </p>
                       <p className="text-[10px] text-gray-500 mt-1">{card.sub}</p>
                     </div>
