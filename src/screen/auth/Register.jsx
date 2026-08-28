@@ -281,7 +281,7 @@ useEffect(() => {
     <div className="min-h-screen flex items-center justify-center bg-transparent w-full px-4 py-8">
       <div className="mx-auto rounded-3xl bg-white/5 border border-teal-800 shadow-xl text-white max-w-[440px] w-full py-6">
         <div className="w-full flex justify-between items-center mb-4 px-6">
-          <h2 className="text-3xl font-bold text-white">Registration</h2>
+          <Link to="/" className="text-3xl font-bold text-white">Registration</Link>
           <img src={signupPageElement} className="h-20 w-20 object-cover" alt="img" />
         </div>
 

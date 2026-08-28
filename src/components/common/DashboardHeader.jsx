@@ -51,19 +51,16 @@ const DashboardHeader = ({ onMenuClick }) => {
             className="flex items-center gap-2 bg-[#0f2a33] px-3 py-2 rounded-lg hover:bg-gray-700"
           >
             <User size={18} />
-            <span className="hidden md:block text-sm">Platform </span>
+            <span className="hidden md:block text-sm">Admin </span>
           </button>
 
           {openProfile && (
-            <div className="absolute right-0 mt-2 w-48 bg-[#0f2a33] rounded-xl shadow-lg border border-gray-700 overflow-hidden z-50">
+            <div className="absolute right-0 mt-2 w-60 bg-[#0f2a33] rounded-xl shadow-lg border border-gray-700 overflow-hidden z-50">
               <button className="flex items-center gap-2 w-full px-4 py-3 hover:bg-gray-700 text-sm">
-                <User size={16} /> Profile
+                <User size={16} /> {user?.email || "Admin"}
               </button>
 
-              <button className="flex items-center gap-2 w-full px-4 py-3 hover:bg-gray-700 text-sm">
-                <Settings size={16} /> Settings
-              </button>
-
+            
               <button
                 onClick={handleLogout}
                 className="flex items-center gap-2 w-full px-4 py-3 hover:bg-red-500 text-sm"

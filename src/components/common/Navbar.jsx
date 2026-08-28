@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { Link } from "react-router-dom";
-import mainContent from "../../utils/mainContent";
 
-const sections = ["home", "plan", "ecosystem", "how it works"];
+const sections = ["home", "plan", "ecosystem", "how it works", "about"];
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);

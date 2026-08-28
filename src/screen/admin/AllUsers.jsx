@@ -27,7 +27,7 @@ const AllUsers = () => {
 
   const columns = [
     { key: "sr", label: "#", isIndex: true },
-    { key: "username", label: "Username" },
+    { key: "username", label: "Username", render: (val) => val?.toUpperCase() },
     { key: "email", label: "email" },
     {
       key: "totalEarnings",

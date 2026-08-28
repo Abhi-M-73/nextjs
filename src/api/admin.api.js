@@ -21,10 +21,19 @@ export const getDepositHistory = async () => {
   const response = Axios.get(`${API_URL}/get-deposit-history`);
   return response;
 };
-export const getStakeIncomeHistory = async () => {
-  const response = Axios.get(`${API_URL}/get-stake-income-history`);
+export const getRoiIncomeHistory = async () => {
+  const response = Axios.get(`${API_URL}/get-roi-history`);
   return response;
 };
+export const getReferralIncomeHistory = async () => {
+  const response = Axios.get(`${API_URL}/get-referalBonus-history`);
+  return response;
+};
+
+export const getLevelIncomeHistory = async () => {
+  const response = Axios.get(`${API_URL}/getAllLevelIncome-history`);
+  return response;
+}
 export const getWithdrawalHistory = async () => {
   const response = Axios.get(`${API_URL}/get-withdrawal-history`);
   return response;

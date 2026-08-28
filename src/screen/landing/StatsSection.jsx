@@ -11,7 +11,7 @@ import {
 
 const StatsSection = () => {
     return (
-        <section className="relative px-6 py-20 bg-[#020203] overflow-hidden">
+        <section id="about" className="relative px-6 py-20 bg-[#020203] overflow-hidden">
             <div className="absolute top-1/2 left-0 w-[500px] h-[500px] bg-purple-600/5 rounded-full blur-[120px] pointer-events-none -translate-y-1/2" />
 
             <div className="max-w-7xl mx-auto relative z-10">

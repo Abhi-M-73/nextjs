@@ -1,4 +1,4 @@
-import { BarChart2, BookOpen, FileText, LayoutDashboard, Users, Database, PieChart, Activity, Wallet, ChartCandlestick, BanknoteArrowDown, Settings } from "lucide-react";
+import { BarChart2, BookOpen, FileText, LayoutDashboard, Users, Database, PieChart, Activity, Wallet, ChartCandlestick, BanknoteArrowDown, Settings, ClipboardList, Share2 } from "lucide-react";
 
 import Login from "../screen/auth/Login";
 import Register from "../screen/auth/Register";
@@ -13,11 +13,13 @@ import AdminDashboard from "../screen/admin/AdminDashboard";
 import AllUsers from "../screen/admin/AllUsers";
 import BuyLLD from "../screen/user/BuyLLD";
 import DepositHistory from "../screen/admin/DepositHistory";
-import StakeIncomeHistory from "../screen/admin/StakeIncomeHistory";
 import WithDrawal from "../screen/admin/withdrawal";
 import AdminControl from "../screen/admin/AdminControl";
 import { GrCart } from "react-icons/gr";
 import AdminInvestmentHistory from "../screen/admin/AdminInvestmentHistory";
+import AdminRoiIncomeHistory from "../screen/admin/AdminRoiIncomeHistory";
+import AdminLevelIncomeHistory from "../screen/admin/AdminLevelIncomeHistory";
+import AdminReferralIncomeHistory from "../screen/admin/AdminReferralIncomeHistory";
 
 export const authRoutes = [
     {
@@ -65,8 +67,10 @@ export const adminRoutes = [
             { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard", element: AdminDashboard },
             { name: "Users", icon: BarChart2, path: "/users", element: AllUsers },
             { name: "Investment History", icon: GrCart, path: "/investment-history", element: AdminInvestmentHistory },
+            { name: "ROI Income History", icon: ChartCandlestick, path: "/roi-income-history", element: AdminRoiIncomeHistory },
+            { name: "Level Income History", icon: ClipboardList, path: "/level-income-history", element: AdminLevelIncomeHistory },
+            { name: "Referral Income History", icon: Share2, path: "/referral-income-history", element: AdminReferralIncomeHistory },
             // { name: "Stake Deposit History", icon: Wallet, path: "/deposit-history", element: DepositHistory },
-            // { name: "Stake Income History", icon: ChartCandlestick, path: "/stake-income-history", element: StakeIncomeHistory },
             // { name: "Withdrawal", icon: BanknoteArrowDown, path: "/withdrawal", element: WithDrawal },
             { name: "Admin Control", icon: Settings, path: "/admin-control", element: AdminControl },
             // { name: "Invoice", icon: <FileText size={18} />, path: "/admin/invoice" },

@@ -85,7 +85,7 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-transparent w-full px-4">
       <div className="w-full max-w-[440px] bg-white/5 rounded-3xl shadow-xl border border-teal-800 py-8">
         <div className="w-full flex justify-between items-center mb-4 px-6">
-          <h2 className="text-3xl font-bold text-white">Login</h2>
+          <Link to="/" className="text-3xl font-bold text-white">Login</Link>
           <img src={loginPageElement} className="h-20 w-20 object-cover" alt="img" />
         </div>
 
