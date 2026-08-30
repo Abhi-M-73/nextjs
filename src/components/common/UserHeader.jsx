@@ -34,12 +34,12 @@ const UserHeader = () => {
   return (
     <div className="bg-white border-b border-gray-100 px-4 py-3 flex justify-between items-center sticky top-0 z-40">
       <div className="flex items-center gap-3">
-        <button className="p-1 -ml-1">
+        {/* <button className="p-1 -ml-1">
           <MenuIcon size={24} className="text-gray-800" />
-        </button>
+        </button> */}
 
         <span className="text-xl font-extrabold text-gray-900 tracking-tight">
-         <img src={mainContent.applogo} alt="logo" className="w-full h-10" />
+          <img src={mainContent.applogo} alt="logo" className="w-full h-10" />
         </span>
       </div>
 
@@ -76,13 +76,20 @@ const UserHeader = () => {
           transformOrigin={{ vertical: "top", horizontal: "right" }}
           slotProps={{ paper: { sx: { minWidth: 220, borderRadius: "12px", mt: 1 } } }}
         >
-          <div className="px-4 py-3">
-            <p className="text-sm font-semibold text-gray-900 truncate">
-              {user?.name || "User"}
-            </p>
-            <p className="text-xs text-gray-500 truncate">
-              {user?.email || "-"}
-            </p>
+          <div className="flex items-center gap-3 px-3 py-2"> 
+            <button
+              className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center"
+            >
+              <UserCircle2 size={22} className="text-blue-500" />
+            </button>
+            <div className="">
+              <p className="text-sm font-semibold text-gray-900 truncate">
+                {user?.name || "User"}
+              </p>
+              <p className="text-xs text-gray-500 truncate">
+                {user?.email || "-"}
+              </p>
+            </div>
           </div>
           <Divider />
           <MenuItem onClick={handleLogout} sx={{ color: "#ef4444", py: 1.2 }}>

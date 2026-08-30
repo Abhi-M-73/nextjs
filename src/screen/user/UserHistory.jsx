@@ -4,6 +4,7 @@ const UserDepositHistory = lazy(() => import("./UserDepositHistory"));
 const UserRoiIncomeHistory = lazy(() => import("./UserRoiIncomeHistory"));
 const UserReferralIncomeHistory = lazy(() => import("./UserReferralIncomeHistory"));
 const UserLevelIncomeHistory = lazy(() => import("./UserLevelIncomeHistory"));
+const UserReactivationCapHistory = lazy(() => import("./UserReactivationCapHistory"));
 
 const UserHistory = () => {
   const [activeTab, setActiveTab] = useState("deposit");
@@ -13,6 +14,7 @@ const UserHistory = () => {
     { key: "roi", label: "ROI" },
     { key: "referral", label: "Referral" },
     { key: "level", label: "Level" },
+    { key: "reactivation-cap", label: "Cap" }, // shortened - "Reactivation" overflow karta tha 5-tab row mein
   ];
 
   const activeIndex = tabs.findIndex((tab) => tab.key === activeTab);
@@ -27,6 +29,8 @@ const UserHistory = () => {
         return <UserReferralIncomeHistory />;
       case "level":
         return <UserLevelIncomeHistory />;
+      case "reactivation-cap":
+        return <UserReactivationCapHistory />;
       default:
         return null;
     }
@@ -35,12 +39,12 @@ const UserHistory = () => {
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-6">
       <div className="max-w-lg mx-auto space-y-6">
-        <div className="flex bg-white border border-gray-200 rounded-full p-1 relative shadow-sm">
+        <div className="flex bg-white border border-gray-200 rounded-full p-1 relative shadow-sm overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`flex-1 text-sm py-2 rounded-full relative z-10 transition-colors ${
+              className={`flex-1 text-xs sm:text-sm py-2 px-1 rounded-full relative z-10 transition-colors whitespace-nowrap ${
                 activeTab === tab.key
                   ? "text-white font-semibold"
                   : "text-gray-500 hover:text-gray-700"

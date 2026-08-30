@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, Users, History, User, Wallet } from "lucide-react";
+import { Home, Users, History, User, Wallet, Landmark } from "lucide-react";
 
 const BottomTab = () => {
   const location = useLocation();
@@ -10,6 +10,7 @@ const BottomTab = () => {
     { label: "Team", path: "/user/team", icon: Users },
     { label: "History", path: "/user/history", icon: History },
     { label: "Wallet", path: "/user/wallet", icon: Wallet },
+    { label: "Accounts", path: "/user/bank-account", icon: Landmark },
     { label: "Profile", path: "/user/profile", icon: User },
   ];
 
@@ -31,9 +32,8 @@ const BottomTab = () => {
               strokeWidth={active ? 2.4 : 2}
             />
             <span
-              className={`text-[11px] mt-1 ${
-                active ? "text-blue-600 font-semibold" : "text-gray-500"
-              }`}
+              className={`text-[11px] mt-1 ${active ? "text-blue-600 font-semibold" : "text-gray-500"
+                }`}
             >
               {tab.label}
             </span>

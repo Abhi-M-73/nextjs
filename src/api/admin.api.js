@@ -34,6 +34,7 @@ export const getLevelIncomeHistory = async () => {
   const response = Axios.get(`${API_URL}/getAllLevelIncome-history`);
   return response;
 }
+
 export const getWithdrawalHistory = async () => {
   const response = Axios.get(`${API_URL}/get-withdrawal-history`);
   return response;
@@ -79,6 +80,16 @@ export const getQr = async () => {
 
 export const uploadQr = async (payload) => {
   const response = await Axios.post(`${API_URL}/upload-qr`, payload);
+  return response;
+}
+
+export const getAdminReactivationCapHistory = async () => {
+  const response = Axios.get(`${API_URL}/get-reactivation-cap-deduct-history`);
+  return response;
+}
+
+export const getWithdrawalEligibleUsers = async () => {
+  const response = Axios.get(`${API_URL}/high-wallet`);
   return response;
 }
 

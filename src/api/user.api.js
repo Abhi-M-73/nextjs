@@ -85,3 +85,19 @@ export const submitDeposit = async (payload) => {
   const response = await Axios.post(`${API_URL}/make-investment`, payload);
   return response;
 }
+
+
+export const getReactivationCapHistory = async () => {
+  const response = Axios.get(`${API_URL}/get-reactivation-cap-deduct-history`);
+  return response;
+};
+
+export const addBankAccount = async (payload) => {
+  const response = await Axios.post(`${API_URL}/add-bank`, payload);
+  return response;
+}
+
+export const getBankAccount = async () => {
+  const response = await Axios.get(`${API_URL}/get-bank`);
+  return response;
+}

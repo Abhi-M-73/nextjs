@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Wallet,
   Link,
@@ -9,6 +9,8 @@ import {
   Layers,
   ArrowDownToLine,
   Banknote,
+  Clock,
+  PackageX,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { showSnackbar } from "../../redux/slices/snackbarSlice";
@@ -20,6 +22,37 @@ const UserProfile = () => {
   const { user } = useSelector((state) => state.auth);
   const referralLink = `${window.location.origin}/auth/register?referredBy=${user?.referralCode}`;
   const dispatch = useDispatch();
+
+  const [timeLeft, setTimeLeft] = useState(null);
+
+  useEffect(() => {
+    if (!user?.packageExpiryDate) {
+      setTimeLeft(null);
+      return;
+    }
+
+    const calculateTimeLeft = () => {
+      const expiry = new Date(user.packageExpiryDate).getTime();
+      const now = new Date().getTime();
+      const diff = expiry - now;
+
+      if (diff <= 0) {
+        setTimeLeft({ expired: true });
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((diff / (1000 * 60)) % 60);
+      const seconds = Math.floor((diff / 1000) % 60);
+
+      setTimeLeft({ days, hours, minutes, seconds, expired: false });
+    };
+
+    calculateTimeLeft();
+    const interval = setInterval(calculateTimeLeft, 1000);
+    return () => clearInterval(interval);
+  }, [user?.packageExpiryDate]);
 
   const handleCopy = () => {
     navigator.clipboard
@@ -107,6 +140,62 @@ const UserProfile = () => {
           <p className="text-gray-500 text-sm mt-1">
             Joined: {user?.createdAt ? dateFormatter(user?.createdAt) : "--"}
           </p>
+        </div>
+
+        {/* Package Expiry / Countdown Section */}
+        <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+          <div className="flex items-center gap-2 text-gray-900 font-semibold mb-3">
+            <Clock size={18} className="text-blue-600" />
+            Package Expiry
+          </div>
+
+          {!user?.packageExpiryDate ? (
+            <div className="flex flex-col items-center justify-center py-6 text-center">
+              <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-2">
+                <PackageX size={22} className="text-red-500" />
+              </div>
+              <p className="text-gray-900 font-semibold text-sm">No Active Investment</p>
+              <p className="text-gray-500 text-xs mt-1">
+                Purchase a package to activate your countdown
+              </p>
+            </div>
+          ) : timeLeft?.expired ? (
+            <div className="flex flex-col items-center justify-center py-6 text-center">
+              <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-2">
+                <PackageX size={22} className="text-red-500" />
+              </div>
+              <p className="text-red-500 font-semibold text-sm">Package Expired</p>
+              <p className="text-gray-500 text-xs mt-1">
+                {user?.packageExpiryDate ? dateFormatter(user.packageExpiryDate) : "--"}
+              </p>
+            </div>
+          ) : timeLeft ? (
+            <div>
+              <div className="grid grid-cols-4 gap-2">
+                {[
+                  { label: "Days", value: timeLeft.days },
+                  { label: "Hours", value: timeLeft.hours },
+                  { label: "Mins", value: timeLeft.minutes },
+                  { label: "Secs", value: timeLeft.seconds },
+                ].map((unit) => (
+                  <div
+                    key={unit.label}
+                    className="bg-blue-50 rounded-xl py-3 text-center"
+                  >
+                    <p className="text-xl font-extrabold text-blue-600 tabular-nums">
+                      {String(unit.value).padStart(2, "0")}
+                    </p>
+                    <p className="text-[10px] text-gray-500 font-medium mt-0.5">
+                      {unit.label}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-gray-500 text-xs mt-3 text-center">
+                Expires on {dateFormatter(user.packageExpiryDate)}
+              </p>
+            </div>
+          ) : null}
         </div>
 
         {/* Financial Stats Grid */}
