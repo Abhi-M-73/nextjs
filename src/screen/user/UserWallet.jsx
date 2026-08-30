@@ -1,13 +1,19 @@
 import React, { useState } from "react";
 import {
-    ArrowUpRight,
-    ArrowDownLeft,
-    Network,
-    TrendingUp,
-    CheckCircle2,
-    X,
+  ArrowUpRight,
+  ArrowDownLeft,
+  Network,
+  TrendingUp,
+  X,
+  Clock3,
+  Wallet,
+  ShieldCheck,
+  ChevronRight,
+  IndianRupee,
+  Info,
+  Loader2,
+  CheckCircle2,
 } from "lucide-react";
-import { Button } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { withdrawRequest } from "../../api/user.api";
 import useFetchProfile from "../../hooks/useFetchProfile";
@@ -15,324 +21,673 @@ import { showSnackbar } from "../../redux/slices/snackbarSlice";
 import DepositModal from "../../components/all/DepositModel";
 
 const UserWallet = () => {
-    const { fetchUserInfo } = useFetchProfile();
-    const { user } = useSelector((state) => state.auth);
-    const [activeTab, setActiveTab] = useState("deposit"); 
-    const [amount, setAmount] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [depositOpen, setDepositOpen] = useState(false);
-    const [successData, setSuccessData] = useState(null);
+  const { fetchUserInfo } = useFetchProfile();
+  const { user } = useSelector((state) => state.auth);
 
-    const MIN_WITHDRAWAL_AMOUNT = 700;
+  const [activeTab, setActiveTab] = useState("deposit");
+  const [amount, setAmount] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [depositOpen, setDepositOpen] = useState(false);
+  const [successData, setSuccessData] = useState(null);
 
-    const dispatch = useDispatch();
+  const MIN_WITHDRAWAL_AMOUNT = 700;
 
-    const handleWithdraw = async () => {
-        try {
-            if (!amount) {
-                dispatch(showSnackbar({ message: "Please enter an amount to withdraw.", severity: "error" }));
-                return;
-            }
-            if (amount <= 0) {
-                dispatch(showSnackbar({ message: "Amount must be greater than zero.", severity: "error" }));
-                return;
-            }
-            if (parseFloat(amount) < MIN_WITHDRAWAL_AMOUNT) {
-                dispatch(showSnackbar({ message: `Minimum withdrawal is ${MIN_WITHDRAWAL_AMOUNT}.`, severity: "error" }));
-                return;
-            }
-            if (parseFloat(amount) > user?.mainWallet) {
-                dispatch(showSnackbar({ message: "Insufficient balance.", severity: "error" }));
-                return;
-            }
+  const dispatch = useDispatch();
 
-            setLoading(true);
-            const response = await withdrawRequest({ amount: parseFloat(amount) });
-            if (response?.success) {
-                setSuccessData({
-                    netAmount: response?.data?.netAmountSent || parseFloat(amount) * 0.95,
-                    amount: response?.data?.amountRequested || parseFloat(amount),
-                    fee: response?.data?.feeDeducted || parseFloat(amount) * 0.05,
-                    txHash: response?.data?.txHash,
-                    token: response?.data?.token || "LLD",
-                });
-                setAmount("");
-                fetchUserInfo();
-            }
-        } catch (error) {
-            dispatch(showSnackbar({ message: error?.response?.data?.message || error?.message || "Failed to process withdrawal. Try again! ❌", severity: "error" }));
-        } finally {
-            setLoading(false);
-        }
-    };
+  const balance = Number(user?.mainWallet || 0);
+  const totalPayouts = Number(user?.totalPayouts || 0);
 
-    return (
-        <div className="min-h-screen bg-gray-50 px-4 py-6 pb-24">
-            <div className="max-w-lg mx-auto space-y-6">
-                {/* Earnings Overview */}
-                <div className="bg-white border border-gray-100 rounded-2xl p-5 space-y-4 shadow-sm">
-                    <h2 className="text-gray-900 font-semibold">Wallet Overview</h2>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                            <div className="flex items-center gap-2 text-blue-600 text-sm">
-                                <TrendingUp size={16} />
-                                Total Investment
-                            </div>
-                            <div className="flex items-center mt-2">
-                                <p className="text-gray-900 text-lg font-bold">
-                                    ₹{user?.totalInvestment?.toFixed(2) || 0}
-                                </p>
-                            </div>
-                        </div>
+  const formatCurrency = (value) => {
+    return Number(value || 0).toLocaleString("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
 
-                        <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                            <div className="flex items-center gap-2 text-blue-600 text-sm">
-                                <Network size={16} />
-                                Total Payouts
-                            </div>
-                            <div className="flex items-center mt-2">
-                                <p className="text-gray-900 text-lg font-bold">₹{user?.totalPayouts?.toFixed(2) || 0}</p>
-                            </div>
-                        </div>
-                    </div>
+  const handleWithdraw = async () => {
+    const withdrawAmount = parseFloat(amount);
+
+    if (!amount) {
+      dispatch(
+        showSnackbar({
+          message: "Please enter an amount to withdraw.",
+          severity: "error",
+        }),
+      );
+      return;
+    }
+
+    if (withdrawAmount <= 0) {
+      dispatch(
+        showSnackbar({
+          message: "Amount must be greater than zero.",
+          severity: "error",
+        }),
+      );
+      return;
+    }
+
+    if (withdrawAmount < MIN_WITHDRAWAL_AMOUNT) {
+      dispatch(
+        showSnackbar({
+          message: `Minimum withdrawal is ₹${MIN_WITHDRAWAL_AMOUNT}.`,
+          severity: "error",
+        }),
+      );
+      return;
+    }
+
+    if (withdrawAmount > balance) {
+      dispatch(
+        showSnackbar({
+          message: "Insufficient balance.",
+          severity: "error",
+        }),
+      );
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const response = await withdrawRequest({
+        amount: withdrawAmount,
+      });
+
+      if (response?.success) {
+        setSuccessData({
+          netAmount: response?.data?.netAmountSent || withdrawAmount * 0.95,
+          amount: response?.data?.amountRequested || withdrawAmount,
+          fee: response?.data?.feeDeducted || withdrawAmount * 0.05,
+          txHash: response?.data?.txHash,
+          token: response?.data?.token || "LLD",
+        });
+
+        setAmount("");
+        fetchUserInfo();
+      }
+    } catch (error) {
+      dispatch(
+        showSnackbar({
+          message:
+            error?.response?.data?.message ||
+            error?.message ||
+            "Failed to process withdrawal. Try again!",
+          severity: "error",
+        }),
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const quickAmount = (percentage) => {
+    const value = Math.floor((balance * percentage) / 100);
+
+    if (value >= MIN_WITHDRAWAL_AMOUNT) {
+      setAmount(value.toString());
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 px-4 py-6 pb-24">
+      <div className="max-w-lg mx-auto space-y-5">
+        {/* =========================================
+            HEADER
+        ========================================= */}
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/20">
+            <Wallet size={21} className="text-white" />
+          </div>
+
+          <div>
+            <h1 className="text-xl font-extrabold tracking-tight text-slate-900">
+              My Wallet
+            </h1>
+
+            <p className="text-xs text-slate-500 mt-0.5">
+              Manage your funds and withdrawals
+            </p>
+          </div>
+        </div>
+
+        {/* =========================================
+            MAIN BALANCE CARD
+        ========================================= */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 via-blue-600 to-indigo-600 p-5 shadow-xl shadow-blue-600/15">
+          {/* Decorative circles */}
+          <div className="absolute -right-12 -top-12 w-36 h-36 rounded-full bg-white/10" />
+          <div className="absolute -right-5 -bottom-16 w-32 h-32 rounded-full bg-white/5" />
+
+          <div className="relative z-10">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center">
+                  <Wallet size={16} className="text-white" />
                 </div>
 
-                {/* Deposit / Withdraw Tabs */}
-                <div className="bg-white border border-gray-100 rounded-2xl p-2 shadow-sm flex gap-2">
-                    <button
-                        onClick={() => setActiveTab("deposit")}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition ${activeTab === "deposit"
-                            ? "bg-blue-600 text-white"
-                            : "text-gray-500 hover:bg-gray-50"
-                            }`}
-                    >
-                        <ArrowDownLeft size={16} />
-                        Deposit
-                    </button>
-                    <button
-                        onClick={() => setActiveTab("withdraw")}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition ${activeTab === "withdraw"
-                            ? "bg-blue-600 text-white"
-                            : "text-gray-500 hover:bg-gray-50"
-                            }`}
-                    >
-                        <ArrowUpRight size={16} />
-                        Withdraw
-                    </button>
-                </div>
+                <span className="text-xs font-semibold text-blue-100">
+                  Available Balance
+                </span>
+              </div>
 
-                {/* Deposit panel */}
-                {activeTab === "deposit" && (
-                    <div className="bg-white border border-gray-100 rounded-2xl p-5 space-y-4 shadow-sm">
-                        <h2 className="text-gray-900 font-semibold flex items-center gap-2">
-                            <ArrowDownLeft size={16} className="text-blue-600" />
-                            Add Funds
-                        </h2>
-                        <p className="text-gray-500 text-sm">
-                            Top up your wallet to activate or upgrade your package.
-                        </p>
-                        <Button
-                            onClick={() => setDepositOpen(true)}
-                            variant="contained"
-                            fullWidth
-                            sx={{
-                                background: "#2563eb",
-                                textTransform: "none",
-                                fontWeight: 700,
-                                borderRadius: "999px",
-                                py: 1.2,
-                                "&:hover": { background: "#1d4ed8" },
-                            }}
-                        >
-                            Deposit Now
-                        </Button>
-
-                        <DepositModal open={depositOpen} onClose={() => setDepositOpen(false)} />
-                    </div>
-                )}
-
-                {/* Withdraw panel */}
-                {activeTab === "withdraw" && (
-                    <>
-                        {/* <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
-                            <h2 className="text-gray-900 font-semibold mb-2">Withdrawal Feature</h2>
-                            <div className="flex items-center gap-1.5 text-sm">
-                                <span className="text-gray-500">Withdrawal feature are coming soone</span>
-                            </div>
-                        </div> */}
-                        {/* <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
-                            <h2 className="text-gray-900 font-semibold mb-2">Withdrawal Rules</h2>
-                            <div className="flex items-center gap-1.5 text-sm">
-                                <span className="text-gray-500">Minimum withdrawal:</span>
-                                <span className="text-gray-900 font-semibold">{MIN_WITHDRAWAL_AMOUNT}</span>
-                            </div>
-                        </div> */}
-
-                        <div className="bg-white border border-gray-100 rounded-2xl p-5 space-y-4 shadow-sm">
-                            <div className="flex justify-between items-center">
-                                <h2 className="text-gray-900 font-semibold flex items-center gap-2">
-                                    <ArrowUpRight size={16} className="text-blue-600" />
-                                    Withdraw Funds
-                                </h2>
-                                <div className="flex items-center gap-1.5 text-sm">
-                                    <span className="text-gray-500">Balance:</span>
-                                    <span className="text-gray-900 font-semibold">
-                                        ₹{user?.mainWallet?.toFixed(2) || 0}
-                                    </span>
-                                </div>
-                            </div>
-
-                            <input
-                                type="number"
-                                placeholder="Enter amount"
-                                value={amount}
-                                onChange={(e) => setAmount(e.target.value)}
-                                className="w-full bg-gray-50 border border-gray-200 rounded-full px-4 py-3 text-gray-900 outline-none focus:border-blue-500"
-                                onWheel={(e) => e.target.blur()}
-                            />
-
-                            <Button
-                                onClick={handleWithdraw}
-                                disabled={loading || parseFloat(amount) > user?.mainWallet || user?.mainWallet < MIN_WITHDRAWAL_AMOUNT}
-                                variant="contained"
-                                fullWidth
-                                sx={{
-                                    background: "#2563eb",
-                                    textTransform: "none",
-                                    fontWeight: 700,
-                                    borderRadius: "999px",
-                                    py: 1.2,
-                                    "&:hover": { background: "#1d4ed8" },
-                                    "&.Mui-disabled": { background: "#93c5fd", color: "#fff" },
-                                }}
-                            >
-                                {loading ? "Processing..." : "Withdraw"}
-                            </Button>
-                        </div>
-                    </>
-                )}
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 border border-white/10">
+                <ShieldCheck size={12} className="text-blue-100" />
+                <span className="text-[9px] font-semibold text-blue-100">
+                  SECURE
+                </span>
+              </div>
             </div>
 
-            {successData && (
-                <WithdrawalRequestPopup
-                    data={successData}
-                    onClose={() => setSuccessData(null)}
-                />
-            )}
+            <div className="mt-5">
+              <p className="text-[11px] text-blue-100 font-medium mb-1">
+                Current Wallet Balance
+              </p>
+
+              <div className="flex items-baseline gap-1">
+                <span className="text-xl font-semibold text-blue-100">₹</span>
+
+                <span className="text-3xl font-extrabold tracking-tight text-white">
+                  {formatCurrency(balance)}
+                </span>
+              </div>
+            </div>
+
+            {/* Mini stats */}
+            <div className="grid grid-cols-2 gap-3 mt-6">
+              <div className="rounded-xl bg-white/10 border border-white/10 p-3">
+                <div className="flex items-center gap-1.5">
+                  <TrendingUp size={13} className="text-blue-100" />
+                  <span className="text-[10px] text-blue-100">
+                    Total Payouts
+                  </span>
+                </div>
+
+                <p className="text-sm font-bold text-white mt-1">
+                  ₹{formatCurrency(totalPayouts)}
+                </p>
+              </div>
+
+              <div className="rounded-xl bg-white/10 border border-white/10 p-3">
+                <div className="flex items-center gap-1.5">
+                  <Network size={13} className="text-blue-100" />
+                  <span className="text-[10px] text-blue-100">
+                    Wallet Status
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-300" />
+                  <p className="text-sm font-bold text-white">Active</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-    );
+
+        {/* =========================================
+            DEPOSIT / WITHDRAW TABS
+        ========================================= */}
+        <div className="p-1.5 bg-white rounded-2xl border border-slate-200 shadow-sm">
+          <div className="grid grid-cols-2 gap-1.5">
+            <button
+              onClick={() => setActiveTab("deposit")}
+              className={`relative flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-200 ${
+                activeTab === "deposit"
+                  ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
+                  : "text-slate-500 hover:bg-slate-50"
+              }`}
+            >
+              <ArrowDownLeft size={17} />
+              Deposit
+            </button>
+
+            <button
+              onClick={() => setActiveTab("withdraw")}
+              className={`relative flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-200 ${
+                activeTab === "withdraw"
+                  ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
+                  : "text-slate-500 hover:bg-slate-50"
+              }`}
+            >
+              <ArrowUpRight size={17} />
+              Withdraw
+            </button>
+          </div>
+        </div>
+
+        {/* =========================================
+            DEPOSIT
+        ========================================= */}
+        {activeTab === "deposit" && (
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_8px_30px_rgba(15,23,42,0.05)] overflow-hidden">
+            <div className="h-1 bg-gradient-to-r from-blue-600 to-indigo-500" />
+
+            <div className="p-5">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                  <ArrowDownLeft size={19} className="text-blue-600" />
+                </div>
+
+                <div>
+                  <h2 className="text-base font-bold text-slate-900">
+                    Add Funds
+                  </h2>
+
+                  <p className="text-xs text-slate-500 mt-1 leading-5">
+                    Add funds to your wallet to activate or upgrade your
+                    package.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-5 p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+                <div className="flex items-start gap-2">
+                  <Info size={15} className="text-blue-500 mt-0.5 shrink-0" />
+
+                  <p className="text-[10px] text-slate-500 leading-4">
+                    Deposited funds will be added to your wallet after
+                    successful payment verification.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setDepositOpen(true)}
+                className="group mt-5 w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-lg shadow-blue-600/15 transition-all flex items-center justify-center gap-2"
+              >
+                <Wallet size={17} />
+                Deposit Now
+                <ChevronRight
+                  size={17}
+                  className="group-hover:translate-x-0.5 transition-transform"
+                />
+              </button>
+
+              <DepositModal
+                open={depositOpen}
+                onClose={() => setDepositOpen(false)}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* =========================================
+            WITHDRAW
+        ========================================= */}
+        {activeTab === "withdraw" && (
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_8px_30px_rgba(15,23,42,0.05)] overflow-hidden">
+            <div className="h-1 bg-gradient-to-r from-blue-600 to-indigo-500" />
+
+            <div className="p-5">
+              {/* Header */}
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                    <ArrowUpRight size={19} className="text-blue-600" />
+                  </div>
+
+                  <div>
+                    <h2 className="text-base font-bold text-slate-900">
+                      Withdraw Funds
+                    </h2>
+
+                    <p className="text-xs text-slate-500 mt-1">
+                      Transfer your available balance
+                    </p>
+                  </div>
+                </div>
+
+                <div className="text-right shrink-0">
+                  <p className="text-[9px] uppercase tracking-wider font-semibold text-slate-400">
+                    Balance
+                  </p>
+
+                  <p className="text-sm font-bold text-blue-600 mt-0.5">
+                    ₹{formatCurrency(balance)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Amount Input */}
+              <div className="mt-6">
+                <label className="block text-[10px] uppercase tracking-wider font-bold text-slate-500 mb-2">
+                  Withdrawal Amount
+                </label>
+
+                <div className="relative">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center">
+                    <IndianRupee size={14} className="text-blue-600" />
+                  </div>
+
+                  <input
+                    type="number"
+                    placeholder="Enter amount"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    onWheel={(e) => e.target.blur()}
+                    className="w-full h-14 bg-slate-50 border border-slate-200 rounded-xl pl-14 pr-4 text-lg font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-medium outline-none transition-all focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+                  />
+                </div>
+
+                {/* Quick Amounts */}
+                <div className="flex gap-2 mt-3">
+                  {[25, 50, 75, 100].map((percentage) => (
+                    <button
+                      key={percentage}
+                      type="button"
+                      onClick={() => quickAmount(percentage)}
+                      className="flex-1 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-[10px] font-bold text-slate-500 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-colors"
+                    >
+                      {percentage}%
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Withdrawal Info */}
+              <div className="grid grid-cols-2 gap-3 mt-5">
+                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+                  <p className="text-[9px] uppercase tracking-wider font-semibold text-slate-400">
+                    Minimum
+                  </p>
+
+                  <p className="text-sm font-bold text-slate-800 mt-1">
+                    ₹{formatCurrency(MIN_WITHDRAWAL_AMOUNT)}
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+                  <p className="text-[9px] uppercase tracking-wider font-semibold text-slate-400">
+                    Processing Fee
+                  </p>
+
+                  <p className="text-sm font-bold text-slate-800 mt-1">10%</p>
+                </div>
+              </div>
+
+              {/* Note */}
+              <div className="flex items-start gap-2 mt-4 px-1">
+                <Info size={14} className="text-blue-500 mt-0.5 shrink-0" />
+
+                <p className="text-[10px] leading-4 text-slate-400">
+                  A 5% processing fee may be deducted from the requested
+                  withdrawal amount.
+                </p>
+              </div>
+
+              {/* Withdraw Button */}
+              <button
+                onClick={handleWithdraw}
+                disabled={
+                  loading ||
+                  !amount ||
+                  parseFloat(amount) > balance ||
+                  balance < MIN_WITHDRAWAL_AMOUNT
+                }
+                className="group mt-5 w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-lg shadow-blue-600/15 transition-all flex items-center justify-center gap-2 disabled:bg-blue-300 disabled:shadow-none disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 size={17} className="animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <ArrowUpRight size={17} />
+                    Withdraw Funds
+                    <ChevronRight
+                      size={16}
+                      className="group-hover:translate-x-0.5 transition-transform"
+                    />
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Bottom security note */}
+        <div className="flex items-center justify-center gap-1.5 pt-1">
+          <ShieldCheck size={13} className="text-slate-400" />
+
+          <p className="text-[10px] text-slate-400">
+            Your wallet activity is securely protected.
+          </p>
+        </div>
+      </div>
+
+      {/* =========================================
+          SUCCESS POPUP
+      ========================================= */}
+      {successData && (
+        <WithdrawalRequestPopup
+          data={successData}
+          onClose={() => setSuccessData(null)}
+        />
+      )}
+    </div>
+  );
 };
 
 // ========================================
-// PREMIUM SUCCESS POPUP - white theme
+// PREMIUM WITHDRAWAL SUCCESS POPUP
 // ========================================
 const WithdrawalRequestPopup = ({ data, onClose }) => {
-    return (
-        <>
-            <style>{`
-        @keyframes popupFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  return (
+    <>
+      <style>{`
+        @keyframes popupFadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
         @keyframes popupScaleIn {
-          0% { transform: scale(0.7) translateY(40px); opacity: 0; }
-          60% { transform: scale(1.05) translateY(-5px); opacity: 1; }
-          100% { transform: scale(1) translateY(0); opacity: 1; }
+          0% {
+            transform: scale(0.85) translateY(25px);
+            opacity: 0;
+          }
+
+          100% {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+          }
         }
-        @keyframes checkBounce {
-          0% { transform: scale(0) rotate(-45deg); opacity: 0; }
-          50% { transform: scale(1.3) rotate(10deg); opacity: 1; }
-          100% { transform: scale(1) rotate(0deg); opacity: 1; }
+
+        @keyframes iconPop {
+          0% {
+            transform: scale(0.5);
+            opacity: 0;
+          }
+
+          70% {
+            transform: scale(1.08);
+          }
+
+          100% {
+            transform: scale(1);
+            opacity: 1;
+          }
         }
+
         @keyframes ringPulse {
-          0% { transform: scale(0.8); opacity: 0.8; }
-          100% { transform: scale(2.2); opacity: 0; }
+          0% {
+            transform: scale(0.85);
+            opacity: 0.6;
+          }
+
+          100% {
+            transform: scale(1.8);
+            opacity: 0;
+          }
         }
+
         @keyframes slideUp {
-          from { opacity: 0; transform: translateY(15px); }
-          to { opacity: 1; transform: translateY(0); }
+          from {
+            opacity: 0;
+            transform: translateY(12px);
+          }
+
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
       `}</style>
 
-            <div
-                className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
-                style={{ animation: "popupFadeIn 0.3s ease-out" }}
-                onClick={onClose}
-            >
-                <div
-                    onClick={(e) => e.stopPropagation()}
-                    className="relative w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl"
-                    style={{ animation: "popupScaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards" }}
-                >
-                    <button
-                        onClick={onClose}
-                        className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-all"
-                    >
-                        <X size={16} />
-                    </button>
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-sm"
+        style={{
+          animation: "popupFadeIn 0.25s ease-out",
+        }}
+        onClick={onClose}
+      >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="relative w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl"
+          style={{
+            animation: "popupScaleIn 0.35s cubic-bezier(0.34, 1.25, 0.64, 1)",
+          }}
+        >
+          {/* Top Accent */}
+          <div className="h-1 bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-500" />
 
-                    <div className="p-8 pt-10">
-                        {/* Icon: clock/pending instead of a completed checkmark, since this is a request awaiting approval */}
-                        <div className="relative flex items-center justify-center mb-6 h-24">
-                            <div
-                                className="absolute w-24 h-24 rounded-full border-2 border-amber-200"
-                                style={{ animation: "ringPulse 1.5s ease-out infinite" }}
-                            />
-                            <div
-                                className="relative w-20 h-20 rounded-full bg-amber-500 flex items-center justify-center"
-                                style={{ animation: "checkBounce 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55) 0.2s both" }}
-                            >
-                                <Clock size={40} className="text-white" strokeWidth={2.5} />
-                            </div>
-                        </div>
+          {/* Close */}
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-700 transition-all"
+          >
+            <X size={16} />
+          </button>
 
-                        <div className="text-center" style={{ animation: "slideUp 0.5s ease-out 0.4s both" }}>
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-100 mb-3">
-                                <span className="text-amber-600 text-xs font-semibold tracking-wide uppercase">
-                                    Withdrawal Requested
-                                </span>
-                            </div>
-                            <h2 className="text-gray-900 text-2xl font-bold mb-2">
-                                Request Submitted!
-                            </h2>
-                            <p className="text-gray-500 text-sm">
-                                Your withdrawal request has been sent for admin approval
-                            </p>
-                        </div>
+          <div className="p-7 pt-9">
+            {/* Success Icon */}
+            <div className="relative flex items-center justify-center h-24 mb-5">
+              <div
+                className="absolute w-20 h-20 rounded-full border-2 border-blue-200"
+                style={{
+                  animation: "ringPulse 1.5s ease-out infinite",
+                }}
+              />
 
-                        {/* Amount block - INR instead of token */}
-                        <div
-                            className="mt-6 p-5 rounded-2xl bg-amber-50 border border-amber-100"
-                            style={{ animation: "slideUp 0.5s ease-out 0.5s both" }}
-                        >
-                            <p className="text-gray-500 text-xs uppercase tracking-wider text-center mb-2">
-                                Amount Requested
-                            </p>
-                            <div className="flex items-center justify-center gap-1">
-                                <span className="text-gray-900 text-4xl font-bold">
-                                    ₹{data.amount?.toFixed(2)}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="mt-4 space-y-2" style={{ animation: "slideUp 0.5s ease-out 0.6s both" }}>
-                            <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-50">
-                                <span className="text-gray-500 text-sm">Status</span>
-                                <span className="text-amber-600 text-sm font-semibold">
-                                    Pending Admin Approval
-                                </span>
-                            </div>
-                        </div>
-
-                        <button
-                            onClick={onClose}
-                            className="mt-6 w-full py-3 rounded-full bg-amber-500 text-white font-bold text-sm uppercase tracking-wider hover:bg-amber-600 transition-all transform hover:scale-[1.02] active:scale-[0.98]"
-                            style={{ animation: "slideUp 0.5s ease-out 0.8s both" }}
-                        >
-                            Okay, got it!
-                        </button>
-                    </div>
-                </div>
+              <div
+                className="relative w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/25"
+                style={{
+                  animation: "iconPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                }}
+              >
+                <Clock3 size={37} className="text-white" strokeWidth={2.3} />
+              </div>
             </div>
-        </>
-    );
+
+            {/* Heading */}
+            <div
+              className="text-center"
+              style={{
+                animation: "slideUp 0.4s ease-out 0.15s both",
+              }}
+            >
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 mb-3">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+
+                <span className="text-blue-600 text-[10px] font-bold uppercase tracking-wider">
+                  Request Submitted
+                </span>
+              </div>
+
+              <h2 className="text-slate-900 text-2xl font-extrabold tracking-tight">
+                Withdrawal Requested
+              </h2>
+
+              <p className="text-slate-500 text-xs mt-2 leading-5">
+                Your withdrawal request has been successfully submitted for
+                admin approval.
+              </p>
+            </div>
+
+            {/* Amount */}
+            <div
+              className="mt-6 p-5 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100"
+              style={{
+                animation: "slideUp 0.4s ease-out 0.25s both",
+              }}
+            >
+              <p className="text-slate-400 text-[9px] uppercase tracking-widest font-bold text-center">
+                Amount Requested
+              </p>
+
+              <div className="flex items-center justify-center mt-2">
+                <span className="text-blue-600 text-xl font-semibold">₹</span>
+
+                <span className="text-slate-900 text-3xl font-extrabold tracking-tight">
+                  {Number(data.amount || 0).toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
+              </div>
+            </div>
+
+            {/* Status */}
+            <div
+              className="mt-4 p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between"
+              style={{
+                animation: "slideUp 0.4s ease-out 0.35s both",
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                  <Clock3 size={15} className="text-blue-600" />
+                </div>
+
+                <div>
+                  <p className="text-[9px] uppercase tracking-wider font-bold text-slate-400">
+                    Status
+                  </p>
+
+                  <p className="text-xs font-bold text-slate-800 mt-0.5">
+                    Pending Approval
+                  </p>
+                </div>
+              </div>
+
+              <CheckCircle2 size={18} className="text-blue-500" />
+            </div>
+
+            {/* Info */}
+            <div
+              className="mt-4 flex items-start gap-2 px-1"
+              style={{
+                animation: "slideUp 0.4s ease-out 0.45s both",
+              }}
+            >
+              <Info size={13} className="text-slate-400 mt-0.5 shrink-0" />
+
+              <p className="text-[10px] leading-4 text-slate-400">
+                The final amount will be processed according to your withdrawal
+                fee and approval rules.
+              </p>
+            </div>
+
+            {/* Button */}
+            <button
+              onClick={onClose}
+              className="mt-6 w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-lg shadow-blue-600/15 transition-all active:scale-[0.98]"
+              style={{
+                animation: "slideUp 0.4s ease-out 0.55s both",
+              }}
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
 };
 
 export default UserWallet;

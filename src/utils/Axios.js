@@ -2,8 +2,8 @@ import axios from "axios";
 import { store } from "../redux/store";
 import { logout } from "../redux/slices/authSlice";
 
-const BASE_URL =
-  import.meta.env.VITE_API_URL || "https://api.tokenbridge.online";
+const BASE_URL = "https://api.binext.in";
+// import.meta.env.VITE_API_URL || "https://api.tokenbridge.online";
 
 const Axios = axios.create({
   baseURL: `${BASE_URL}/api`,
@@ -27,7 +27,7 @@ Axios.interceptors.request.use(
 
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 Axios.interceptors.response.use(
@@ -65,7 +65,7 @@ Axios.interceptors.response.use(
       message,
       raw: error,
     });
-  }
+  },
 );
 
 export default Axios;

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
+import { HiOutlineUser, HiOutlineMail } from "react-icons/hi";
+import { RiLockPasswordLine, RiPhoneLine, RiGiftLine } from "react-icons/ri";
 import signupPageElement from "../../assets/SignupPageElement.png";
 import Flag from "react-world-flags";
 import toast from "react-hot-toast";
@@ -213,6 +215,7 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [focusedField, setFocusedField] = useState(null);
 
   const [payload, setPayload] = useState({
     name: "",
@@ -225,19 +228,27 @@ const Register = () => {
     referredByFromParam: false,
   });
 
-useEffect(() => {
-  const params = new URLSearchParams(search);
-  const inviteCode = params.get("referredBy") || ""; // 👈 fix: invite_code → referredBy
-  setPayload((prev) => ({
-    ...prev,
-    referredBy: inviteCode,
-    referredByFromParam: !!inviteCode,
-  }));
-}, [search]);
+  useEffect(() => {
+    const params = new URLSearchParams(search);
+    const inviteCode = params.get("referredBy") || ""; // 👈 fix: invite_code → referredBy
+    setPayload((prev) => ({
+      ...prev,
+      referredBy: inviteCode,
+      referredByFromParam: !!inviteCode,
+    }));
+  }, [search]);
 
   const handleSubmit = async () => {
     if (loading) return;
-    const { name, password, confirmPassword, mobile, email, countryCode, referredBy } = payload;
+    const {
+      name,
+      password,
+      confirmPassword,
+      mobile,
+      email,
+      countryCode,
+      referredBy,
+    } = payload;
 
     if (!name || !password || !confirmPassword || !mobile || !email) {
       toast.error("Please fill in all the required fields.");
@@ -271,76 +282,157 @@ useEffect(() => {
         navigate("/auth/login");
       }
     } catch (error) {
-      toast.error(error?.response?.data?.message || error.message || "error in register");
+      toast.error(
+        error?.response?.data?.message || error.message || "error in register",
+      );
     } finally {
       setLoading(false);
     }
   };
 
+  const fieldClass = (field, hasError) =>
+    `flex items-center gap-2.5 rounded-xl border transition-all duration-300 bg-gray-50 px-3.5 ${
+      hasError
+        ? "border-red-400"
+        : focusedField === field
+          ? "border-blue-500 bg-white shadow-[0_0_0_3px_rgba(37,99,235,0.12)]"
+          : "border-gray-200"
+    }`;
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-transparent w-full px-4 py-8">
-      <div className="mx-auto rounded-3xl bg-white/5 border border-teal-800 shadow-xl text-white max-w-[440px] w-full py-6">
-        <div className="w-full flex justify-between items-center mb-4 px-6">
-          <Link to="/" className="text-3xl font-bold text-white">Registration</Link>
-          <img src={signupPageElement} className="h-20 w-20 object-cover" alt="img" />
+    <div className="min-h-screen relative flex items-center justify-center bg-gradient-to-b from-slate-50 via-white to-blue-50/40 w-full px-4 py-10 overflow-hidden">
+      {/* Ambient glow background */}
+      <div className="pointer-events-none absolute -top-40 -right-32 w-96 h-96 bg-blue-200/40 rounded-full blur-[120px]" />
+      <div className="pointer-events-none absolute -bottom-40 -left-32 w-96 h-96 bg-indigo-200/40 rounded-full blur-[120px]" />
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage:
+            "linear-gradient(#1d4ed8 1px, transparent 1px), linear-gradient(90deg, #1d4ed8 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
+        }}
+      />
+
+      <div className="relative mx-auto rounded-3xl bg-white/80 backdrop-blur-xl border border-white shadow-xl shadow-blue-100 text-gray-900 max-w-[440px] w-full py-8">
+        <div className="absolute top-0 left-8 right-8 h-px bg-gradient-to-r from-transparent via-blue-400/60 to-transparent" />
+
+        <div className="w-full flex justify-between items-center mb-6 px-6">
+          <div>
+            <p className="text-[11px] font-semibold text-blue-600 tracking-[0.2em] mb-1">
+              CREATE ACCOUNT
+            </p>
+            <Link
+              to="/"
+              className="text-3xl font-extrabold text-gray-900 tracking-tight"
+            >
+              Registration
+            </Link>
+          </div>
+          <div className="relative">
+            <div className="absolute inset-0 bg-blue-400/20 rounded-full blur-lg" />
+            <img
+              src={signupPageElement}
+              className="relative h-16 w-16 object-cover rounded-full ring-2 ring-blue-100"
+              alt="img"
+            />
+          </div>
         </div>
 
         <div className="space-y-5 px-6">
+          {/* NAME */}
           <div>
-            <label className="text-white mb-1 text-sm flex gap-1">
+            <label className="text-gray-600 mb-1.5 text-xs font-semibold tracking-wide flex gap-1">
               NAME <span className="text-red-500">*</span>
             </label>
-            <input
-              type="text"
-              className="w-full p-3 rounded-xl outline-none border-2 border-gray-600 bg-[#2b2e39] text-base text-white placeholder-gray-400 focus:border-[#00d0fc]"
-              placeholder="Enter user name"
-              value={payload.name}
-              required
-              onChange={(e) => setPayload({ ...payload, name: e.target.value })}
-            />
+            <div className={fieldClass("name", false)}>
+              <HiOutlineUser
+                size={18}
+                className={
+                  focusedField === "name" ? "text-blue-600" : "text-gray-400"
+                }
+              />
+              <input
+                type="text"
+                className="w-full py-3 bg-transparent outline-none border-none text-[15px] text-gray-900 placeholder-gray-400"
+                placeholder="Enter user name"
+                value={payload.name}
+                required
+                onFocus={() => setFocusedField("name")}
+                onBlur={() => setFocusedField(null)}
+                onChange={(e) =>
+                  setPayload({ ...payload, name: e.target.value })
+                }
+              />
+            </div>
           </div>
 
           {/* PASSWORD */}
           <div>
-            <label className="text-white mb-1 text-sm flex gap-1">
+            <label className="text-gray-600 mb-1.5 text-xs font-semibold tracking-wide flex gap-1">
               PASSWORD <span className="text-red-500">*</span>
             </label>
-            <div className="relative mb-3">
+            <div className={`${fieldClass("password", false)} mb-3`}>
+              <RiLockPasswordLine
+                size={18}
+                className={
+                  focusedField === "password"
+                    ? "text-blue-600"
+                    : "text-gray-400"
+                }
+              />
               <input
                 type={showPassword ? "text" : "password"}
-                className="w-full p-3 rounded-xl outline-none border-2 border-gray-600 text-base bg-[#2b2e39] text-white placeholder-gray-400 focus:border-[#00d0fc]"
+                className="w-full py-3 bg-transparent outline-none border-none text-[15px] text-gray-900 placeholder-gray-400"
                 placeholder="Enter your password"
                 value={payload.password}
                 required
-                onChange={(e) => setPayload({ ...payload, password: e.target.value })}
+                onFocus={() => setFocusedField("password")}
+                onBlur={() => setFocusedField(null)}
+                onChange={(e) =>
+                  setPayload({ ...payload, password: e.target.value })
+                }
               />
               {showPassword ? (
                 <FaRegEyeSlash
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute text-xl text-gray-400 top-1/2 -translate-y-1/2 right-4 cursor-pointer"
+                  className="text-lg text-gray-400 hover:text-blue-600 cursor-pointer transition-colors flex-shrink-0"
                 />
               ) : (
                 <FaRegEye
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute text-xl text-gray-400 top-1/2 -translate-y-1/2 right-4 cursor-pointer"
+                  className="text-lg text-gray-400 hover:text-blue-600 cursor-pointer transition-colors flex-shrink-0"
                 />
               )}
             </div>
 
             {/* CONFIRM PASSWORD */}
-            <input
-              type={showPassword ? "text" : "password"}
-              className="w-full p-3 rounded-xl outline-none border-2 border-gray-600 bg-[#2b2e39] text-base text-white placeholder-gray-400 focus:border-[#00d0fc]"
-              placeholder="Re-enter password"
-              value={payload.confirmPassword}
-              required
-              onChange={(e) => setPayload({ ...payload, confirmPassword: e.target.value })}
-            />
+            <div className={fieldClass("confirmPassword", false)}>
+              <RiLockPasswordLine
+                size={18}
+                className={
+                  focusedField === "confirmPassword"
+                    ? "text-blue-600"
+                    : "text-gray-400"
+                }
+              />
+              <input
+                type={showPassword ? "text" : "password"}
+                className="w-full py-3 bg-transparent outline-none border-none text-[15px] text-gray-900 placeholder-gray-400"
+                placeholder="Re-enter password"
+                value={payload.confirmPassword}
+                required
+                onFocus={() => setFocusedField("confirmPassword")}
+                onBlur={() => setFocusedField(null)}
+                onChange={(e) =>
+                  setPayload({ ...payload, confirmPassword: e.target.value })
+                }
+              />
+            </div>
           </div>
 
           {/* MOBILE */}
           <div className="relative">
-            <label className="text-white mb-1 text-sm flex gap-1">
+            <label className="text-gray-600 mb-1.5 text-xs font-semibold tracking-wide flex gap-1">
               MOBILE NO. <span className="text-red-500">*</span>
             </label>
             <div className="w-full flex gap-2 items-start">
@@ -350,24 +442,30 @@ useEffect(() => {
                     setOpen(!open);
                     if (!open) setSearchQuery("");
                   }}
-                  className="p-3 rounded-xl border-2 border-gray-600 text-base bg-[#2b2e39] text-white cursor-pointer flex items-center gap-2"
+                  className="p-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 cursor-pointer flex items-center gap-2 hover:border-gray-300 transition-colors"
                 >
                   <Flag
-                    code={options.find((opt) => opt.value === payload.countryCode)?.code || "IN"}
+                    code={
+                      options.find((opt) => opt.value === payload.countryCode)
+                        ?.code || "IN"
+                    }
                     style={{ width: 22, height: 14 }}
                   />
-                  <span className="truncate">
-                    {options.find((opt) => opt.value === payload.countryCode)?.value}
+                  <span className="truncate text-sm">
+                    {
+                      options.find((opt) => opt.value === payload.countryCode)
+                        ?.value
+                    }
                   </span>
-                  <span className="ml-auto text-xs">▼</span>
+                  <span className="ml-auto text-xs text-gray-400">▼</span>
                 </div>
 
                 {open && (
-                  <div className="absolute z-10 w-[280px] max-h-80 overflow-auto mt-2 rounded-xl border-2 border-gray-600 bg-[#2b2e39] text-white text-base shadow-lg">
-                    <div className="sticky top-0 bg-[#2b2e39] border-b border-gray-700">
+                  <div className="absolute z-10 w-[280px] max-h-80 overflow-auto mt-2 rounded-xl border border-gray-200 bg-white text-gray-900 text-base shadow-2xl shadow-gray-300/50">
+                    <div className="sticky top-0 bg-white border-b border-gray-100">
                       <input
                         type="text"
-                        className="w-full p-3 outline-none bg-[#2b2e39] text-white placeholder-gray-400 text-base"
+                        className="w-full p-3 outline-none bg-transparent text-gray-900 placeholder-gray-400 text-sm"
                         placeholder="Search country or code..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -376,31 +474,43 @@ useEffect(() => {
                     {options
                       .filter(
                         (option) =>
-                          option.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          option.value.includes(searchQuery)
+                          option.name
+                            .toLowerCase()
+                            .includes(searchQuery.toLowerCase()) ||
+                          option.value.includes(searchQuery),
                       )
                       .map((option) => (
                         <div
                           key={`${option.name}-${option.value}`}
                           onClick={() => {
-                            setPayload({ ...payload, countryCode: option.value });
+                            setPayload({
+                              ...payload,
+                              countryCode: option.value,
+                            });
                             setOpen(false);
                             setSearchQuery("");
                           }}
-                          className={`flex items-center justify-between p-3 border-b border-gray-700 last:border-b-0 cursor-pointer hover:bg-[#3a3d4c] ${payload.countryCode === option.value ? "text-[#00d0fc]" : ""
-                            }`}
+                          className={`flex items-center justify-between p-3 border-b border-gray-50 last:border-b-0 cursor-pointer hover:bg-blue-50 transition-colors ${
+                            payload.countryCode === option.value
+                              ? "text-blue-600 bg-blue-50/60"
+                              : ""
+                          }`}
                         >
                           <div className="flex items-center gap-2">
-                            <Flag code={option.code} style={{ width: 22, height: 14 }} />
+                            <Flag
+                              code={option.code}
+                              style={{ width: 22, height: 14 }}
+                            />
                             <span className="text-sm">
                               {option.value} ({option.name})
                             </span>
                           </div>
                           <span
-                            className={`w-4 h-4 rounded-full border-2 shrink-0 ${payload.countryCode === option.value
-                                ? "border-[#00d0fc] bg-[#00d0fc]"
-                                : "border-white"
-                              }`}
+                            className={`w-4 h-4 rounded-full border-2 shrink-0 ${
+                              payload.countryCode === option.value
+                                ? "border-blue-600 bg-blue-600"
+                                : "border-gray-300"
+                            }`}
                           />
                         </div>
                       ))}
@@ -408,48 +518,93 @@ useEffect(() => {
                 )}
               </div>
 
-              <input
-                type="number"
-                className="text-base w-full p-3 rounded-xl outline-none border-2 border-gray-600 bg-[#2b2e39] text-white placeholder-gray-400 focus:border-[#00d0fc]"
-                placeholder="Enter mobile number"
-                value={payload.mobile}
-                onChange={(e) => setPayload({ ...payload, mobile: e.target.value })}
-                required
-              />
+              <div className={`${fieldClass("mobile", false)} flex-1`}>
+                <RiPhoneLine
+                  size={18}
+                  className={
+                    focusedField === "mobile"
+                      ? "text-blue-600"
+                      : "text-gray-400"
+                  }
+                />
+                <input
+                  type="number"
+                  className="w-full py-3 bg-transparent outline-none border-none text-[15px] text-gray-900 placeholder-gray-400"
+                  placeholder="Enter mobile number"
+                  value={payload.mobile}
+                  onFocus={() => setFocusedField("mobile")}
+                  onBlur={() => setFocusedField(null)}
+                  onChange={(e) =>
+                    setPayload({ ...payload, mobile: e.target.value })
+                  }
+                  required
+                />
+              </div>
             </div>
           </div>
 
           {/* EMAIL */}
           <div>
-            <label className="text-white mb-1 text-sm flex gap-1">
+            <label className="text-gray-600 mb-1.5 text-xs font-semibold tracking-wide flex gap-1">
               EMAIL <span className="text-red-500">*</span>
             </label>
-            <input
-              type="email"
-              className="w-full p-3 rounded-xl outline-none border-2 border-gray-600 text-base bg-[#2b2e39] text-white placeholder-gray-400 focus:border-[#00d0fc]"
-              placeholder="Enter your email id"
-              value={payload.email}
-              onChange={(e) => setPayload({ ...payload, email: e.target.value })}
-            />
+            <div className={fieldClass("email", false)}>
+              <HiOutlineMail
+                size={18}
+                className={
+                  focusedField === "email" ? "text-blue-600" : "text-gray-400"
+                }
+              />
+              <input
+                type="email"
+                className="w-full py-3 bg-transparent outline-none border-none text-[15px] text-gray-900 placeholder-gray-400"
+                placeholder="Enter your email id"
+                value={payload.email}
+                onFocus={() => setFocusedField("email")}
+                onBlur={() => setFocusedField(null)}
+                onChange={(e) =>
+                  setPayload({ ...payload, email: e.target.value })
+                }
+              />
+            </div>
           </div>
 
           {/* REFERRAL */}
           <div>
-            <label className="text-white mb-1 text-sm flex gap-1">
+            <label className="text-gray-600 mb-1.5 text-xs font-semibold tracking-wide flex gap-1">
               REFERRAL CODE
             </label>
-            <input
-              type="text"
-              className="w-full p-3 rounded-xl outline-none border-2 border-gray-600 bg-[#2b2e39] text-white text-base placeholder-gray-400 focus:border-[#00d0fc] disabled:opacity-60"
-              placeholder="Referral code"
-              value={payload.referredBy}
-              onChange={(e) => {
-                if (!payload.referredByFromParam) {
-                  setPayload({ ...payload, referredBy: e.target.value?.toUpperCase() });
+            <div
+              className={`${fieldClass("referredBy", false)} ${
+                payload.referredByFromParam ? "opacity-60" : ""
+              }`}
+            >
+              <RiGiftLine
+                size={18}
+                className={
+                  focusedField === "referredBy"
+                    ? "text-blue-600"
+                    : "text-gray-400"
                 }
-              }}
-              disabled={payload.referredByFromParam}
-            />
+              />
+              <input
+                type="text"
+                className="w-full py-3 bg-transparent outline-none border-none text-[15px] text-gray-900 placeholder-gray-400 disabled:cursor-not-allowed"
+                placeholder="Referral code"
+                value={payload.referredBy}
+                onFocus={() => setFocusedField("referredBy")}
+                onBlur={() => setFocusedField(null)}
+                onChange={(e) => {
+                  if (!payload.referredByFromParam) {
+                    setPayload({
+                      ...payload,
+                      referredBy: e.target.value?.toUpperCase(),
+                    });
+                  }
+                }}
+                disabled={payload.referredByFromParam}
+              />
+            </div>
           </div>
 
           {/* SUBMIT */}
@@ -458,13 +613,38 @@ useEffect(() => {
             variant="contained"
             onClick={handleSubmit}
             disabled={loading}
+            sx={{
+              background: "linear-gradient(135deg, #2563eb, #4338ca)",
+              color: "#fff",
+              fontWeight: 800,
+              textTransform: "none",
+              borderRadius: "12px",
+              py: 1.3,
+              fontSize: "15px",
+              boxShadow: "0 8px 24px rgba(37,99,235,0.3)",
+              "&:hover": {
+                background: "linear-gradient(135deg, #1d4ed8, #3730a3)",
+                boxShadow: "0 10px 28px rgba(37,99,235,0.4)",
+              },
+              "&.Mui-disabled": {
+                background: "rgba(37,99,235,0.2)",
+                color: "#fff",
+              },
+            }}
           >
-            {loading ? <CircularProgress size={22} sx={{ color: "#121418" }} /> : "Sign Up"}
+            {loading ? (
+              <CircularProgress size={22} sx={{ color: "#fff" }} />
+            ) : (
+              "Sign Up"
+            )}
           </Button>
 
-          <p className="text-center text-gray-400 text-sm py-4">
+          <p className="text-center text-gray-500 text-sm py-2">
             HAVE AN ACCOUNT?{" "}
-            <Link className="text-[#00d0fc] hover:underline font-semibold" to={"/auth/login"}>
+            <Link
+              className="text-blue-600 font-bold hover:text-blue-700 transition-colors"
+              to={"/auth/login"}
+            >
               LOG IN
             </Link>
           </p>
