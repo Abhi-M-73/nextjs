@@ -10,20 +10,6 @@ import TokenBridge from "./TokenBridge";
 import LLDChart from "./LLDChart";
 
 export default function LandingPage() {
-<<<<<<< HEAD
-    return (
-        <div className="min-h-screen bg-[#0a0a0a] text-white">
-            <Navbar />
-            <HeroSection />
-            <TokenBridge />
-            <EcosystemSection />
-            <HowItsWork />
-            <StatsSection />
-            <Footer />
-        </div>
-    );
-}
-=======
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white">
       {/* <BackgroundEffects /> */}
@@ -38,4 +24,3 @@ export default function LandingPage() {
     </div>
   );
 }
->>>>>>> 656cdf7786a80072d334a9b766a9f44ddf07050c
