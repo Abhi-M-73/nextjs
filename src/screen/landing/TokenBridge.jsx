@@ -129,7 +129,7 @@ const TokenBridge = () => {
         </div>
 
         {/* --- LEVEL INCOME TABLE --- */}
-        <motion.div
+        {/* <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           className="rounded-[2rem] border border-white/10 bg-white/5 backdrop-blur-md overflow-hidden mb-16"
@@ -176,7 +176,7 @@ const TokenBridge = () => {
             <span>📅 Level Income Validity: 30 Days</span>
             <span className="font-semibold text-white">💰 Total Level Income: ₹977</span>
           </div>
-        </motion.div>
+        </motion.div> */}
 
         {/* --- BOTTOM DASHBOARD VIEW --- */}
         <div className="grid lg:grid-cols-3 gap-6">
