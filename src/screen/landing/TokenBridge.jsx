@@ -128,56 +128,6 @@ const TokenBridge = () => {
           ))}
         </div>
 
-        {/* --- LEVEL INCOME TABLE --- */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          className="rounded-[2rem] border border-white/10 bg-white/5 backdrop-blur-md overflow-hidden mb-16"
-        >
-          <div className="flex items-center justify-between px-8 py-6 border-b border-white/10">
-            <h3 className="text-xl font-bold">Level-Wise Income Breakdown</h3>
-            <span className="text-xs font-mono uppercase tracking-widest text-gray-400">
-              26 Active Days / 30 Days
-            </span>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-gray-400 uppercase text-xs tracking-widest border-b border-white/10">
-                  <th className="text-left py-4 px-8 font-medium">Level</th>
-                  <th className="text-left py-4 px-4 font-medium">Rate</th>
-                  <th className="text-left py-4 px-4 font-medium">Income</th>
-                  <th className="text-right py-4 px-8 font-medium">Team Required</th>
-                </tr>
-              </thead>
-              <tbody>
-                {levelIncome.map((row, i) => (
-                  <tr
-                    key={row.level}
-                    className={`border-b border-white/5 hover:bg-white/5 transition-colors ${
-                      i % 2 === 0 ? "bg-white/[0.02]" : ""
-                    }`}
-                  >
-                    <td className="py-3 px-8 font-semibold text-indigo-300">{row.level}</td>
-                    <td className="py-3 px-4 text-gray-400">{row.rate}</td>
-                    <td className="py-3 px-4 font-semibold">{row.income}</td>
-                    <td className="py-3 px-8 text-right text-gray-400 flex items-center justify-end gap-1">
-                      <Users size={12} /> {row.team}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="flex flex-col md:flex-row justify-between gap-4 px-8 py-6 border-t border-white/10 text-sm text-gray-400">
-            <span>🚫 Every Sunday — OFF</span>
-            <span>📅 Level Income Validity: 30 Days</span>
-            <span className="font-semibold text-white">💰 Total Level Income: ₹977</span>
-          </div>
-        </motion.div>
-
         {/* --- BOTTOM DASHBOARD VIEW --- */}
         <div className="grid lg:grid-cols-3 gap-6">
           <motion.div

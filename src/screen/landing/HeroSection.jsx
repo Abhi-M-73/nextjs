@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 
 const HeroSection = () => {
   const texts = [
@@ -57,7 +58,14 @@ const HeroSection = () => {
     <section
       id="home"
       className="relative min-h-screen bg-[#020203] overflow-hidden md:pt-16 px-6 flex items-center justify-center"
+      style={{ fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif" }}
     >
+      {/* Google Fonts: display face for headings, Inter for body */}
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
+      />
+
       <motion.div
         className="absolute top-[5%] left-[-15%] md:left-[-13%] w-[600px] h-[600px] pointer-events-none md:opacity-60 opacity-10 blur-[1px] mix-blend-screen hidden md:block"
         style={{
@@ -116,7 +124,17 @@ const HeroSection = () => {
         />
       </div>
 
-      <div className="max-w-7xl mx-auto relative z-10 flex flex-col items-center text-center py-10">
+      {/* Subtle grid texture for depth */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.025]"
+        style={{
+          backgroundImage:
+            "linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)",
+          backgroundSize: "56px 56px",
+        }}
+      />
+
+      <div className="max-w-7xl mt-16 mx-auto relative z-10 flex flex-col items-center text-center py-10">
         {/* Badge */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -124,8 +142,8 @@ const HeroSection = () => {
           className="flex items-center gap-2 px-5 py-2 rounded-full border border-white/10 bg-white/[0.03] backdrop-blur-xl mb-8 shadow-[0_0_20px_rgba(255,255,255,0.05)]"
         >
           <Sparkles className="w-4 h-4 text-purple-400" />
-          <span className="text-xs font-semibold text-gray-300 uppercase tracking-widest">
-            Activate • Refer • Upgrade • Earn
+          <span className="text-xs   font-semibold text-gray-300 uppercase tracking-widest">
+            Binext • Activate • Refer • Upgrade • Earn
           </span>
         </motion.div>
 
@@ -134,6 +152,7 @@ const HeroSection = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-5xl md:text-7xl font-semibold text-white mb-6 leading-[1.1] tracking-tight"
+          style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif" }}
         >
           Join With ₹999 <br className="hidden md:block" />
           Build Your Income Network <br />
@@ -148,7 +167,7 @@ const HeroSection = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="text-gray-400 text-lg md:text-xl max-w-4xl mb-8 font-light"
+          className="text-gray-400 text-lg md:text-xl max-w-4xl mb-8 font-light leading-relaxed"
         >
           Activate your ID at just ₹999 and unlock daily cashback, instant
           referral income, and level income across 16 levels. Start as SILVER,
@@ -164,16 +183,22 @@ const HeroSection = () => {
           className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10 w-full max-w-3xl"
         >
           {highlights.map(({ icon: Icon, label, value }) => (
-            <div
+            <motion.div
               key={label}
-              className="flex flex-col items-center gap-1 px-4 py-4 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl"
+              whileHover={{ y: -3 }}
+              className="flex flex-col items-center gap-1 px-4 py-5 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl transition-colors duration-300 hover:bg-white/[0.06] hover:border-white/20"
             >
               <Icon className="w-5 h-5 text-purple-400 mb-1" />
-              <span className="text-white font-semibold text-lg">{value}</span>
-              <span className="text-gray-400 text-xs uppercase tracking-wide">
+              <span
+                className="text-white font-semibold text-lg tracking-tight"
+                style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+              >
+                {value}
+              </span>
+              <span className="text-gray-500 text-[11px] font-medium uppercase tracking-wide">
                 {label}
               </span>
-            </div>
+            </motion.div>
           ))}
         </motion.div>
 
@@ -200,6 +225,16 @@ const HeroSection = () => {
             <ArrowRight className="w-4 h-4" />
           </Link>
         </motion.button>
+
+        {/* Trust line */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="text-gray-600 text-xs mt-6 tracking-wide"
+        >
+          Powered by Binext — secure activation, instant payouts
+        </motion.p>
       </div>
     </section>
   );
