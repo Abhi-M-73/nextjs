@@ -6,12 +6,9 @@ import {
     TrendingUp,
     CheckCircle2,
     X,
-    Copy,
-    ExternalLink,
 } from "lucide-react";
 import { Button } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
-import mainContent from "../../utils/mainContent";
 import { withdrawRequest } from "../../api/user.api";
 import useFetchProfile from "../../hooks/useFetchProfile";
 import { showSnackbar } from "../../redux/slices/snackbarSlice";
@@ -20,14 +17,13 @@ import DepositModal from "../../components/all/DepositModel";
 const UserWallet = () => {
     const { fetchUserInfo } = useFetchProfile();
     const { user } = useSelector((state) => state.auth);
-    const [activeTab, setActiveTab] = useState("deposit"); // deposit | withdraw
+    const [activeTab, setActiveTab] = useState("deposit"); 
     const [amount, setAmount] = useState("");
     const [loading, setLoading] = useState(false);
     const [depositOpen, setDepositOpen] = useState(false);
-
     const [successData, setSuccessData] = useState(null);
 
-    const MIN_WITHDRAWAL_AMOUNT = 50;
+    const MIN_WITHDRAWAL_AMOUNT = 700;
 
     const dispatch = useDispatch();
 
@@ -45,7 +41,7 @@ const UserWallet = () => {
                 dispatch(showSnackbar({ message: `Minimum withdrawal is ${MIN_WITHDRAWAL_AMOUNT}.`, severity: "error" }));
                 return;
             }
-            if (parseFloat(amount) > user?.currentEarnings) {
+            if (parseFloat(amount) > user?.mainWallet) {
                 dispatch(showSnackbar({ message: "Insufficient balance.", severity: "error" }));
                 return;
             }
@@ -64,7 +60,7 @@ const UserWallet = () => {
                 fetchUserInfo();
             }
         } catch (error) {
-            dispatch(showSnackbar({ message: "Failed to process withdrawal. Try again! ❌", severity: "error" }));
+            dispatch(showSnackbar({ message: error?.response?.data?.message || error?.message || "Failed to process withdrawal. Try again! ❌", severity: "error" }));
         } finally {
             setLoading(false);
         }
@@ -83,9 +79,8 @@ const UserWallet = () => {
                                 Total Investment
                             </div>
                             <div className="flex items-center mt-2">
-                                ₹
                                 <p className="text-gray-900 text-lg font-bold">
-                                    {user?.totalInvestment?.toFixed(2) || 0}
+                                    ₹{user?.totalInvestment?.toFixed(2) || 0}
                                 </p>
                             </div>
                         </div>
@@ -96,8 +91,7 @@ const UserWallet = () => {
                                 Total Payouts
                             </div>
                             <div className="flex items-center mt-2">
-                                ₹
-                                <p className="text-gray-900 text-lg font-bold">{user?.totalPayouts?.toFixed(2) || 0}</p>
+                                <p className="text-gray-900 text-lg font-bold">₹{user?.totalPayouts?.toFixed(2) || 0}</p>
                             </div>
                         </div>
                     </div>
@@ -160,12 +154,12 @@ const UserWallet = () => {
                 {/* Withdraw panel */}
                 {activeTab === "withdraw" && (
                     <>
-                        <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+                        {/* <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
                             <h2 className="text-gray-900 font-semibold mb-2">Withdrawal Feature</h2>
                             <div className="flex items-center gap-1.5 text-sm">
                                 <span className="text-gray-500">Withdrawal feature are coming soone</span>
                             </div>
-                        </div>
+                        </div> */}
                         {/* <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
                             <h2 className="text-gray-900 font-semibold mb-2">Withdrawal Rules</h2>
                             <div className="flex items-center gap-1.5 text-sm">
@@ -174,16 +168,16 @@ const UserWallet = () => {
                             </div>
                         </div> */}
 
-                        {/* <div className="bg-white border border-gray-100 rounded-2xl p-5 space-y-4 shadow-sm">
+                        <div className="bg-white border border-gray-100 rounded-2xl p-5 space-y-4 shadow-sm">
                             <div className="flex justify-between items-center">
                                 <h2 className="text-gray-900 font-semibold flex items-center gap-2">
                                     <ArrowUpRight size={16} className="text-blue-600" />
-                                    Total Stake Income
+                                    Withdraw Funds
                                 </h2>
                                 <div className="flex items-center gap-1.5 text-sm">
                                     <span className="text-gray-500">Balance:</span>
                                     <span className="text-gray-900 font-semibold">
-                                        {user?.currentEarnings?.toFixed(2) || 0}
+                                        ₹{user?.mainWallet?.toFixed(2) || 0}
                                     </span>
                                 </div>
                             </div>
@@ -199,7 +193,7 @@ const UserWallet = () => {
 
                             <Button
                                 onClick={handleWithdraw}
-                                disabled={loading || parseFloat(amount) > user?.currentEarnings}
+                                disabled={loading || parseFloat(amount) > user?.mainWallet || user?.mainWallet < MIN_WITHDRAWAL_AMOUNT}
                                 variant="contained"
                                 fullWidth
                                 sx={{
@@ -214,13 +208,13 @@ const UserWallet = () => {
                             >
                                 {loading ? "Processing..." : "Withdraw"}
                             </Button>
-                        </div> */}
+                        </div>
                     </>
                 )}
             </div>
 
             {successData && (
-                <WithdrawalSuccessPopup
+                <WithdrawalRequestPopup
                     data={successData}
                     onClose={() => setSuccessData(null)}
                 />
@@ -232,15 +226,7 @@ const UserWallet = () => {
 // ========================================
 // PREMIUM SUCCESS POPUP - white theme
 // ========================================
-const WithdrawalSuccessPopup = ({ data, onClose, logo }) => {
-    const [copied, setCopied] = useState(false);
-
-    const handleCopy = () => {
-        navigator.clipboard.writeText(data.txHash || "");
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    };
-
+const WithdrawalRequestPopup = ({ data, onClose }) => {
     return (
         <>
             <style>{`
@@ -283,63 +269,64 @@ const WithdrawalSuccessPopup = ({ data, onClose, logo }) => {
                     </button>
 
                     <div className="p-8 pt-10">
+                        {/* Icon: clock/pending instead of a completed checkmark, since this is a request awaiting approval */}
                         <div className="relative flex items-center justify-center mb-6 h-24">
                             <div
-                                className="absolute w-24 h-24 rounded-full border-2 border-blue-200"
+                                className="absolute w-24 h-24 rounded-full border-2 border-amber-200"
                                 style={{ animation: "ringPulse 1.5s ease-out infinite" }}
                             />
                             <div
-                                className="relative w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center"
+                                className="relative w-20 h-20 rounded-full bg-amber-500 flex items-center justify-center"
                                 style={{ animation: "checkBounce 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55) 0.2s both" }}
                             >
-                                <CheckCircle2 size={44} className="text-white" strokeWidth={2.5} />
+                                <Clock size={40} className="text-white" strokeWidth={2.5} />
                             </div>
                         </div>
 
                         <div className="text-center" style={{ animation: "slideUp 0.5s ease-out 0.4s both" }}>
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 mb-3">
-                                <span className="text-blue-600 text-xs font-semibold tracking-wide uppercase">
-                                    Withdrawal Successful
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-100 mb-3">
+                                <span className="text-amber-600 text-xs font-semibold tracking-wide uppercase">
+                                    Withdrawal Requested
                                 </span>
                             </div>
                             <h2 className="text-gray-900 text-2xl font-bold mb-2">
-                                Your tokens are on the way! 🚀
+                                Request Submitted!
                             </h2>
                             <p className="text-gray-500 text-sm">
-                                Transaction confirmed on the Ethereum network
+                                Your withdrawal request has been sent for admin approval
                             </p>
                         </div>
 
+                        {/* Amount block - INR instead of token */}
                         <div
-                            className="mt-6 p-5 rounded-2xl bg-blue-50 border border-blue-100"
+                            className="mt-6 p-5 rounded-2xl bg-amber-50 border border-amber-100"
                             style={{ animation: "slideUp 0.5s ease-out 0.5s both" }}
                         >
                             <p className="text-gray-500 text-xs uppercase tracking-wider text-center mb-2">
-                                Amount Sent
+                                Amount Requested
                             </p>
-                            <div className="flex items-center justify-center gap-3">
+                            <div className="flex items-center justify-center gap-1">
                                 <span className="text-gray-900 text-4xl font-bold">
-                                    {data.amount?.toFixed(4)}
+                                    ₹{data.amount?.toFixed(2)}
                                 </span>
-                                <span className="text-blue-600 text-md font-bold">{data.token}</span>
                             </div>
                         </div>
 
                         <div className="mt-4 space-y-2" style={{ animation: "slideUp 0.5s ease-out 0.6s both" }}>
                             <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-50">
-                                <span className="text-gray-500 text-sm">Requested</span>
-                                <span className="text-gray-900 text-sm font-semibold">
-                                    {data.amount?.toFixed(4)} LLD
+                                <span className="text-gray-500 text-sm">Status</span>
+                                <span className="text-amber-600 text-sm font-semibold">
+                                    Pending Admin Approval
                                 </span>
                             </div>
                         </div>
 
                         <button
                             onClick={onClose}
-                            className="mt-6 w-full py-3 rounded-full bg-blue-600 text-white font-bold text-sm uppercase tracking-wider hover:bg-blue-700 transition-all transform hover:scale-[1.02] active:scale-[0.98]"
+                            className="mt-6 w-full py-3 rounded-full bg-amber-500 text-white font-bold text-sm uppercase tracking-wider hover:bg-amber-600 transition-all transform hover:scale-[1.02] active:scale-[0.98]"
                             style={{ animation: "slideUp 0.5s ease-out 0.8s both" }}
                         >
-                            Awesome, thanks!
+                            Okay, got it!
                         </button>
                     </div>
                 </div>

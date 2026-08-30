@@ -117,7 +117,7 @@ const AdminDepositHistory = () => {
         </div>
       ),
     },
-{
+    {
       key: "userId",
       label: "User",
       render: (val) => (
@@ -162,13 +162,17 @@ const AdminDepositHistory = () => {
       render: (val) =>
         val === "approved" ? "Approved" : val === "rejected" ? "Rejected" : "Pending",
     },
+    {
+      key: "response",
+      label: "Admin Response",
+      render: (val) => val || "N/A",
+    },
 
     {
       key: "createdAt",
       label: "Submitted",
-      render: (val) => dateFormatter(new Date()),
+      render: (val) => dateFormatter(val),
     },
-
     {
       key: "actions",
       label: "Actions",

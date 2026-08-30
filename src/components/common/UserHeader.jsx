@@ -84,7 +84,7 @@ const UserHeader = () => {
             </button>
             <div className="">
               <p className="text-sm font-semibold text-gray-900 truncate">
-                {user?.name || "User"}
+                {user?.username || "User"}
               </p>
               <p className="text-xs text-gray-500 truncate">
                 {user?.email || "-"}

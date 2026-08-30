@@ -51,7 +51,7 @@ export const stakeDepositLLD = async (payload) => {
 
 export const withdrawRequest = async (payload) => {
   const response = await Axios.post(
-    `${API_URL}/withdrawal-request`,
+    `${API_URL}/withdraw`,
     payload,
     { timeout: 120000 } // ⬅️ 2 minutes — blockchain confirmation ke liye
   );
@@ -59,7 +59,7 @@ export const withdrawRequest = async (payload) => {
 };
 
 export const getWithdrawalHistory = async () => {
-  const response = await Axios.get(`${API_URL}/get-withdrawal-history`);
+  const response = await Axios.get(`${API_URL}/get-my-withdrawals`);
   return response;
 };
 

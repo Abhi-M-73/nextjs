@@ -1,6 +1,7 @@
 import React, { useState, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 const UserDepositHistory = lazy(() => import("./UserDepositHistory"));
+const UserWithdrawalHistory = lazy(() => import("./UserWithdrawalHistory"));
 const UserRoiIncomeHistory = lazy(() => import("./UserRoiIncomeHistory"));
 const UserReferralIncomeHistory = lazy(() => import("./UserReferralIncomeHistory"));
 const UserLevelIncomeHistory = lazy(() => import("./UserLevelIncomeHistory"));
@@ -11,6 +12,7 @@ const UserHistory = () => {
 
   const tabs = [
     { key: "deposit", label: "Deposit" },
+    {key: "withdraw", label: "Withdraw"},
     { key: "roi", label: "ROI" },
     { key: "referral", label: "Referral" },
     { key: "level", label: "Level" },
@@ -23,6 +25,8 @@ const UserHistory = () => {
     switch (activeTab) {
       case "deposit":
         return <UserDepositHistory />;
+      case "withdraw":
+        return <UserWithdrawalHistory />;
       case "roi":
         return <UserRoiIncomeHistory />;
       case "referral":

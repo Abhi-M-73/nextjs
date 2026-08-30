@@ -13,7 +13,6 @@ import AdminDashboard from "../screen/admin/AdminDashboard";
 import AllUsers from "../screen/admin/AllUsers";
 import BuyLLD from "../screen/user/BuyLLD";
 import DepositHistory from "../screen/admin/DepositHistory";
-import WithDrawal from "../screen/admin/withdrawal";
 import AdminControl from "../screen/admin/AdminControl";
 import { GrCart } from "react-icons/gr";
 import AdminInvestmentHistory from "../screen/admin/AdminInvestmentHistory";
@@ -23,6 +22,7 @@ import AdminReferralIncomeHistory from "../screen/admin/AdminReferralIncomeHisto
 import AdminReactivationCapHistory from "../screen/admin/AdminReactivationCapHistory";
 import UserBankAccount from "./UserBankAccount";
 import AdminWithdrawalEligibleUsers from "../screen/admin/AdminWithdrawalEligibleUsers";
+import AdminWithdrawalRequests from "../screen/admin/AdminWithdrawalRequests";
 
 export const authRoutes = [
     {
@@ -73,13 +73,13 @@ export const adminRoutes = [
         items: [
             { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard", element: AdminDashboard },
             { name: "Users", icon: BarChart2, path: "/users", element: AllUsers },
-            { name: "Investment History", icon: GrCart, path: "/investment-history", element: AdminInvestmentHistory },
+            { name: "Deposit History", icon: GrCart, path: "/deposit-history", element: AdminInvestmentHistory },
             { name: "ROI Income History", icon: ChartCandlestick, path: "/roi-income-history", element: AdminRoiIncomeHistory },
             { name: "Level Income History", icon: ClipboardList, path: "/level-income-history", element: AdminLevelIncomeHistory },
             { name: "Referral Income History", icon: Share2, path: "/referral-income-history", element: AdminReferralIncomeHistory },
             { name: "Reactivation Cap History", icon: Rocket, path: "/reactivation-cap-history", element: AdminReactivationCapHistory },
             { name: "Withdrawal Eligible Users", icon: Users, path: "/withdrawal-eligible-users", element: AdminWithdrawalEligibleUsers },
-            // { name: "Withdrawal", icon: BanknoteArrowDown, path: "/withdrawal", element: WithDrawal },
+            { name: "Withdrawal Requests", icon: BanknoteArrowDown, path: "/withdrawal-requests", element: AdminWithdrawalRequests },
             // { name: "Stake Deposit History", icon: Wallet, path: "/deposit-history", element: DepositHistory },
             { name: "Admin Control", icon: Settings, path: "/admin-control", element: AdminControl },
             // { name: "Invoice", icon: <FileText size={18} />, path: "/admin/invoice" },

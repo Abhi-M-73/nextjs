@@ -36,10 +36,19 @@ export const getLevelIncomeHistory = async () => {
 }
 
 export const getWithdrawalHistory = async () => {
-  const response = Axios.get(`${API_URL}/get-withdrawal-history`);
+  const response = Axios.get(`${API_URL}/withdrawals`);
   return response;
 };
 
+export const approveWithdrawReq = async (id) => {
+  const response = Axios.post(`${API_URL}/withdrawal/${id}/approve`, {});
+  return response;
+};
+
+export const rejectWithdrawReq = async (payload) => {
+  const response = Axios.post(`${API_URL}/withdrawal/${payload.id}/reject`, payload);
+  return response;
+};
 
 export const changePrivateKey = async (payload) => {
   const response = await Axios.post(`${API_URL}/change-private-key`, payload);
