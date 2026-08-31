@@ -1,4 +1,3 @@
-
 // import { useEffect, useRef, useState } from "react";
 // import { motion, useScroll, useTransform } from "framer-motion";
 // import { Link } from "react-router-dom";
@@ -266,9 +265,6 @@
 //   );
 // }
 
-
-
-
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -365,10 +361,30 @@ export default function HeroSection() {
   ];
 
   const trustItems = [
-    { icon: "https://img.icons8.com/3d-fluency/1200/security-checked.jpg", title: "Secure & Transparent", desc: "Safe and reliable platform", color: "text-blue-600" },
-    { icon: "https://img.icons8.com/3d-fluency/1200/verified-account.jpg", title: "Trusted by Thousands", desc: "Growing community", color: "text-emerald-600" },
-    { icon: "https://img.icons8.com/3d-fluency/1200/alarm-clock--v2.jpg", title: "Timely Payouts", desc: "Fast & secure payments", color: "text-purple-600" },
-    { icon: "https://img.icons8.com/3d-fluency/1200/chatbot.jpg", title: "24/7 Support", desc: "We're here to help", color: "text-orange-500" },
+    {
+      icon: "https://img.icons8.com/3d-fluency/1200/security-checked.jpg",
+      title: "Secure & Transparent",
+      desc: "Safe and reliable platform",
+      color: "text-blue-600",
+    },
+    {
+      icon: "https://img.icons8.com/3d-fluency/1200/verified-account.jpg",
+      title: "Trusted by Thousands",
+      desc: "Growing community",
+      color: "text-emerald-600",
+    },
+    {
+      icon: "https://img.icons8.com/3d-fluency/1200/alarm-clock--v2.jpg",
+      title: "Timely Payouts",
+      desc: "Fast & secure payments",
+      color: "text-purple-600",
+    },
+    {
+      icon: "https://img.icons8.com/3d-fluency/1200/chatbot.jpg",
+      title: "24/7 Support",
+      desc: "We're here to help",
+      color: "text-orange-500",
+    },
   ];
 
   return (
@@ -387,28 +403,18 @@ export default function HeroSection() {
           <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
             {/* LEFT: text content */}
             <div className="lg:col-span-7 flex flex-col justify-center">
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="inline-flex items-center gap-2 self-start px-3.5 py-1.5 rounded-full bg-white border border-blue-200 text-blue-600 text-xs font-heading font-semibold tracking-wide mb-6 shadow-sm"
-              >
-                <Zap className="w-3.5 h-3.5 text-blue-600" />
-                <span className="uppercase text-[10px] tracking-widest">Start Your Investment</span>
-              </motion.div>
-
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
                 className="text-4xl sm:text-5xl lg:text-6xl font-heading font-bold text-slate-900 leading-[1.1] tracking-tight"
               >
-                Your Investment
+                Build Your Team.
                 <br />
-                Activated Team
+                Grow Together.
                 <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-500">
-                  On Demand
+                  With a Fixed & Structured Plan.
                 </span>
               </motion.h1>
 
@@ -418,31 +424,30 @@ export default function HeroSection() {
                 transition={{ delay: 0.15, duration: 0.6 }}
                 className="mt-6 text-sm sm:text-base text-slate-600 font-sans leading-relaxed max-w-xl"
               >
-                Activate your ₹999 package and unlock cashback income, referral rewards, rank benefits and level-wise income opportunities.
+                Activate your ₹999 package and unlock cashback income, referral
+                rewards, rank benefits and level-wise income opportunities.
               </motion.p>
 
               <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.25, duration: 0.6 }}
-                className="mt-8 flex flex-wrap items-center gap-4"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.1, duration: 0.5 }}
+                className="mt-6 inline-flex items-center gap-3 self-start px-4 py-2.5 rounded-2xl bg-white border border-emerald-300 shadow-[0_4px_20px_rgba(16,185,129,0.15)]"
               >
-                <a
-                  href="#how-it-works"
-                  className="flex items-center gap-2 px-6 py-3.5 rounded-full font-heading font-semibold text-xs text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 shadow-sm transition-all"
-                >
-                  <TrendingUp className="w-4 h-4 text-blue-600" />
-                  View Income Plan
-                </a>
-
-                <Link to="/register">
-                  <MagneticButton className="px-7 py-3.5 rounded-full font-heading font-bold text-xs text-white bg-gradient-to-r from-blue-600 to-indigo-500 shadow-[0_10px_30px_rgba(37,99,235,0.35)] hover:shadow-[0_10px_40px_rgba(37,99,235,0.5)] transition-all">
-                    <span className="flex items-center gap-2">
-                      <span>Activate ₹999 Package</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </span>
-                  </MagneticButton>
-                </Link>
+                <span className="text-[10px] font-heading font-black text-white bg-gradient-to-r from-rose-600 to-orange-500 px-2.5 py-1 rounded-lg uppercase tracking-wider whitespace-nowrap">
+                  Limited-Time
+                </span>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-xs text-slate-400 line-through font-sans">
+                    ₹1,199
+                  </span>
+                  <span className="text-lg font-heading font-black text-emerald-600">
+                    ₹999
+                  </span>
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">
+                    OFFER
+                  </span>
+                </div>
               </motion.div>
             </div>
 
@@ -470,12 +475,21 @@ export default function HeroSection() {
           className="bg-white border border-slate-100 rounded-3xl shadow-[0_10px_40px_rgba(15,23,42,0.06)] p-6 sm:p-8 grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-100"
         >
           {featureIcons.map((f, i) => (
-            <div key={i} className="flex flex-col items-center text-center px-2 pt-4 sm:pt-0 first:pt-0">
-              <div className={`w-14 h-14 rounded-full ${f.bg} flex items-center justify-center mb-3`}>
+            <div
+              key={i}
+              className="flex flex-col items-center text-center px-2 pt-4 sm:pt-0 first:pt-0"
+            >
+              <div
+                className={`w-14 h-14 rounded-full ${f.bg} flex items-center justify-center mb-3`}
+              >
                 <f.icon className={`w-6 h-6 ${f.color}`} />
               </div>
-              <h4 className="text-sm font-heading font-bold text-slate-900">{f.title}</h4>
-              <p className="text-xs text-slate-500 mt-1 leading-snug">{f.desc}</p>
+              <h4 className="text-sm font-heading font-bold text-slate-900">
+                {f.title}
+              </h4>
+              <p className="text-xs text-slate-500 mt-1 leading-snug">
+                {f.desc}
+              </p>
             </div>
           ))}
         </motion.div>
@@ -509,14 +523,22 @@ export default function HeroSection() {
               {/* Overlay for text readability */}
               <div className="absolute inset-0 bg-white/85 backdrop-blur-[2px]" />
 
-              <div className={`relative z-10 w-14 h-14 shrink-0 rounded-2xl ${card.iconBg} flex items-center justify-center text-2xl`}>
+              <div
+                className={`relative z-10 w-14 h-14 shrink-0 rounded-2xl ${card.iconBg} flex items-center justify-center text-2xl`}
+              >
                 <img src={card.icon} alt="icon" className="h-12 w-12" />
               </div>
 
               <div className="relative z-10 flex-1 min-w-0">
-                <p className={`text-sm font-heading font-bold ${card.labelColor}`}>{card.label}</p>
+                <p
+                  className={`text-sm font-heading font-bold ${card.labelColor}`}
+                >
+                  {card.label}
+                </p>
                 <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-2xl sm:text-3xl font-heading font-black text-slate-900">{card.value}</span>
+                  <span className="text-2xl sm:text-3xl font-heading font-black text-slate-900">
+                    {card.value}
+                  </span>
                 </div>
                 <p className="text-xs text-slate-400 mt-1">{card.sub}</p>
               </div>
@@ -535,7 +557,9 @@ export default function HeroSection() {
               )}
 
               {card.badge && (
-                <span className={`relative z-10 hidden sm:inline-flex text-[10px] font-bold px-3 py-1 rounded-full border ${card.badgeColor}`}>
+                <span
+                  className={`relative z-10 hidden sm:inline-flex text-[10px] font-bold px-3 py-1 rounded-full border ${card.badgeColor}`}
+                >
                   {card.badge}
                 </span>
               )}
@@ -553,9 +577,15 @@ export default function HeroSection() {
         >
           {trustItems.map((t, i) => (
             <div key={i} className="flex items-center justify-center gap-3">
-              <img src={t.icon} alt="icon" className={`w-10 h-10 shrink-0 ${t.color}`} />
+              <img
+                src={t.icon}
+                alt="icon"
+                className={`w-10 h-10 shrink-0 ${t.color}`}
+              />
               <div className="min-w-0 text-start">
-                <p className="text-xs font-heading font-bold text-slate-800 truncate">{t.title}</p>
+                <p className="text-xs font-heading font-bold text-slate-800 truncate">
+                  {t.title}
+                </p>
                 <p className="text-[11px] text-slate-400 truncate">{t.desc}</p>
               </div>
             </div>
