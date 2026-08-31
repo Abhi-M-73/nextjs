@@ -15,11 +15,11 @@ export default function LandingPage() {
       {/* <BackgroundEffects /> */}
       <Navbar />
       <HeroSection />
-      <EcosystemSection />
+      {/* <EcosystemSection /> */}
       <HowItsWork />
       <StatsSection />
-      {/* <LLDChart /> */}
       {/* <AboutSection /> */}
+      {/* <LLDChart /> */}
       <Footer />
     </div>
   );
