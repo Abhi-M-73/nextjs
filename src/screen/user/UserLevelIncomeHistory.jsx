@@ -39,9 +39,7 @@ const UserLevelIncomeHistory = () => {
 
       {/* Empty */}
       {!loading && levelIncomeHistory.length === 0 && (
-        <p className="text-center text-gray-400 text-sm py-6">
-          No income yet
-        </p>
+        <p className="text-center text-gray-400 text-sm py-6">No income yet</p>
       )}
 
       {/* List */}
@@ -74,23 +72,25 @@ const UserLevelIncomeHistory = () => {
           {/* Details */}
           <div className="flex justify-between items-center text-xs bg-gray-50 rounded-lg px-3 py-2 mt-2">
             <div>
-              <p className="text-gray-400">From</p>
-              <p className="text-gray-900 uppercase font-medium mt-0.5">
-                {item?.fromUserId?.username || item?.fromUserId?.name || "Unknown"}
+              <p className="text-gray-400 text-[10px]">Member ID</p>
+              <p className="text-gray-900 text-[10px] uppercase font-medium mt-0.5">
+                {item?.fromUserId?.username ||
+                  item?.fromUserId?.name ||
+                  "Unknown"}
               </p>
             </div>
 
             <div className="text-center">
-              <p className="text-gray-400">Package</p>
-              <p className="text-gray-900 font-medium mt-0.5">
-                {formatINR(item.investmentAmount)}
+              <p className="text-gray-400 text-[10px]">Member Name</p>
+              <p className="text-gray-900 uppercase text-[10px] font-medium mt-0.5">
+                {item?.fromUserId?.name}
               </p>
             </div>
 
             <div className="text-right">
-              <p className="text-gray-400">Day</p>
-              <p className="text-gray-900 font-medium mt-0.5">
-                {item.dayCount}
+              <p className="text-gray-400 text-[10px]">Member Validity</p>
+              <p className="text-gray-900 text-[10px] font-medium mt-0.5">
+                {dateFormatter(item?.fromUserId?.packageExpiryDate) || "N/A"}
               </p>
             </div>
           </div>

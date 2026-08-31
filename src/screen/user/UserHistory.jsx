@@ -1,7 +1,6 @@
 import React, { useState, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PieChart, ChevronDown } from "lucide-react";
-
 const UserDepositHistory = lazy(() => import("./UserDepositHistory"));
 const UserWithdrawalHistory = lazy(() => import("./UserWithdrawalHistory"));
 const UserRoiIncomeHistory = lazy(() => import("./UserRoiIncomeHistory"));
@@ -12,13 +11,12 @@ const UserLevelIncomeHistory = lazy(() => import("./UserLevelIncomeHistory"));
 const UserReactivationCapHistory = lazy(
   () => import("./UserReactivationCapHistory"),
 );
-
 const UserHistory = () => {
-  const [activeTab, setActiveTab] = useState("deposit");
+  const [activeTab, setActiveTab] = useState("level");
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const tabs = [
-    { key: "deposit", label: "Deposit" },
+    { key: "activation", label: "Activation" },
 
     { key: "cashback", label: "Cashback" },
     { key: "referral", label: "Referral" },

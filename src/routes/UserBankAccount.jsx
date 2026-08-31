@@ -19,6 +19,7 @@ const UserBankAccount = () => {
 
   const [form, setForm] = useState({
     bankName: "",
+    bankHoldername: "",
     accountNumber: "",
     ifscCode: "",
     upiId: "",
@@ -32,11 +33,10 @@ const UserBankAccount = () => {
 
       if (res?.success && res?.data) {
         const bank = res.data;
-
         setBankData(bank);
-
         setForm({
           bankName: bank.bankName || "",
+          bankHoldername: bank.bankHoldername || "",
           accountNumber: bank.accountNumber || "",
           ifscCode: bank.ifscCode || "",
           upiId: bank.upiId || "",
@@ -69,7 +69,8 @@ const UserBankAccount = () => {
       !form.bankName ||
       !form.accountNumber ||
       !form.ifscCode ||
-      !form.upiId
+      !form.upiId ||
+      !form.bankHoldername
     ) {
       toast.error("Please fill all fields");
       return;
@@ -188,7 +189,26 @@ const UserBankAccount = () => {
                   />
                 </div>
               </div>
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
+                  Bank Holder Name
+                </label>
 
+                <div className="relative">
+                  <Building2
+                    size={17}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                  />
+                  <input
+                    type="text"
+                    name="bankHoldername"
+                    value={form.bankHoldername}
+                    onChange={handleChange}
+                    placeholder="e.g. State Bank of India"
+                    className={inputClass}
+                  />
+                </div>
+              </div>
               {/* Account Number */}
               <div>
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
@@ -212,7 +232,6 @@ const UserBankAccount = () => {
                   />
                 </div>
               </div>
-
               {/* IFSC */}
               <div>
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
@@ -235,7 +254,6 @@ const UserBankAccount = () => {
                   />
                 </div>
               </div>
-
               {/* UPI */}
               <div>
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
@@ -258,7 +276,6 @@ const UserBankAccount = () => {
                   />
                 </div>
               </div>
-
               {/* Submit */}
               <button
                 type="submit"

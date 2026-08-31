@@ -239,7 +239,7 @@ const UserWallet = () => {
               }`}
             >
               <ArrowDownLeft size={17} />
-              Deposit
+              Activation
             </button>
 
             <button
@@ -286,7 +286,7 @@ const UserWallet = () => {
                   <Info size={15} className="text-blue-500 mt-0.5 shrink-0" />
 
                   <p className="text-[10px] text-slate-500 leading-4">
-                    Deposited funds will be added to your wallet after
+                    Activation funds will be added to your wallet after
                     successful payment verification.
                   </p>
                 </div>
@@ -297,7 +297,7 @@ const UserWallet = () => {
                 className="group mt-5 w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-lg shadow-blue-600/15 transition-all flex items-center justify-center gap-2"
               >
                 <Wallet size={17} />
-                Deposit Now
+                Activate Now
                 <ChevronRight
                   size={17}
                   className="group-hover:translate-x-0.5 transition-transform"

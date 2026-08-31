@@ -136,70 +136,6 @@ const UserProfile = () => {
         </div>
 
         {/* Package Expiry / Countdown Section */}
-        <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm shadow-gray-100">
-          <div className="flex items-center gap-2.5 mb-4">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-200">
-              <Clock size={16} className="text-white" />
-            </div>
-            <h2 className="text-gray-900 font-extrabold text-[15px] tracking-tight">
-              Package Expiry
-            </h2>
-          </div>
-
-          {!user?.packageExpiryDate ? (
-            <div className="flex flex-col items-center justify-center py-6 text-center">
-              <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-2">
-                <PackageX size={22} className="text-red-500" />
-              </div>
-              <p className="text-gray-900 font-semibold text-sm">
-                No Active Investment
-              </p>
-              <p className="text-gray-400 text-xs mt-1">
-                Purchase a package to activate your countdown
-              </p>
-            </div>
-          ) : timeLeft?.expired ? (
-            <div className="flex flex-col items-center justify-center py-6 text-center">
-              <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-2">
-                <PackageX size={22} className="text-red-500" />
-              </div>
-              <p className="text-red-500 font-semibold text-sm">
-                Package Expired
-              </p>
-              <p className="text-gray-400 text-xs mt-1">
-                {user?.packageExpiryDate
-                  ? dateFormatter(user.packageExpiryDate)
-                  : "--"}
-              </p>
-            </div>
-          ) : timeLeft ? (
-            <div>
-              <div className="grid grid-cols-4 gap-2.5">
-                {[
-                  { label: "Days", value: timeLeft.days },
-                  { label: "Hours", value: timeLeft.hours },
-                  { label: "Mins", value: timeLeft.minutes },
-                  { label: "Secs", value: timeLeft.seconds },
-                ].map((unit) => (
-                  <div
-                    key={unit.label}
-                    className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-xl py-3 text-center"
-                  >
-                    <p className="text-xl font-extrabold text-blue-700 tabular-nums">
-                      {String(unit.value).padStart(2, "0")}
-                    </p>
-                    <p className="text-[10px] text-blue-500 font-semibold mt-0.5">
-                      {unit.label}
-                    </p>
-                  </div>
-                ))}
-              </div>
-              <p className="text-gray-400 text-xs mt-3.5 text-center">
-                Expires on {dateFormatter(user.packageExpiryDate)}
-              </p>
-            </div>
-          ) : null}
-        </div>
 
         {/* Financial Stats Grid */}
         <div>
@@ -305,7 +241,6 @@ const UserProfile = () => {
           </Button>
         </div>
 
-        {/* Settings Section */}
         <div className="bg-white border border-gray-100 rounded-2xl p-5 space-y-3 shadow-sm shadow-gray-100">
           <a
             href="#"
@@ -338,6 +273,70 @@ const UserProfile = () => {
               Logout
             </div>
           </button>
+          <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm shadow-gray-100">
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-200">
+                <Clock size={16} className="text-white" />
+              </div>
+              <h2 className="text-gray-900 font-extrabold text-[15px] tracking-tight">
+                Package Expiry
+              </h2>
+            </div>
+
+            {!user?.packageExpiryDate ? (
+              <div className="flex flex-col items-center justify-center py-6 text-center">
+                <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-2">
+                  <PackageX size={22} className="text-red-500" />
+                </div>
+                <p className="text-gray-900 font-semibold text-sm">
+                  No Active Investment
+                </p>
+                <p className="text-gray-400 text-xs mt-1">
+                  Purchase a package to activate your countdown
+                </p>
+              </div>
+            ) : timeLeft?.expired ? (
+              <div className="flex flex-col items-center justify-center py-6 text-center">
+                <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-2">
+                  <PackageX size={22} className="text-red-500" />
+                </div>
+                <p className="text-red-500 font-semibold text-sm">
+                  Package Expired
+                </p>
+                <p className="text-gray-400 text-xs mt-1">
+                  {user?.packageExpiryDate
+                    ? dateFormatter(user.packageExpiryDate)
+                    : "--"}
+                </p>
+              </div>
+            ) : timeLeft ? (
+              <div>
+                <div className="grid grid-cols-4 gap-2.5">
+                  {[
+                    { label: "Days", value: timeLeft.days },
+                    { label: "Hours", value: timeLeft.hours },
+                    { label: "Mins", value: timeLeft.minutes },
+                    { label: "Secs", value: timeLeft.seconds },
+                  ].map((unit) => (
+                    <div
+                      key={unit.label}
+                      className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-xl py-3 text-center"
+                    >
+                      <p className="text-xl font-extrabold text-blue-700 tabular-nums">
+                        {String(unit.value).padStart(2, "0")}
+                      </p>
+                      <p className="text-[10px] text-blue-500 font-semibold mt-0.5">
+                        {unit.label}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-gray-400 text-xs mt-3.5 text-center">
+                  Expires on {dateFormatter(user.packageExpiryDate)}
+                </p>
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
     </div>

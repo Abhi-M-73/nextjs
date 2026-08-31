@@ -89,7 +89,7 @@ const UserHome = () => {
       iconBg: "bg-green-50",
       iconColor: "text-green-600",
       barGradient: "from-green-400 to-green-600",
-      onClick: () => navigate("/user/income/cashback"),
+      onClick: () => navigate("/user/history"),
       type: "currency",
     },
     {
