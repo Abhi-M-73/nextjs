@@ -177,7 +177,6 @@ const UserHome = () => {
           {/* Banner Image */}
           <img src={dashboardImage} alt="Dashboard" className="w-full h-auto" />
 
-          {/* Subtle bottom gradient overlay for depth */}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/10 to-transparent" />
         </div>
 
@@ -218,17 +217,14 @@ const UserHome = () => {
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[10.5px] font-bold text-gray-400 tracking-wider">
+                      <p className="text-[10px] font-bold text-gray-400 tracking-wider">
                         {card.label}
                       </p>
-                      <p className="text-[19px] font-extrabold text-gray-900 mt-1 tracking-tight truncate">
+                      <p className="text-[12px] font-extrabold text-gray-900 mt-1 tracking-tight break-words">
                         {card.type === "currency" &&
                           `₹${Number(card.value).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                         {card.type === "count" && card.value}
                         {card.type === "status" && card.value}
-                      </p>
-                      <p className="text-[10px] text-gray-400 mt-0.5">
-                        {card.sub}
                       </p>
                     </div>
                     <ChevronRight
