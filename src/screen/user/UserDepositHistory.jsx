@@ -95,8 +95,8 @@ const UserDepositHistory = () => {
               {/* Payment method + proof */}
               <div className="bg-gray-50 border border-gray-100 rounded-xl px-3 py-2 mb-2 flex items-center justify-between text-xs">
                 <div>
-                  <p className="text-gray-400">Payment Method</p>
-                  <p className="text-gray-900 font-medium">{item.paymentMethod}</p>
+                  <p className="text-gray-400">Activated By:</p>
+                  <p className="text-gray-900 font-medium">{item.addedBy === "admin" ? "Admin" : "User"}</p>
                 </div>
                 {item?.proofImage?.url && (
                   <button
