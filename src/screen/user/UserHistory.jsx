@@ -1,6 +1,7 @@
 import React, { useState, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { PieChart } from "lucide-react";
+import { PieChart, ChevronDown } from "lucide-react";
+
 const UserDepositHistory = lazy(() => import("./UserDepositHistory"));
 const UserWithdrawalHistory = lazy(() => import("./UserWithdrawalHistory"));
 const UserRoiIncomeHistory = lazy(() => import("./UserRoiIncomeHistory"));
@@ -14,6 +15,7 @@ const UserReactivationCapHistory = lazy(
 
 const UserHistory = () => {
   const [activeTab, setActiveTab] = useState("deposit");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const tabs = [
     { key: "deposit", label: "Deposit" },
@@ -21,10 +23,10 @@ const UserHistory = () => {
     { key: "roi", label: "ROI" },
     { key: "referral", label: "Referral" },
     { key: "level", label: "Level" },
-    { key: "reactivation-cap", label: "Cap" }, // shortened - "Reactivation" overflow karta tha 5-tab row mein
+    { key: "reactivation-cap", label: "Reactivation Cap" }, // ab full naam use kar sakte, dropdown me space hai
   ];
 
-  const activeIndex = tabs.findIndex((tab) => tab.key === activeTab);
+  const activeLabel = tabs.find((t) => t.key === activeTab)?.label;
 
   const renderComponent = () => {
     switch (activeTab) {
@@ -58,31 +60,51 @@ const UserHistory = () => {
           </h2>
         </div>
 
-        {/* Tab bar */}
-        <div className="flex bg-white border border-gray-100 rounded-full p-1 relative shadow-sm shadow-gray-100 overflow-x-auto">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`flex-1 text-xs sm:text-sm py-2 px-1 rounded-full relative z-10 transition-colors duration-300 whitespace-nowrap font-semibold ${
-                activeTab === tab.key
-                  ? "text-white"
-                  : "text-gray-500 hover:text-blue-600"
+        {/* Dropdown selector */}
+        <div className="relative">
+          <button
+            onClick={() => setDropdownOpen((prev) => !prev)}
+            className="w-full flex items-center justify-between bg-white border border-gray-100 rounded-2xl px-4 py-3 shadow-sm shadow-gray-100"
+          >
+            <span className="text-sm font-bold text-gray-900">
+              {activeLabel}
+            </span>
+            <ChevronDown
+              size={18}
+              className={`text-blue-600 transition-transform duration-300 ${
+                dropdownOpen ? "rotate-180" : ""
               }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+            />
+          </button>
 
-          <motion.div
-            layout
-            className="absolute top-1 bottom-1 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 shadow-md shadow-blue-200"
-            style={{
-              width: `${100 / tabs.length}%`,
-              left: `${activeIndex * (100 / tabs.length)}%`,
-            }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          />
+          <AnimatePresence>
+            {dropdownOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2 }}
+                className="absolute z-20 mt-2 w-full bg-white border border-gray-100 rounded-2xl shadow-lg shadow-gray-200 overflow-hidden"
+              >
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => {
+                      setActiveTab(tab.key);
+                      setDropdownOpen(false);
+                    }}
+                    className={`w-full text-left px-4 py-3 text-sm font-semibold transition-colors ${
+                      activeTab === tab.key
+                        ? "bg-blue-50 text-blue-700"
+                        : "text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Content Animation */}

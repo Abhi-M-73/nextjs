@@ -66,7 +66,6 @@ const UserHeader = () => {
             }`}
           />
         </button>
-
         <Menu
           anchorEl={anchorEl}
           open={menuOpen}
@@ -91,7 +90,7 @@ const UserHeader = () => {
               <UserCircle2 size={22} className="text-white" strokeWidth={2} />
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-bold text-gray-900 truncate">
+              <p className="text-sm capitalize font-bold text-gray-900 ">
                 {user?.username || "User"}
               </p>
               <p className="text-xs text-gray-500 truncate">
