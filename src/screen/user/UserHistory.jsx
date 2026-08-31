@@ -19,11 +19,12 @@ const UserHistory = () => {
 
   const tabs = [
     { key: "deposit", label: "Deposit" },
-    { key: "withdraw", label: "Withdraw" },
-    { key: "roi", label: "ROI" },
+
+    { key: "cashback", label: "Cashback" },
     { key: "referral", label: "Referral" },
     { key: "level", label: "Level" },
-    { key: "reactivation-cap", label: "Reactivation Cap" }, // ab full naam use kar sakte, dropdown me space hai
+    { key: "reactivation-cap", label: "Reactivation Cap" },
+    { key: "withdraw", label: "Withdraw" },
   ];
 
   const activeLabel = tabs.find((t) => t.key === activeTab)?.label;
@@ -32,9 +33,8 @@ const UserHistory = () => {
     switch (activeTab) {
       case "deposit":
         return <UserDepositHistory />;
-      case "withdraw":
-        return <UserWithdrawalHistory />;
-      case "roi":
+
+      case "cashback":
         return <UserRoiIncomeHistory />;
       case "referral":
         return <UserReferralIncomeHistory />;
@@ -42,6 +42,8 @@ const UserHistory = () => {
         return <UserLevelIncomeHistory />;
       case "reactivation-cap":
         return <UserReactivationCapHistory />;
+      case "withdraw":
+        return <UserWithdrawalHistory />;
       default:
         return null;
     }
