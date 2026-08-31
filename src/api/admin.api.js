@@ -103,3 +103,12 @@ export const getWithdrawalEligibleUsers = async () => {
 }
 
 
+export const adminTopupUserWallet = async (payload) => {
+  const response = await Axios.post(`${API_URL}/admin-topup`, payload);
+  return response;
+}
+
+export const searchUserByUsername = async (userName) => {
+  const response = await Axios.post(`${API_URL}/get-info`, { userName });
+  return response;
+}

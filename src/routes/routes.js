@@ -23,6 +23,7 @@ import AdminReactivationCapHistory from "../screen/admin/AdminReactivationCapHis
 import UserBankAccount from "./UserBankAccount";
 import AdminWithdrawalEligibleUsers from "../screen/admin/AdminWithdrawalEligibleUsers";
 import AdminWithdrawalRequests from "../screen/admin/AdminWithdrawalRequests";
+import AdminTopup from "../screen/admin/AdminTopup";
 
 export const authRoutes = [
     {
@@ -81,6 +82,7 @@ export const adminRoutes = [
             { name: "Withdrawal Eligible Users", icon: Users, path: "/withdrawal-eligible-users", element: AdminWithdrawalEligibleUsers },
             { name: "Withdrawal Requests", icon: BanknoteArrowDown, path: "/withdrawal-requests", element: AdminWithdrawalRequests },
             // { name: "Stake Deposit History", icon: Wallet, path: "/deposit-history", element: DepositHistory },
+            { name: "Admin Topup", icon: Settings, path: "/admin-topup", element: AdminTopup },
             { name: "Admin Control", icon: Settings, path: "/admin-control", element: AdminControl },
             // { name: "Invoice", icon: <FileText size={18} />, path: "/admin/invoice" },
             // { name: "CRM", icon: <Users size={18} />, path: "/admin/crm" },

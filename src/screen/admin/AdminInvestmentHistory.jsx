@@ -163,6 +163,11 @@ const AdminDepositHistory = () => {
         val === "approved" ? "Approved" : val === "rejected" ? "Rejected" : "Pending",
     },
     {
+      key: "addedBy",
+      label: "Activated By",
+      render: (val) => val === "admin" ? "Admin" : "User",
+    },
+    {
       key: "response",
       label: "Admin Response",
       render: (val) => val || "N/A",

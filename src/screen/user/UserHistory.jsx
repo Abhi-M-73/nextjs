@@ -17,7 +17,6 @@ const UserHistory = () => {
 
   const tabs = [
     { key: "activation", label: "Activation" },
-
     { key: "cashback", label: "Cashback" },
     { key: "referral", label: "Referral" },
     { key: "level", label: "Level" },
@@ -29,9 +28,8 @@ const UserHistory = () => {
 
   const renderComponent = () => {
     switch (activeTab) {
-      case "deposit":
+      case "activation":
         return <UserDepositHistory />;
-
       case "cashback":
         return <UserRoiIncomeHistory />;
       case "referral":
