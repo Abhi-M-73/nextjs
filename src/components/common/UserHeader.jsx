@@ -94,7 +94,7 @@ const UserHeader = () => {
                 {user?.username || "User"}
               </p>
               <p className="text-xs text-gray-500 truncate">
-                {user?.email || "-"}
+                {user?.name || "-"}
               </p>
             </div>
           </div>
