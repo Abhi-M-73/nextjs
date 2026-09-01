@@ -10,6 +10,7 @@ import {
   ArrowDownRight,
   RefreshCw,
   Calendar,
+  Wallet,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { getDashbboardData } from "../../api/admin.api";
@@ -136,6 +137,15 @@ const AdminDashboard = () => {
             subtitle="Active platform users"
           />
           <MetricCard
+            title="Total Client Balance"
+            value={data.totalClientBalance || 0}
+            unit="₹"
+            icon={<Wallet className="w-5 h-5" />}
+            gradient="from-cyan-500 to-blue-600"
+            trend="up"
+            subtitle="Sum of all wallet balances"
+          />
+          <MetricCard
             title="Total Investment"
             value={data.totalInvestment || 0}
             unit="₹"
@@ -152,15 +162,6 @@ const AdminDashboard = () => {
             gradient="from-orange-500 to-amber-600"
             trend={data.todayInvestment > 0 ? "up" : "down"}
             subtitle="Daily investment flow"
-          />
-          <MetricCard
-            title="Total Cashback Paid"
-            value={data.totalRoi || 0}
-            unit="₹"
-            icon={<Banknote className="w-5 h-5" />}
-            gradient="from-emerald-500 to-teal-600"
-            trend="up"
-            subtitle="Total cashback distributed"
           />
         </div>
 
@@ -198,6 +199,19 @@ const AdminDashboard = () => {
               trend="up"
               subtitle="Referral bonuses"
             />
+            <MetricCard
+              title="Total Income"
+              value={
+                (data.totalRoi || 0) +
+                (data.totalLevelIncome || 0) +
+                (data.totalReferral || 0)
+              }
+              unit="₹"
+              icon={<Award className="w-5 h-5" />}
+              gradient="from-amber-500 to-yellow-600"
+              trend="up"
+              subtitle="All income combined"
+            />
           </div>
         </div>
 
@@ -232,36 +246,46 @@ const AdminDashboard = () => {
               gradient="from-teal-500 to-emerald-600"
               trend={data.todayReferral > 0 ? "up" : "down"}
             />
+            <MetricCard
+              title="Today Total Income"
+              value={
+                (data.todayRoi || 0) +
+                (data.todayLevelIncome || 0) +
+                (data.todayReferral || 0)
+              }
+              unit="₹"
+              icon={<Award className="w-5 h-5" />}
+              gradient="from-amber-500 to-orange-600"
+              trend="up"
+            />
           </div>
         </div>
 
-        {/* Rewards & Withdrawals */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div>
-            <SectionHeader
-              title="Withdrawals"
-              icon={<Banknote className="w-4 h-4" />}
+        {/* Withdrawals */}
+        <div>
+          <SectionHeader
+            title="Withdrawals"
+            icon={<Banknote className="w-4 h-4" />}
+          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <MetricCard
+              title="Total Withdrawn"
+              value={data.totalWithdrawal || 0}
+              unit="₹"
+              icon={<Banknote className="w-5 h-5" />}
+              gradient="from-rose-500 to-pink-600"
+              trend="down"
+              subtitle="Cumulative withdrawals"
             />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <MetricCard
-                title="Total Withdrawn"
-                value={data.totalWithdrawal || 0}
-                unit="₹"
-                icon={<Banknote className="w-5 h-5" />}
-                gradient="from-rose-500 to-pink-600"
-                trend="down"
-                subtitle="Cumulative withdrawals"
-              />
-              <MetricCard
-                title="Today Withdrawn"
-                value={data.todayWithdrawal || 0}
-                unit="₹"
-                icon={<Banknote className="w-5 h-5" />}
-                gradient="from-pink-500 to-rose-600"
-                trend={data.todayWithdrawal > 0 ? "up" : "down"}
-                subtitle="Daily withdrawal amount"
-              />
-            </div>
+            <MetricCard
+              title="Today Withdrawn"
+              value={data.todayWithdrawal || 0}
+              unit="₹"
+              icon={<Banknote className="w-5 h-5" />}
+              gradient="from-pink-500 to-rose-600"
+              trend={data.todayWithdrawal > 0 ? "up" : "down"}
+              subtitle="Daily withdrawal amount"
+            />
           </div>
         </div>
 
