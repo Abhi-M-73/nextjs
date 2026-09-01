@@ -53,7 +53,10 @@ const AdminDepositHistory = () => {
 
   // ── Approve flow ──────────────────────────────────────────────────────
   const handleApproveClick = (row) => {
-    setApproveTarget({ id: row._id, username: row.userId?.username || "this user" });
+    setApproveTarget({
+      id: row._id,
+      username: row.userId?.username || "this user",
+    });
   };
 
   const confirmApprove = async () => {
@@ -77,7 +80,10 @@ const AdminDepositHistory = () => {
 
   // ── Reject flow ───────────────────────────────────────────────────────
   const handleRejectClick = (row) => {
-    setRejectTarget({ id: row._id, username: row.userId?.username || "this user" });
+    setRejectTarget({
+      id: row._id,
+      username: row.userId?.username || "this user",
+    });
     setRejectReason("");
   };
 
@@ -89,7 +95,10 @@ const AdminDepositHistory = () => {
     }
     try {
       setActionLoading(true);
-      const res = await rejectDeposit({ id: rejectTarget.id, reason: rejectReason.trim() });
+      const res = await rejectDeposit({
+        id: rejectTarget.id,
+        reason: rejectReason.trim(),
+      });
       if (res?.success) {
         toast.success("Deposit rejected.");
         setRejectTarget(null);
@@ -113,16 +122,16 @@ const AdminDepositHistory = () => {
       label: "User",
       render: (val) => (
         <div className="leading-tight">
-          <p className="font-medium uppercase" >{val?.username || "N/A"}</p>
+          <p className="font-medium uppercase">{val?.username || "N/A"}</p>
         </div>
       ),
     },
     {
       key: "userId",
-      label: "User",
+      label: "Name",
       render: (val) => (
         <div className="leading-tight">
-          <p className="text-xs text-green-400">{val?.email || "-"}</p>
+          <p className="text-xs text-green-400">{val?.name || "-"}</p>
         </div>
       ),
     },
@@ -160,12 +169,16 @@ const AdminDepositHistory = () => {
       label: "Status",
       isBadge: true,
       render: (val) =>
-        val === "approved" ? "Approved" : val === "rejected" ? "Rejected" : "Pending",
+        val === "approved"
+          ? "Approved"
+          : val === "rejected"
+            ? "Rejected"
+            : "Pending",
     },
     {
       key: "addedBy",
       label: "Activated By",
-      render: (val) => val === "admin" ? "Admin" : "User",
+      render: (val) => (val === "admin" ? "Admin" : "User"),
     },
     {
       key: "response",
@@ -221,12 +234,15 @@ const AdminDepositHistory = () => {
         <DialogContent>
           <p className="text-sm text-gray-600">
             Are you sure you want to approve this deposit for{" "}
-            <span className="font-semibold">{approveTarget?.username}</span>? This will
-            activate their package and cannot be undone.
+            <span className="font-semibold">{approveTarget?.username}</span>?
+            This will activate their package and cannot be undone.
           </p>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setApproveTarget(null)} disabled={actionLoading}>
+          <Button
+            onClick={() => setApproveTarget(null)}
+            disabled={actionLoading}
+          >
             Cancel
           </Button>
           <Button
@@ -241,11 +257,17 @@ const AdminDepositHistory = () => {
       </Dialog>
 
       {/* Reject with reason */}
-      <Dialog open={!!rejectTarget} onClose={() => setRejectTarget(null)} fullWidth maxWidth="xs">
+      <Dialog
+        open={!!rejectTarget}
+        onClose={() => setRejectTarget(null)}
+        fullWidth
+        maxWidth="xs"
+      >
         <DialogTitle>Reject Deposit</DialogTitle>
         <DialogContent>
           <p className="text-sm text-gray-600 mb-3">
-            Rejecting deposit for <span className="font-semibold">{rejectTarget?.username}</span>.
+            Rejecting deposit for{" "}
+            <span className="font-semibold">{rejectTarget?.username}</span>.
             Please provide a reason.
           </p>
           <TextField
@@ -258,7 +280,10 @@ const AdminDepositHistory = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setRejectTarget(null)} disabled={actionLoading}>
+          <Button
+            onClick={() => setRejectTarget(null)}
+            disabled={actionLoading}
+          >
             Cancel
           </Button>
           <Button
@@ -273,9 +298,17 @@ const AdminDepositHistory = () => {
       </Dialog>
 
       {/* Image preview */}
-      <Dialog open={!!previewImage} onClose={() => setPreviewImage(null)} maxWidth="sm">
+      <Dialog
+        open={!!previewImage}
+        onClose={() => setPreviewImage(null)}
+        maxWidth="sm"
+      >
         <DialogContent className="flex items-center justify-center p-2">
-          <img src={previewImage} alt="Payment proof" className="max-w-full max-h-[70vh] object-contain" />
+          <img
+            src={previewImage}
+            alt="Payment proof"
+            className="max-w-full max-h-[70vh] object-contain"
+          />
         </DialogContent>
       </Dialog>
     </div>

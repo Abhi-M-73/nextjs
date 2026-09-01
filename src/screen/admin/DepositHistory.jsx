@@ -5,7 +5,6 @@ import { dateFormatter } from "../../utils/AdditionalFn";
 
 const DepositHistory = () => {
   const [data, setData] = useState([]);
-
   const [loading, setLoading] = useState(false);
 
   const fetchAllUser = async () => {
@@ -35,28 +34,22 @@ const DepositHistory = () => {
       label: "Username",
       render: (_, row) => row?.userId?.username || "—",
     },
+    // {
+    //   key: "name",
+    //   label: "Name",
+    //   render: (_, row) => row?.userId?.name || "—",
+    // },
+
     {
-      key: "name",
-      label: "Name",
-      render: (_, row) => row?.userId?.name || "—",
+      key: "paymentMethod",
+      label: "Method",
+      render: (val) => val || "—",
     },
 
     {
-      key: "walletAddress",
-      label: "Wallet",
-      render: (val) => (val ? `${val.slice(0, 6)}...${val.slice(-4)}` : "—"),
-    },
-
-    {
-      key: "txHash",
-      label: "Tx Hash",
-      render: (val) => (val ? `${val.slice(0, 6)}...${val.slice(-4)}` : "—"),
-    },
-
-    {
-      key: "stakedAmount",
+      key: "amount_inr",
       label: "Amount",
-      render: (val) => `${Number(val || 0).toFixed(2)} LLD`,
+      render: () => `₹1199`,
     },
 
     {
@@ -65,8 +58,14 @@ const DepositHistory = () => {
       isBadge: true,
       render: (val) => {
         switch (val) {
-          case "active":
-            return "Active";
+          case "approved":
+            return "Approved";
+          case "rejected":
+            return "Rejected";
+          case "pending":
+            return "Pending";
+          default:
+            return val || "—";
         }
       },
     },
@@ -82,7 +81,7 @@ const DepositHistory = () => {
     <div className="w-full overflow-auto p-5">
       <DynamicTable
         dataKey="_id"
-        title="Activation History"
+        title="Deposit History"
         data={data}
         columns={columns}
         loading={loading}

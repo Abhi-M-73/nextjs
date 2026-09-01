@@ -13,6 +13,18 @@ const AllUsers = () => {
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
 
+  const getValidityDays = (expiryDate) => {
+    if (!expiryDate) return "N/A";
+
+    const expiry = new Date(expiryDate);
+    const now = new Date();
+    const diffMs = expiry.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) return "Expired";
+    if (diffDays === 0) return "Expires today";
+    return `${diffDays} days`;
+  };
   const fetchAllUsers = useCallback(async () => {
     try {
       setLoading(true);
@@ -65,13 +77,7 @@ const AllUsers = () => {
         </span>
       ),
     },
-    {
-      key: "email",
-      label: "Email",
-      render: (value) => (
-        <span className="text-slate-500">{value || "N/A"}</span>
-      ),
-    },
+
     {
       key: "totalEarnings",
       label: "Total Earnings",
@@ -94,6 +100,24 @@ const AllUsers = () => {
       render: (value) => {
         const isVerified = value === true || value === "true";
         return isVerified ? "Active" : "Inactive";
+      },
+    },
+    {
+      key: "packageExpiryDate",
+      label: "Validity",
+      render: (value) => {
+        const days = getValidityDays(value);
+        const isExpired = days === "Expired";
+
+        return (
+          <span
+            className={`text-xs font-semibold ${
+              isExpired ? "text-rose-600" : "text-emerald-600"
+            }`}
+          >
+            {days}
+          </span>
+        );
       },
     },
     {
