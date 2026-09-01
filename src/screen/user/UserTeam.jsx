@@ -35,6 +35,19 @@ const UserTeam = () => {
   const formatINR = (value) =>
     `₹${(value || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
+  const getValidityDays = (expiryDate) => {
+    if (!expiryDate) return { label: "No Package", isExpired: true };
+
+    const expiry = new Date(expiryDate);
+    const now = new Date();
+    const diffMs = expiry.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) return { label: "Expired", isExpired: true };
+    if (diffDays === 0) return { label: "Expires today", isExpired: false };
+    return { label: `${diffDays} days left`, isExpired: false };
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-50 via-white to-white">
@@ -134,44 +147,64 @@ const UserTeam = () => {
                   {isOpen && (
                     <div className="mt-3.5 space-y-2 max-h-[220px] overflow-y-auto">
                       {team.users?.length > 0 ? (
-                        team.users.map((user) => (
-                          <div
-                            key={user?._id}
-                            className="flex flex-col sm:flex-row sm:justify-between sm:items-center bg-white border border-gray-100 hover:border-blue-100 hover:shadow-sm transition-all duration-200 rounded-xl p-3.5 text-sm gap-3"
-                          >
-                            {/* LEFT */}
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-[11px] font-extrabold flex-shrink-0">
-                                {(user?.username || "U")
-                                  .slice(0, 2)
-                                  .toUpperCase()}
+                        team.users.map((user) => {
+                          const validity = getValidityDays(
+                            user?.packageExpiryDate,
+                          );
+                          return (
+                            <div
+                              key={user?._id}
+                              className="flex flex-col sm:flex-row sm:justify-between sm:items-center bg-white border border-gray-100 hover:border-blue-100 hover:shadow-sm transition-all duration-200 rounded-xl p-3.5 text-sm gap-3"
+                            >
+                              {/* LEFT */}
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-[11px] font-extrabold flex-shrink-0">
+                                  {(user?.username || "U")
+                                    .slice(0, 2)
+                                    .toUpperCase()}
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-gray-900 font-semibold text-sm truncate">
+                                    {user?.name || "Unknown"}
+                                  </p>
+                                  <p className="text-gray-400 text-xs uppercase truncate">
+                                    {user?.username || "—"}
+                                  </p>
+                                </div>
                               </div>
-                              <p className="text-gray-900 font-semibold text-sm uppercase truncate">
-                                {user?.username || "Unknown User"}
-                              </p>
-                            </div>
 
-                            {/* RIGHT */}
-                            <div className="flex flex-row sm:flex-col justify-between sm:items-end gap-2 text-xs">
-                              <span
-                                className={`px-2.5 py-1 rounded-full font-semibold whitespace-nowrap flex items-center gap-1 ${
-                                  user?.isVerified
-                                    ? "bg-green-50 text-green-600"
-                                    : "bg-red-50 text-red-500"
-                                }`}
-                              >
+                              {/* RIGHT */}
+                              <div className="flex flex-row sm:flex-col justify-between sm:items-end gap-2 text-xs">
                                 <span
-                                  className={`w-1.5 h-1.5 rounded-full ${
+                                  className={`px-2.5 py-1 rounded-full font-semibold whitespace-nowrap flex items-center gap-1 ${
                                     user?.isVerified
-                                      ? "bg-green-500"
-                                      : "bg-red-400"
+                                      ? "bg-green-50 text-green-600"
+                                      : "bg-red-50 text-red-500"
                                   }`}
-                                />
-                                {user?.isVerified ? "Active" : "Inactive"}
-                              </span>
+                                >
+                                  <span
+                                    className={`w-1.5 h-1.5 rounded-full ${
+                                      user?.isVerified
+                                        ? "bg-green-500"
+                                        : "bg-red-400"
+                                    }`}
+                                  />
+                                  {user?.isVerified ? "Active" : "Inactive"}
+                                </span>
+
+                                <span
+                                  className={`text-[11px] font-semibold ${
+                                    validity.isExpired
+                                      ? "text-red-500"
+                                      : "text-blue-600"
+                                  }`}
+                                >
+                                  {validity.label}
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                        ))
+                          );
+                        })
                       ) : (
                         <div className="flex flex-col items-center gap-1.5 py-6">
                           <div className="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center">
