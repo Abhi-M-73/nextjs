@@ -873,10 +873,12 @@ const options = [
 
 const Row = ({ label, value }) => (
   <div className="flex justify-between items-center">
-    <span className="text-xs font-semibold text-gray-500 tracking-wide">
+    <span className="text-xs uppercase font-semibold text-gray-500 tracking-wide">
       {label}
     </span>
-    <span className="text-sm font-bold text-gray-900">{value ?? "-"}</span>
+    <span className="text-sm uppercase font-bold text-gray-900">
+      {value ?? "-"}
+    </span>
   </div>
 );
 

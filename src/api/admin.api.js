@@ -123,3 +123,31 @@ export const adminChangeUserPassword = async ({ userId, newPassword }) => {
   });
   return response;
 };
+
+export const adminApproveWithdrawal = async (userId) => {
+  const response = await Axios.post(`${API_URL}/admin/withdrawal/approve`, {
+    userId,
+  });
+  return response;
+};
+
+export const adminRejectWithdrawal = async (userId) => {
+  const response = await Axios.post(`${API_URL}/admin/withdrawal/reject`, {
+    userId,
+  });
+  return response;
+};
+
+export const adminApproveAllWithdrawals = async (userIds) => {
+  const response = await Axios.post(`${API_URL}/admin/withdrawal/approve-all`, {
+    userIds,
+  });
+  return response;
+};
+
+export const adminRejectAllWithdrawals = async (userIds) => {
+  const response = await Axios.post(`${API_URL}/admin/withdrawal/reject-all`, {
+    userIds,
+  });
+  return response;
+};
