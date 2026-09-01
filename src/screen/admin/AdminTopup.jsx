@@ -224,7 +224,7 @@ const AdminTopup = () => {
                     Fixed Topup Amount
                   </p>
                   <h3 className="mt-1 text-2xl font-bold text-slate-900">
-                    ₹{TOPUP_AMOUNT.toLocaleString("en-IN")}
+                    ₹{"1199"}
                   </h3>
                 </div>
               </div>
@@ -463,7 +463,7 @@ const AdminTopup = () => {
                     Amount to be credited
                   </p>
                   <p className="mt-1 text-lg font-bold text-slate-900">
-                    ₹{TOPUP_AMOUNT.toLocaleString("en-IN")}
+                    ₹{"1199"}
                   </p>
                 </div>
 
@@ -471,32 +471,6 @@ const AdminTopup = () => {
               </div>
             </div>
 
-            {/* Submit */}
-            {/* <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={!selectedUser || submitting}
-              className="
-                mt-5 flex w-full items-center justify-center gap-2
-                rounded-xl bg-gradient-to-r from-indigo-600
-                via-purple-600 to-pink-600 py-3.5
-                text-sm font-semibold text-white shadow-md
-                transition-all hover:shadow-lg active:scale-[0.99]
-                disabled:cursor-not-allowed disabled:opacity-50
-              "
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Processing Topup...
-                </>
-              ) : (
-                <>
-                  <CheckCircle2 className="h-4 w-4" />
-                  Topup ₹{TOPUP_AMOUNT.toLocaleString("en-IN")}
-                </>
-              )}
-            </button> */}
             <button
               type="button"
               onClick={handleSubmit}

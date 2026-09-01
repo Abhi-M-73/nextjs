@@ -38,39 +38,18 @@ const AdminDashboard = () => {
     fetchDashboardData();
   }, []);
 
-  // Format large numbers with K/M suffixes
-  // const formatNumber = (num) => {
-  //   if (num >= 1000000) {
-  //     return (num / 1000000).toFixed(2) + "M";
-  //   }
-  //   if (num >= 1000) {
-  //     return (num / 1000).toFixed(2) + "K";
-  //   }
-  //   return num?.toString() || "0";
-  // };
-  // Format large numbers with full digits + Indian comma system
   const formatNumber = (num) => {
     if (num === null || num === undefined) return "0";
     return Number(num).toLocaleString("en-IN");
   };
 
   // Metric card component with modern design
-  const MetricCard = ({
-    title,
-    value,
-    unit,
-    icon,
-    gradient,
-    trend,
-    subtitle,
-  }) => (
+  const MetricCard = ({ title, value, unit, icon, gradient, subtitle }) => (
     <div className="group relative bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 overflow-hidden">
       {/* Gradient accent bar */}
       <div
         className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${gradient}`}
       />
-
-      {/* Content */}
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
@@ -86,20 +65,18 @@ const AdminDashboard = () => {
               {loading ? "—" : formatNumber(value)}
             </h3>
           </div>
-          {subtitle && (
+          {/* {subtitle && (
             <p className="text-xs text-slate-400 mt-1">{subtitle}</p>
-          )}
+          )} */}
         </div>
 
-        {/* Icon with gradient background */}
         <div
           className={`p-3 rounded-xl bg-gradient-to-br ${gradient} text-white shadow-lg group-hover:scale-110 transition-transform duration-300`}
         >
           {icon}
         </div>
       </div>
-
-      {/* Trend indicator */}
+      {/* Trend indicator
       {trend && (
         <div className="flex items-center gap-1 mt-4">
           {trend === "up" ? (
@@ -113,7 +90,7 @@ const AdminDashboard = () => {
             {trend === "up" ? "Increasing" : "Decreasing"}
           </span>
         </div>
-      )}
+      )} */}
     </div>
   );
 
@@ -177,7 +154,7 @@ const AdminDashboard = () => {
             subtitle="Daily investment flow"
           />
           <MetricCard
-            title="Total ROI Paid"
+            title="Total Cashback Paid"
             value={data.totalRoi || 0}
             unit="₹"
             icon={<Banknote className="w-5 h-5" />}
@@ -232,7 +209,7 @@ const AdminDashboard = () => {
           />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <MetricCard
-              title="Today ROI"
+              title="Today cashback Paid"
               value={data.todayRoi || 0}
               unit="₹"
               icon={<Banknote className="w-5 h-5" />}

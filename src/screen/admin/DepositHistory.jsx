@@ -35,6 +35,11 @@ const DepositHistory = () => {
       label: "Username",
       render: (_, row) => row?.userId?.username || "—",
     },
+    {
+      key: "name",
+      label: "Name",
+      render: (_, row) => row?.userId?.name || "—",
+    },
 
     {
       key: "walletAddress",
