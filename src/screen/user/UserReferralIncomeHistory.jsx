@@ -83,7 +83,7 @@ const UserReferralIncomeHistory = () => {
             <div className="text-right">
               <p className="text-gray-400">Package Amount</p>
               <p className="text-gray-900 font-medium mt-0.5">
-                {formatINR(item?.baseAmount)}
+                {formatINR("1199")}
               </p>
             </div>
           </div>

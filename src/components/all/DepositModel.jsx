@@ -16,7 +16,6 @@ const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
 const DEFAULT_AMOUNT_INR = 999;
 
-// ── Cloudinary direct upload with progress ───────────────────────────────
 const uploadToCloudinary = (file, onProgress) => {
   return new Promise((resolve, reject) => {
     const formData = new FormData();
@@ -24,7 +23,10 @@ const uploadToCloudinary = (file, onProgress) => {
     formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
 
     const xhr = new XMLHttpRequest();
-    xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`);
+    xhr.open(
+      "POST",
+      `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+    );
 
     xhr.upload.onprogress = (event) => {
       if (event.lengthComputable) {
@@ -72,7 +74,12 @@ export default function LLDStakeModal({ open, onClose }) {
       setQrUrl(res?.qrCode || null);
     } catch (err) {
       console.error("QR fetch failed:", err);
-      dispatch(showSnackbar({ message: "Failed to load payment QR.", severity: "error" }));
+      dispatch(
+        showSnackbar({
+          message: "Failed to load payment QR.",
+          severity: "error",
+        }),
+      );
     } finally {
       setQrLoading(false);
     }
@@ -121,7 +128,10 @@ export default function LLDStakeModal({ open, onClose }) {
       setUploadProgress(0);
 
       // 1. Screenshot Cloudinary pe upload karo, progress track karte hue
-      const cloudinaryRes = await uploadToCloudinary(screenshot, setUploadProgress);
+      const cloudinaryRes = await uploadToCloudinary(
+        screenshot,
+        setUploadProgress,
+      );
 
       // 2. Sirf yeh 4 fields backend ko bhejo
       const res = await submitDeposit({
@@ -132,7 +142,12 @@ export default function LLDStakeModal({ open, onClose }) {
       });
 
       if (res?.success) {
-        dispatch(showSnackbar({ message: "Deposit submitted! Waiting for admin approval.", severity: "success" }));
+        dispatch(
+          showSnackbar({
+            message: "Deposit submitted! Waiting for admin approval.",
+            severity: "success",
+          }),
+        );
         await fetchUserInfo();
         resetForm();
         onClose();
@@ -141,7 +156,10 @@ export default function LLDStakeModal({ open, onClose }) {
       }
     } catch (err) {
       console.error("Deposit submit error:", err);
-      setErrorMsg(err?.response?.data?.message || "Something went wrong. Please try again.");
+      setErrorMsg(
+        err?.response?.data?.message ||
+          "Something went wrong. Please try again.",
+      );
     } finally {
       setLoading(false);
       setUploadProgress(null);
@@ -180,7 +198,11 @@ export default function LLDStakeModal({ open, onClose }) {
             {qrLoading ? (
               <Loader2 size={28} className="text-gray-400 animate-spin" />
             ) : qrUrl ? (
-              <img src={qrUrl} alt="Payment QR" className="w-full h-full object-contain p-2" />
+              <img
+                src={qrUrl}
+                alt="Payment QR"
+                className="w-full h-full object-contain p-2"
+              />
             ) : (
               <div className="flex flex-col items-center gap-2 text-gray-400">
                 <QrCode size={28} />
@@ -231,7 +253,11 @@ export default function LLDStakeModal({ open, onClose }) {
 
             {screenshotPreview && (
               <div className="mt-2 w-20 h-20 rounded-lg overflow-hidden border border-gray-200">
-                <img src={screenshotPreview} alt="Preview" className="w-full h-full object-cover" />
+                <img
+                  src={screenshotPreview}
+                  alt="Preview"
+                  className="w-full h-full object-cover"
+                />
               </div>
             )}
           </div>

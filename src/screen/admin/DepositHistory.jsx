@@ -77,7 +77,7 @@ const DepositHistory = () => {
     <div className="w-full overflow-auto p-5">
       <DynamicTable
         dataKey="_id"
-        title="Deposit History"
+        title="Activation History"
         data={data}
         columns={columns}
         loading={loading}

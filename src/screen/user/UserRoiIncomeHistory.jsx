@@ -39,9 +39,7 @@ const UserRoiIncomeHistory = () => {
 
       {/* Empty */}
       {!loading && roiHistory.length === 0 && (
-        <p className="text-center text-gray-400 text-sm py-6">
-          No income yet
-        </p>
+        <p className="text-center text-gray-400 text-sm py-6">No income yet</p>
       )}
 
       {/* List */}
@@ -74,16 +72,13 @@ const UserRoiIncomeHistory = () => {
                 +{formatINR(item.roiAmount)}
               </p>
             </div>
-
-            {/* Details */}
             <div className="flex justify-between items-center text-xs bg-gray-50 rounded-lg px-3 py-2 mt-2">
               <div>
                 <p className="text-gray-400">Investment</p>
                 <p className="text-gray-900 font-medium mt-0.5">
-                  {formatINR(item.investmentAmount)}
+                  {formatINR("1119")}
                 </p>
               </div>
-
               <div className="text-center">
                 <p className="text-gray-400">Rate</p>
                 <p className="text-gray-900 font-medium mt-0.5">

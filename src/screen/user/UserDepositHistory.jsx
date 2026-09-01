@@ -59,7 +59,7 @@ const UserDepositHistory = () => {
         {/* Empty */}
         {!loading && depositHistory.length === 0 && (
           <p className="text-center text-gray-400 py-6 text-sm">
-            No deposits found
+            No Activation found
           </p>
         )}
 
@@ -75,14 +75,16 @@ const UserDepositHistory = () => {
             >
               <div className="flex justify-between items-start mb-3">
                 <div>
-                  <p className="text-gray-900 text-sm font-semibold">Deposit</p>
+                  <p className="text-gray-900 text-sm font-semibold">
+                    Activation
+                  </p>
                   <p className="text-gray-400 text-xs mt-0.5">
                     {dateFormatter(item.createdAt)}
                   </p>
                 </div>
 
                 <div className="text-right">
-                  <p className="text-gray-900 font-bold">{formatINR(item.amount_inr)}</p>
+                  <p className="text-gray-900 font-bold">{formatINR("1199")}</p>
                   <span
                     className={`inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-xs font-medium ${status.className}`}
                   >
@@ -96,7 +98,9 @@ const UserDepositHistory = () => {
               <div className="bg-gray-50 border border-gray-100 rounded-xl px-3 py-2 mb-2 flex items-center justify-between text-xs">
                 <div>
                   <p className="text-gray-400">Activated By:</p>
-                  <p className="text-gray-900 font-medium">{item.addedBy === "admin" ? "Admin" : "User"}</p>
+                  <p className="text-gray-900 font-medium">
+                    {item.addedBy === "admin" ? "Admin" : "User"}
+                  </p>
                 </div>
                 {item?.proofImage?.url && (
                   <button
