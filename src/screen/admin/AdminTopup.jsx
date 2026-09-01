@@ -1,7 +1,22 @@
-import React, { useState, useRef } from 'react'
-import { adminTopupUserWallet, searchUserByUsername } from '../../api/admin.api';
-import { Search, Wallet, User, Loader2, CheckCircle2, X, BadgeCheck, XCircle } from 'lucide-react';
-import toast from 'react-hot-toast';
+import React, { useState } from "react";
+import {
+  BadgeCheck,
+  Calendar,
+  CheckCircle2,
+  CircleDollarSign,
+  Loader2,
+  RefreshCw,
+  Search,
+  User,
+  Wallet,
+  X,
+  XCircle,
+} from "lucide-react";
+import {
+  adminTopupUserWallet,
+  searchUserByUsername,
+} from "../../api/admin.api";
+import toast from "react-hot-toast";
 
 const TOPUP_AMOUNT = 999;
 
@@ -10,51 +25,66 @@ const AdminTopup = () => {
   const [results, setResults] = useState(null);
   const [searching, setSearching] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-
   const [selectedUser, setSelectedUser] = useState(null);
   const [submitting, setSubmitting] = useState(false);
-
-  const wrapperRef = useRef(null);
+  const [lastUpdated, setLastUpdated] = useState(null);
 
   const handleSearch = async () => {
-    if (!query.trim()) {
+    const searchQuery = query.trim().toLowerCase();
+
+    if (!searchQuery) {
+      setSelectedUser(null);
       setResults(null);
       setShowDropdown(false);
+      toast.error("Please enter a username");
       return;
     }
 
     try {
       setSearching(true);
+      setSelectedUser(null);
+      setResults(null);
+      setShowDropdown(false);
 
-      const res = await searchUserByUsername(query.trim().toLowerCase());
-      const user = res?.data || null;
-
-      setResults(user);
-      setShowDropdown(true);
+      const response = await searchUserByUsername(searchQuery);
+      const user = response?.data || null;
 
       if (!user) {
         toast.error("No user found");
+        return;
       }
+
+      // Search button click ke baad direct details show hongi
+      setSelectedUser(user);
+      setLastUpdated(new Date());
     } catch (error) {
-      console.error(error);
+      console.error("User search error:", error);
+
+      setSelectedUser(null);
       setResults(null);
-      setShowDropdown(true);
+      setShowDropdown(false);
+
       toast.error(error?.response?.data?.message || "Failed to search user");
     } finally {
       setSearching(false);
     }
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
       handleSearch();
+    }
+
+    if (event.key === "Escape") {
+      setShowDropdown(false);
     }
   };
 
   const handleSelectUser = (user) => {
     setSelectedUser(user);
     setQuery(user?.username || "");
+    setResults(null);
     setShowDropdown(false);
   };
 
@@ -65,35 +95,47 @@ const AdminTopup = () => {
     setShowDropdown(false);
   };
 
-  // Active = has a package expiry date that's in the future
   const isUserActive = (user) => {
     if (!user?.packageExpiryDate) return false;
+
     return new Date(user.packageExpiryDate) > new Date();
   };
 
   const handleSubmit = async () => {
     if (!selectedUser?._id) {
-      return toast.error("Please select a user first");
+      toast.error("Please select a user first");
+      return;
     }
 
     try {
       setSubmitting(true);
-      const res = await adminTopupUserWallet({
+
+      const response = await adminTopupUserWallet({
         userId: selectedUser._id,
         username: selectedUser.username,
         amount: TOPUP_AMOUNT,
       });
 
-      if (res?.success !== false) {
-        toast.success(res?.message || `₹${TOPUP_AMOUNT} added to ${selectedUser.username}'s wallet`);
-        setSelectedUser((prev) =>
-          prev ? { ...prev, mainWallet: (prev.mainWallet || 0) + TOPUP_AMOUNT } : prev
+      if (response?.success !== false) {
+        toast.success(
+          response?.message ||
+            `₹${TOPUP_AMOUNT} added to ${selectedUser.username}'s wallet`,
+        );
+
+        setSelectedUser((previousUser) =>
+          previousUser
+            ? {
+                ...previousUser,
+                mainWallet: Number(previousUser.mainWallet || 0) + TOPUP_AMOUNT,
+              }
+            : previousUser,
         );
       } else {
-        toast.error(res?.message || "Failed to topup wallet");
+        toast.error(response?.message || "Failed to topup wallet");
       }
     } catch (error) {
-      console.error(error);
+      console.error("Wallet topup error:", error);
+
       toast.error(error?.response?.data?.message || "Failed to topup wallet");
     } finally {
       setSubmitting(false);
@@ -101,166 +143,332 @@ const AdminTopup = () => {
   };
 
   return (
-    <div className="max-w-xl mx-auto p-5">
-      <div className="mb-6">
-        <h2 className="text-slate-900 text-xl font-semibold flex items-center gap-2">
-          <Wallet size={20} className="text-blue-600" />
-          Wallet Topup
-        </h2>
-        <p className="text-slate-500 text-sm mt-1">
-          Search a user by username and add ₹{TOPUP_AMOUNT} directly to their wallet.
-        </p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+      {/* Top Header */}
+      <div className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur-md">
+        <div className="mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+          <div>
+            <h1 className="bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-xl font-bold text-transparent">
+              Wallet Topup
+            </h1>
+            <p className="text-xs text-slate-500">
+              Add balance directly to a user's wallet
+            </p>
+          </div>
+
+          {lastUpdated && (
+            <div className="hidden items-center gap-1.5 text-xs text-slate-500 sm:flex">
+              <Calendar className="h-3.5 w-3.5" />
+              <span>Updated: {lastUpdated.toLocaleTimeString()}</span>
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="bg-black border border-slate-200 shadow-sm rounded-2xl p-5 space-y-5">
-
-        {/* Search / Selected user */}
-        <div ref={wrapperRef} className="relative">
-          <label className="text-slate-500 text-xs mb-1.5 block">Search User</label>
-
-          {selectedUser ? (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-3 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                    <User size={16} className="text-blue-600" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-slate-900 text-sm font-medium truncate">{selectedUser?.name || "-"}</p>
-                    <p className="text-slate-500 text-xs truncate">@{selectedUser?.username}</p>
-                  </div>
+      {/* Main Content */}
+      <main className="mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-2xl">
+          {/* Topup Amount Card */}
+          <div className="mb-6 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 p-3 text-white shadow-lg">
+                  <CircleDollarSign className="h-5 w-5" />
                 </div>
-                <button
-                  onClick={handleClearUser}
-                  className="p-1.5 rounded-md hover:bg-white text-slate-400 hover:text-red-500 transition shrink-0"
-                >
-                  <X size={16} />
-                </button>
+
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+                    Fixed Topup Amount
+                  </p>
+                  <h3 className="mt-1 text-2xl font-bold text-slate-900">
+                    ₹{TOPUP_AMOUNT.toLocaleString("en-IN")}
+                  </h3>
+                </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-blue-200/60">
-                <div className="bg-white rounded-lg px-3 py-2">
-                  <p className="text-[11px] text-slate-400">Referral Code</p>
-                  <p className="text-sm font-medium text-slate-900">{selectedUser?.referralCode || "-"}</p>
-                </div>
-                <div className="bg-white rounded-lg px-3 py-2">
-                  <p className="text-[11px] text-slate-400">Wallet Balance</p>
-                  <p className="text-sm font-medium text-slate-900">₹{selectedUser?.mainWallet ?? 0}</p>
-                </div>
-                <div className="bg-white rounded-lg px-3 py-2 flex items-center justify-between">
-                  <span className="text-[11px] text-slate-400">Package Status</span>
-                  {isUserActive(selectedUser) ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                      <BadgeCheck size={12} /> Active
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-red-500 bg-red-50 px-2 py-0.5 rounded-full">
-                      <XCircle size={12} /> Inactive
-                    </span>
-                  )}
-                </div>
-                <div className="bg-white rounded-lg px-3 py-2 flex items-center justify-between">
-                  <span className="text-[11px] text-slate-400">Verified</span>
-                  {selectedUser?.isVerified ? (
-                    <span className="text-[11px] font-semibold text-emerald-600">Yes</span>
-                  ) : (
-                    <span className="text-[11px] font-semibold text-slate-400">No</span>
-                  )}
-                </div>
-              </div>
+              <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+                Admin Credit
+              </span>
             </div>
-          ) : (
-            <div className="relative">
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input
-                    type="text"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    onFocus={() => setShowDropdown(true)}
-                    placeholder="Enter username..."
-                    className="w-full bg-white border border-slate-300 text-slate-900 text-sm pl-9 pr-3 py-2.5 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 placeholder:text-slate-400"
-                  />
-                </div>
-                <button
-                  onClick={handleSearch}
-                  disabled={searching || !query.trim()}
-                  className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
-                >
-                  {searching ? (
-                    <Loader2 size={15} className="animate-spin" />
-                  ) : (
-                    <Search size={15} />
-                  )}
-                  <span className="hidden sm:inline">Search</span>
-                </button>
+          </div>
+
+          <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm md:p-6">
+            <div className="mb-6 flex items-center gap-2">
+              <div className="rounded-lg bg-slate-100 p-1.5 text-slate-600">
+                <Search className="h-4 w-4" />
               </div>
 
-              {showDropdown && (
-                <div className="absolute z-20 mt-1.5 w-full bg-white border border-slate-200 rounded-lg shadow-xl overflow-hidden">
-                  {searching ? (
-                    <p className="text-slate-400 text-sm px-3 py-3 text-center">Searching...</p>
-                  ) : !results ? (
-                    <p className="text-slate-400 text-sm px-3 py-3 text-center">No user found</p>
-                  ) : (
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-700">
+                Select User
+              </h2>
+
+              <div className="ml-3 h-px flex-1 bg-slate-200" />
+            </div>
+
+            {/* Search / Selected User */}
+            <div className="relative">
+              <label className="mb-1.5 block text-xs font-medium text-slate-500">
+                Search by Username
+              </label>
+
+              {selectedUser ? (
+                <div className="rounded-xl border border-indigo-100 bg-indigo-50/60 p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-100">
+                        <User className="h-5 w-5 text-indigo-600" />
+                      </div>
+
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-slate-900">
+                          {selectedUser?.name ||
+                            selectedUser?.username ||
+                            "Unknown User"}
+                        </p>
+                        <p className="truncate text-xs text-slate-500">
+                          @{selectedUser?.username || "unknown"}
+                        </p>
+                      </div>
+                    </div>
+
                     <button
                       type="button"
-                      onClick={() => handleSelectUser(results)}
-                      className="w-full flex items-center justify-between gap-2.5 px-3 py-3 hover:bg-blue-50 transition text-left"
+                      onClick={handleClearUser}
+                      title="Remove selected user"
+                      className="shrink-0 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-white hover:text-rose-500"
                     >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                          <User size={15} className="text-blue-600" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-slate-900 text-sm font-medium truncate">{results?.name || results?.username}</p>
-                          <p className="text-slate-500 text-xs truncate">@{results?.username}</p>
-                        </div>
-                      </div>
-                      {isUserActive(results) ? (
-                        <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full shrink-0">
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  <div className="mt-4 grid grid-cols-1 gap-3 border-t border-indigo-100 pt-4 sm:grid-cols-2">
+                    <div className="rounded-xl border border-slate-100 bg-white p-3">
+                      <p className="text-[11px] text-slate-400">
+                        Referral Code
+                      </p>
+                      <p className="mt-1 truncate text-sm font-semibold text-slate-800">
+                        {selectedUser?.referralCode || "—"}
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl border border-slate-100 bg-white p-3">
+                      <p className="text-[11px] text-slate-400">
+                        Wallet Balance
+                      </p>
+                      <p className="mt-1 text-sm font-semibold text-slate-800">
+                        ₹
+                        {Number(selectedUser?.mainWallet || 0).toLocaleString(
+                          "en-IN",
+                          {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          },
+                        )}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between rounded-xl border border-slate-100 bg-white p-3">
+                      <span className="text-[11px] text-slate-400">
+                        Package Status
+                      </span>
+
+                      {isUserActive(selectedUser) ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-600">
+                          <BadgeCheck className="h-3.5 w-3.5" />
                           Active
                         </span>
                       ) : (
-                        <span className="text-[10px] font-semibold text-red-500 bg-red-50 px-2 py-0.5 rounded-full shrink-0">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-1 text-[11px] font-semibold text-rose-600">
+                          <XCircle className="h-3.5 w-3.5" />
                           Inactive
                         </span>
                       )}
+                    </div>
+
+                    <div className="flex items-center justify-between rounded-xl border border-slate-100 bg-white p-3">
+                      <span className="text-[11px] text-slate-400">
+                        Verification
+                      </span>
+
+                      {selectedUser?.isVerified === true ||
+                      selectedUser?.isVerified === "true" ? (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                          <BadgeCheck className="h-3.5 w-3.5" />
+                          Verified
+                        </span>
+                      ) : (
+                        <span className="text-[11px] font-semibold text-slate-400">
+                          Not Verified
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="relative">
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+
+                      <input
+                        type="text"
+                        value={query}
+                        onChange={(event) => {
+                          setQuery(event.target.value);
+                          setResults(null);
+                        }}
+                        onKeyDown={handleKeyDown}
+                        onFocus={() => {
+                          if (query.trim()) {
+                            setShowDropdown(true);
+                          }
+                        }}
+                        placeholder="Enter username..."
+                        className="
+                          w-full rounded-xl border border-slate-200
+                          bg-slate-50 py-3 pl-10 pr-3 text-sm
+                          text-slate-800 outline-none transition-all
+                          placeholder:text-slate-400
+                          focus:border-indigo-300 focus:bg-white
+                          focus:ring-4 focus:ring-indigo-50
+                        "
+                      />
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleSearch}
+                      disabled={searching || !query.trim()}
+                      className="
+                        flex items-center justify-center gap-2
+                        rounded-xl bg-gradient-to-r
+                        from-indigo-600 to-purple-600
+                        px-5 py-3 text-sm font-semibold text-white
+                        shadow-sm transition-all
+                        hover:from-indigo-700 hover:to-purple-700
+                        active:scale-95 disabled:cursor-not-allowed
+                        disabled:opacity-50
+                      "
+                    >
+                      {searching ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Search className="h-4 w-4" />
+                      )}
+
+                      <span>Search</span>
                     </button>
+                  </div>
+
+                  {/* Search Dropdown */}
+                  {showDropdown && (
+                    <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl">
+                      {searching ? (
+                        <div className="flex items-center justify-center gap-2 px-4 py-4 text-sm text-slate-500">
+                          <Loader2 className="h-4 w-4 animate-spin text-indigo-600" />
+                          Searching user...
+                        </div>
+                      ) : !results ? (
+                        <div className="px-4 py-4 text-center text-sm text-slate-400">
+                          No user found
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleSelectUser(results)}
+                          className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-indigo-50"
+                        >
+                          <div className="flex min-w-0 items-center gap-3">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-100">
+                              <User className="h-4 w-4 text-indigo-600" />
+                            </div>
+
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-semibold text-slate-800">
+                                {results?.name ||
+                                  results?.username ||
+                                  "Unknown User"}
+                              </p>
+                              <p className="truncate text-xs text-slate-500">
+                                @{results?.username || "unknown"}
+                              </p>
+                            </div>
+                          </div>
+
+                          {isUserActive(results) ? (
+                            <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-emerald-600">
+                              Active
+                            </span>
+                          ) : (
+                            <span className="shrink-0 rounded-full bg-rose-50 px-2 py-1 text-[10px] font-semibold text-rose-600">
+                              Inactive
+                            </span>
+                          )}
+                        </button>
+                      )}
+                    </div>
                   )}
                 </div>
               )}
             </div>
-          )}
-        </div>
 
-        {/* Fixed amount display */}
-        <div>
-          <label className="text-slate-500 text-xs mb-1.5 block">Topup Amount</label>
-          <div className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm px-3 py-2.5 rounded-lg font-semibold">
-            ₹{TOPUP_AMOUNT}
+            {/* Topup Summary */}
+            <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs text-slate-400">
+                    Amount to be credited
+                  </p>
+                  <p className="mt-1 text-lg font-bold text-slate-900">
+                    ₹{TOPUP_AMOUNT.toLocaleString("en-IN")}
+                  </p>
+                </div>
+
+                <Wallet className="h-6 w-6 text-indigo-500" />
+              </div>
+            </div>
+
+            {/* Submit */}
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={!selectedUser || submitting}
+              className="
+                mt-5 flex w-full items-center justify-center gap-2
+                rounded-xl bg-gradient-to-r from-indigo-600
+                via-purple-600 to-pink-600 py-3.5
+                text-sm font-semibold text-white shadow-md
+                transition-all hover:shadow-lg active:scale-[0.99]
+                disabled:cursor-not-allowed disabled:opacity-50
+              "
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Processing Topup...
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="h-4 w-4" />
+                  Topup ₹{TOPUP_AMOUNT.toLocaleString("en-IN")}
+                </>
+              )}
+            </button>
+
+            <p className="mt-3 text-center text-xs text-slate-400">
+              Please verify the selected username before submitting.
+            </p>
           </div>
         </div>
 
-        {/* Submit */}
-        <button
-          onClick={handleSubmit}
-          disabled={!selectedUser || submitting}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {submitting ? (
-            <>
-              <Loader2 size={16} className="animate-spin" /> Processing...
-            </>
-          ) : (
-            <>
-              <CheckCircle2 size={16} /> Topup ₹{TOPUP_AMOUNT}
-            </>
-          )}
-        </button>
-      </div>
+        {/* Footer */}
+        <div className="mx-auto mt-8 max-w-2xl border-t border-slate-200 pt-6">
+          <div className="flex items-center justify-center gap-2 text-xs text-slate-500">
+            <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+            <span>Wallet topup system operational</span>
+          </div>
+        </div>
+      </main>
     </div>
   );
 };

@@ -13,9 +13,15 @@ const QRPreview = ({ src }) => {
   if (!src) return null;
   return (
     <div className="mt-4 flex flex-col items-center gap-2">
-      <p className="text-xs text-gray-400">QR Preview</p>
-      <div className="border border-gray-600 rounded-xl overflow-hidden w-44 h-44 flex items-center justify-center bg-white">
-        <img src={src} alt="QR Code" className="object-contain w-full h-full p-2" />
+      <p className="text-xs text-yellow-500/80 font-medium tracking-wide uppercase">
+        QR Preview
+      </p>
+      <div className="border border-yellow-500/30 rounded-xl overflow-hidden w-44 h-44 flex items-center justify-center bg-[#1a1a1a] shadow-inner">
+        <img
+          src={src}
+          alt="QR Code"
+          className="object-contain w-full h-full p-2"
+        />
       </div>
     </div>
   );
@@ -26,13 +32,13 @@ const UploadProgress = ({ progress }) => {
   if (progress === null) return null;
   return (
     <div className="mt-2">
-      <div className="flex justify-between text-xs text-gray-400 mb-1">
+      <div className="flex justify-between text-xs text-yellow-500/80 mb-1 font-medium">
         <span>Uploading...</span>
         <span>{progress}%</span>
       </div>
-      <div className="w-full h-2 rounded-full bg-gray-700 overflow-hidden">
+      <div className="w-full h-2 rounded-full bg-[#1a1a1a] border border-yellow-500/20 overflow-hidden">
         <div
-          className="h-full bg-blue-400 transition-all duration-200 rounded-full"
+          className="h-full bg-yellow-400 transition-all duration-200 rounded-full"
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -48,7 +54,10 @@ const uploadToCloudinary = (file, onProgress) => {
     formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
 
     const xhr = new XMLHttpRequest();
-    xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`);
+    xhr.open(
+      "POST",
+      `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+    );
 
     xhr.upload.onprogress = (event) => {
       if (event.lengthComputable) {
@@ -60,7 +69,7 @@ const uploadToCloudinary = (file, onProgress) => {
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) {
         const response = JSON.parse(xhr.responseText);
-        resolve(response); // response.secure_url, response.public_id
+        resolve(response);
       } else {
         reject(new Error("Cloudinary upload failed"));
       }
@@ -120,10 +129,11 @@ const AdminControl = () => {
       setLoading(true);
       setUploadProgress(0);
 
-      // 1. Cloudinary pe direct upload, progress track karte hue
-      const cloudinaryResponse = await uploadToCloudinary(qrFile, setUploadProgress);
+      const cloudinaryResponse = await uploadToCloudinary(
+        qrFile,
+        setUploadProgress,
+      );
 
-      // 2. Sirf URL (aur public_id, delete/replace ke liye) backend ko bhejo
       const res = await uploadQr({
         url: cloudinaryResponse.secure_url,
         public_id: cloudinaryResponse.public_id,
@@ -150,28 +160,32 @@ const AdminControl = () => {
       style={{ "--btnColor": "#facc15", "--btnHoverColor": "#eab308" }}
       className="max-w-2xl mx-auto p-4"
     >
-      <div className="bg-[#121212] border border-gray-700 rounded-2xl p-6 space-y-5">
-        <div className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-full bg-blue-400/10 flex items-center justify-center">
-            <QrCode size={20} className="text-blue-400" />
+      <div className="bg-[#111111] border border-yellow-500/30 rounded-2xl p-6 space-y-5 shadow-2xl shadow-yellow-500/5">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center">
+            <QrCode size={20} className="text-yellow-400" />
           </div>
           <div>
-            <h2 className="text-white font-semibold">Payment QR Code</h2>
+            <h2 className="text-white font-semibold tracking-wide">
+              Payment QR Code
+            </h2>
             <p className="text-xs text-gray-400">
               Users will scan this to send deposits
             </p>
           </div>
         </div>
 
-        <ReusableForm
-          label="Upload Payment QR Code"
-          name="qrFile"
-          type="file"
-          onChange={handleChange}
-          icon={UploadCloud}
-          required
-          disabled={loading}
-        />
+        <div className="[&_label]:text-yellow-500/90 [&_input]:border-yellow-500/30 [&_input]:bg-[#1a1a1a] [&_input]:text-white">
+          <ReusableForm
+            label="Upload Payment QR Code"
+            name="qrFile"
+            type="file"
+            onChange={handleChange}
+            icon={UploadCloud}
+            required
+            disabled={loading}
+          />
+        </div>
 
         <UploadProgress progress={uploadProgress} />
 
@@ -183,6 +197,7 @@ const AdminControl = () => {
           loading={loading}
           disabled={!qrFile || loading}
           icon={!loading ? CheckCircle2 : undefined}
+          className="bg-yellow-400 text-black hover:bg-yellow-500 font-semibold"
         />
       </div>
     </div>
