@@ -101,9 +101,55 @@ const AdminTopup = () => {
     return new Date(user.packageExpiryDate) > new Date();
   };
 
+  // const handleSubmit = async () => {
+  //   if (!selectedUser?._id) {
+  //     toast.error("Please select a user first");
+  //     return;
+  //   }
+
+  //   try {
+  //     setSubmitting(true);
+
+  //     const response = await adminTopupUserWallet({
+  //       userId: selectedUser._id,
+  //       username: selectedUser.username,
+  //       amount: TOPUP_AMOUNT,
+  //     });
+
+  //     if (response?.success !== false) {
+  //       toast.success(
+  //         response?.message ||
+  //           `₹${TOPUP_AMOUNT} added to ${selectedUser.username}'s wallet`,
+  //       );
+
+  //       setSelectedUser((previousUser) =>
+  //         previousUser
+  //           ? {
+  //               ...previousUser,
+  //               mainWallet: Number(previousUser.mainWallet || 0) + TOPUP_AMOUNT,
+  //             }
+  //           : previousUser,
+  //       );
+  //     } else {
+  //       toast.error(response?.message || "Failed to topup wallet");
+  //     }
+  //   } catch (error) {
+  //     console.error("Wallet topup error:", error);
+
+  //     toast.error(error?.response?.data?.message || "Failed to topup wallet");
+  //   } finally {
+  //     setSubmitting(false);
+  //   }
+  // };
+
   const handleSubmit = async () => {
     if (!selectedUser?._id) {
       toast.error("Please select a user first");
+      return;
+    }
+
+    if (isUserActive(selectedUser)) {
+      toast.error("User is already active, topup not allowed");
       return;
     }
 
@@ -122,14 +168,12 @@ const AdminTopup = () => {
             `₹${TOPUP_AMOUNT} added to ${selectedUser.username}'s wallet`,
         );
 
-        setSelectedUser((previousUser) =>
-          previousUser
-            ? {
-                ...previousUser,
-                mainWallet: Number(previousUser.mainWallet || 0) + TOPUP_AMOUNT,
-              }
-            : previousUser,
-        );
+        // Topup ke baad form pura reset
+        setSelectedUser(null);
+        setQuery("");
+        setResults(null);
+        setShowDropdown(false);
+        setLastUpdated(new Date());
       } else {
         toast.error(response?.message || "Failed to topup wallet");
       }
@@ -141,7 +185,6 @@ const AdminTopup = () => {
       setSubmitting(false);
     }
   };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
       {/* Top Header */}
@@ -429,7 +472,7 @@ const AdminTopup = () => {
             </div>
 
             {/* Submit */}
-            <button
+            {/* <button
               type="button"
               onClick={handleSubmit}
               disabled={!selectedUser || submitting}
@@ -446,6 +489,38 @@ const AdminTopup = () => {
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Processing Topup...
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="h-4 w-4" />
+                  Topup ₹{TOPUP_AMOUNT.toLocaleString("en-IN")}
+                </>
+              )}
+            </button> */}
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={
+                !selectedUser || submitting || isUserActive(selectedUser)
+              }
+              className="
+                mt-5 flex w-full items-center justify-center gap-2
+                rounded-xl bg-gradient-to-r from-indigo-600
+                via-purple-600 to-pink-600 py-3.5
+                text-sm font-semibold text-white shadow-md
+                transition-all hover:shadow-lg active:scale-[0.99]
+                disabled:cursor-not-allowed disabled:opacity-50
+              "
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Processing Topup...
+                </>
+              ) : isUserActive(selectedUser) ? (
+                <>
+                  <XCircle className="h-4 w-4" />
+                  User Already Active
                 </>
               ) : (
                 <>

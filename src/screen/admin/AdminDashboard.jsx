@@ -39,14 +39,19 @@ const AdminDashboard = () => {
   }, []);
 
   // Format large numbers with K/M suffixes
+  // const formatNumber = (num) => {
+  //   if (num >= 1000000) {
+  //     return (num / 1000000).toFixed(2) + "M";
+  //   }
+  //   if (num >= 1000) {
+  //     return (num / 1000).toFixed(2) + "K";
+  //   }
+  //   return num?.toString() || "0";
+  // };
+  // Format large numbers with full digits + Indian comma system
   const formatNumber = (num) => {
-    if (num >= 1000000) {
-      return (num / 1000000).toFixed(2) + "M";
-    }
-    if (num >= 1000) {
-      return (num / 1000).toFixed(2) + "K";
-    }
-    return num?.toString() || "0";
+    if (num === null || num === undefined) return "0";
+    return Number(num).toLocaleString("en-IN");
   };
 
   // Metric card component with modern design

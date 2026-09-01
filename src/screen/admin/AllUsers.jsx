@@ -57,6 +57,15 @@ const AllUsers = () => {
       ),
     },
     {
+      key: "name",
+      label: "Name",
+      render: (value) => (
+        <span className="font-semibold text-slate-700">
+          {value?.toUpperCase() || "N/A"}
+        </span>
+      ),
+    },
+    {
       key: "email",
       label: "Email",
       render: (value) => (
