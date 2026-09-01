@@ -1,8 +1,24 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Calendar, RefreshCw, Users, UserCheck, UserX } from "lucide-react";
-import { getAllUserList } from "../../api/admin.api";
+import {
+  Calendar,
+  RefreshCw,
+  Users,
+  UserCheck,
+  UserX,
+  Ban,
+  ShieldCheck,
+  KeyRound,
+  X,
+  Loader2,
+} from "lucide-react";
+import {
+  getAllUserList,
+  toggleUserBlock,
+  adminChangeUserPassword,
+} from "../../api/admin.api";
 import { dateFormatter } from "../../utils/AdditionalFn";
 import DynamicTable from "../../components/ui/DynamicTable";
+import toast from "react-hot-toast";
 
 const formatAmount = (value) => {
   return `₹${Number(value || 0).toFixed(2)}`;
@@ -12,6 +28,12 @@ const AllUsers = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [blockingId, setBlockingId] = useState(null);
+
+  // Password modal state
+  const [passwordModalUser, setPasswordModalUser] = useState(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [updatingPassword, setUpdatingPassword] = useState(false);
 
   const getValidityDays = (expiryDate) => {
     if (!expiryDate) return "N/A";
@@ -25,6 +47,7 @@ const AllUsers = () => {
     if (diffDays === 0) return "Expires today";
     return `${diffDays} days`;
   };
+
   const fetchAllUsers = useCallback(async () => {
     try {
       setLoading(true);
@@ -52,6 +75,78 @@ const AllUsers = () => {
   ).length;
 
   const inactiveUsers = users.length - activeUsers;
+
+  const handleToggleBlock = async (user) => {
+    try {
+      setBlockingId(user._id);
+
+      const response = await toggleUserBlock(user._id);
+
+      if (response?.success !== false) {
+        toast.success(response?.message || "Login status updated");
+
+        setUsers((prev) =>
+          prev.map((u) =>
+            u._id === user._id
+              ? { ...u, isLoginBlocked: !u.isLoginBlocked }
+              : u,
+          ),
+        );
+      } else {
+        toast.error(response?.message || "Failed to update block status");
+      }
+    } catch (error) {
+      console.error("Block toggle error:", error);
+      toast.error(
+        error?.response?.data?.message || "Failed to update block status",
+      );
+    } finally {
+      setBlockingId(null);
+    }
+  };
+
+  const openPasswordModal = (user) => {
+    setPasswordModalUser(user);
+    setNewPassword("");
+  };
+
+  const closePasswordModal = () => {
+    setPasswordModalUser(null);
+    setNewPassword("");
+  };
+
+  const handleChangePassword = async () => {
+    if (!newPassword || newPassword.trim().length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    try {
+      setUpdatingPassword(true);
+
+      const response = await adminChangeUserPassword({
+        userId: passwordModalUser._id,
+        newPassword: newPassword.trim(),
+      });
+
+      if (response?.success !== false) {
+        toast.success(
+          response?.message ||
+            `Password updated for ${passwordModalUser.username}`,
+        );
+        closePasswordModal();
+      } else {
+        toast.error(response?.message || "Failed to update password");
+      }
+    } catch (error) {
+      console.error("Password change error:", error);
+      toast.error(
+        error?.response?.data?.message || "Failed to update password",
+      );
+    } finally {
+      setUpdatingPassword(false);
+    }
+  };
 
   const columns = [
     {
@@ -103,6 +198,22 @@ const AllUsers = () => {
       },
     },
     {
+      key: "isLoginBlocked",
+      label: "Block Status",
+      render: (value) =>
+        value === true ? (
+          <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-1 text-[11px] font-semibold text-rose-600">
+            <Ban className="h-3 w-3" />
+            Blocked
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-600">
+            <ShieldCheck className="h-3 w-3" />
+            Allowed
+          </span>
+        ),
+    },
+    {
       key: "packageExpiryDate",
       label: "Validity",
       render: (value) => {
@@ -124,6 +235,44 @@ const AllUsers = () => {
       key: "createdAt",
       label: "Joined At",
       render: (value) => (value ? dateFormatter(value) : "N/A"),
+    },
+    {
+      key: "actions",
+      label: "Actions",
+      render: (_, row) => (
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => handleToggleBlock(row)}
+            disabled={blockingId === row._id}
+            title={row?.isLoginBlocked ? "Unblock user" : "Block user"}
+            className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+              row?.isLoginBlocked
+                ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                : "bg-rose-50 text-rose-700 hover:bg-rose-100"
+            }`}
+          >
+            {blockingId === row._id ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : row?.isLoginBlocked ? (
+              <ShieldCheck className="h-3.5 w-3.5" />
+            ) : (
+              <Ban className="h-3.5 w-3.5" />
+            )}
+            {row?.isLoginBlocked ? "Unblock" : "Block"}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => openPasswordModal(row)}
+            title="Change password"
+            className="inline-flex items-center gap-1 rounded-lg bg-indigo-50 px-2.5 py-1.5 text-xs font-semibold text-indigo-700 transition-colors hover:bg-indigo-100"
+          >
+            <KeyRound className="h-3.5 w-3.5" />
+            Password
+          </button>
+        </div>
+      ),
     },
   ];
 
@@ -292,6 +441,63 @@ const AllUsers = () => {
           </div>
         </div>
       </div>
+
+      {/* Change Password Modal */}
+      {passwordModalUser && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-base font-bold text-slate-900">
+                Change Password
+              </h3>
+              <button
+                type="button"
+                onClick={closePasswordModal}
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <p className="mb-4 text-xs text-slate-500">
+              Setting new password for{" "}
+              <span className="font-semibold text-slate-700">
+                @{passwordModalUser.username}
+              </span>
+            </p>
+
+            <input
+              type="text"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Enter new password"
+              className="mb-4 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-50"
+            />
+
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={closePasswordModal}
+                className="flex-1 rounded-xl border border-slate-200 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleChangePassword}
+                disabled={updatingPassword}
+                className="flex-1 rounded-xl bg-indigo-600 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {updatingPassword ? (
+                  <Loader2 className="mx-auto h-4 w-4 animate-spin" />
+                ) : (
+                  "Update"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
