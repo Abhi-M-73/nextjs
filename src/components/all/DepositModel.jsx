@@ -472,9 +472,7 @@ export default function LLDStakeModal({
       }
     } catch (err) {
       console.error("Deposit submit error:", err);
-      setErrorMsg(
-        err?.response?.message || "Something went wrong. Please try again.",
-      );
+      setErrorMsg(err?.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
       setUploadProgress(null);
