@@ -7,6 +7,7 @@ import {
   ChevronUp,
   UserCheck2,
   Sparkles,
+  ShieldCheck,
 } from "lucide-react";
 import { dateFormatter } from "../../utils/AdditionalFn";
 
@@ -35,6 +36,18 @@ const UserTeam = () => {
       );
     })
     .filter((team) => team.count > 0); // 👈 sirf wahi levels dikhao jinme members hain
+
+  // 👇 total users + total active users (saare levels milaake)
+  const totalUsers = formattedData.reduce(
+    (sum, team) => sum + (team.count || 0),
+    0,
+  );
+  const totalActiveUsers = formattedData.reduce(
+    (sum, team) =>
+      sum + (team.users?.filter((u) => u?.isVerified)?.length || 0),
+    0,
+  );
+  const totalInactiveUsers = totalUsers - totalActiveUsers;
 
   const formatINR = (value) =>
     `₹${(value || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -86,15 +99,51 @@ const UserTeam = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-white px-4 py-6">
       <div className="max-w-lg mx-auto space-y-6">
+        {/* ---------------- STATS SUMMARY ---------------- */}
+        <div className="grid grid-cols-2 gap-3.5">
+          <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm shadow-gray-100 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-200 flex-shrink-0">
+              <Users size={18} className="text-white" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-gray-900 font-extrabold text-lg leading-tight">
+                {totalUsers}
+              </p>
+              <p className="text-gray-400 text-xs font-medium truncate">
+                Total Team Members
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm shadow-gray-100 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-md shadow-green-200 flex-shrink-0">
+              <ShieldCheck size={18} className="text-white" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-gray-900 font-extrabold text-lg leading-tight">
+                {totalActiveUsers}
+              </p>
+              <p className="text-gray-400 text-xs font-medium truncate">
+                Active Members
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* ---------------- TEAM STRUCTURE ---------------- */}
         <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm shadow-gray-100">
-          <div className="flex items-center gap-2.5 mb-5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-200">
-              <Users size={16} className="text-white" />
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-200">
+                <Users size={16} className="text-white" />
+              </div>
+              <h2 className="text-gray-900 font-extrabold text-[17px] tracking-tight">
+                My Team Structure
+              </h2>
             </div>
-            <h2 className="text-gray-900 font-extrabold text-[17px] tracking-tight">
-              My Team Structure
-            </h2>
+            <span className="text-[11px] font-semibold text-gray-400">
+              {totalUsers} total · {totalActiveUsers} active
+            </span>
           </div>
 
           <div className="space-y-3.5 max-h-[560px] overflow-y-auto pr-1">

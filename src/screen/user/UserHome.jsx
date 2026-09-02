@@ -129,7 +129,7 @@ const UserHome = () => {
       type: "count",
     },
     {
-      label: "ACTIVE USERS",
+      label: " DIRECT ACTIVE USERS",
       sub: "Active Direct Referrals",
       value: user?.directActiveReferrals ?? 0,
       icon: UserCheck,
