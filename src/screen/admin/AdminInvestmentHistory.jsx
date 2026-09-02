@@ -151,9 +151,9 @@ const AdminDepositHistory = () => {
       key: "proofImage",
       label: "Proof",
       render: (val) =>
-        val?.proofImage?.url ? (
+        val?.url ? (
           <button
-            onClick={() => setPreviewImage(val.proofImage.url)}
+            onClick={() => setPreviewImage(val.url)}
             className="flex items-center gap-1 text-blue-600 hover:underline text-xs"
           >
             <ImageIcon size={14} />
