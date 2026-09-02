@@ -9,30 +9,23 @@ import {
   Wallet,
   ShieldCheck,
   ChevronRight,
-  IndianRupee,
   Info,
-  Loader2,
   CheckCircle2,
 } from "lucide-react";
-import { useDispatch, useSelector } from "react-redux";
-import { withdrawRequest } from "../../api/user.api";
+import { useSelector } from "react-redux";
 import useFetchProfile from "../../hooks/useFetchProfile";
-import { showSnackbar } from "../../redux/slices/snackbarSlice";
 import DepositModal from "../../components/all/DepositModel";
 
 const UserWallet = () => {
   const { fetchUserInfo } = useFetchProfile();
   const { user } = useSelector((state) => state.auth);
-
+  console.log(user);
+  console.log("Status field:", user?.status);
+  console.log("Status type:", typeof user?.status);
   const [activeTab, setActiveTab] = useState("deposit");
-  const [amount, setAmount] = useState("");
-  const [loading, setLoading] = useState(false);
   const [depositOpen, setDepositOpen] = useState(false);
   const [successData, setSuccessData] = useState(null);
-
-  const MIN_WITHDRAWAL_AMOUNT = 700;
-
-  const dispatch = useDispatch();
+  const [activationPopup, setActivationPopup] = useState(null); // { type: 'not-activated' | 'already-activated' }
 
   const balance = Number(user?.mainWallet || 0);
   const totalPayouts = Number(user?.totalPayouts || 0);
@@ -44,97 +37,20 @@ const UserWallet = () => {
     });
   };
 
-  const handleWithdraw = async () => {
-    const withdrawAmount = parseFloat(amount);
-
-    if (!amount) {
-      dispatch(
-        showSnackbar({
-          message: "Please enter an amount to withdraw.",
-          severity: "error",
-        }),
-      );
-      return;
-    }
-
-    if (withdrawAmount <= 0) {
-      dispatch(
-        showSnackbar({
-          message: "Amount must be greater than zero.",
-          severity: "error",
-        }),
-      );
-      return;
-    }
-
-    if (withdrawAmount < MIN_WITHDRAWAL_AMOUNT) {
-      dispatch(
-        showSnackbar({
-          message: `Minimum withdrawal is ₹${MIN_WITHDRAWAL_AMOUNT}.`,
-          severity: "error",
-        }),
-      );
-      return;
-    }
-
-    if (withdrawAmount > balance) {
-      dispatch(
-        showSnackbar({
-          message: "Insufficient balance.",
-          severity: "error",
-        }),
-      );
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      const response = await withdrawRequest({
-        amount: withdrawAmount,
-      });
-
-      if (response?.success) {
-        setSuccessData({
-          netAmount: response?.data?.netAmountSent || withdrawAmount * 0.95,
-          amount: response?.data?.amountRequested || withdrawAmount,
-          fee: response?.data?.feeDeducted || withdrawAmount * 0.05,
-          txHash: response?.data?.txHash,
-          token: response?.data?.token || "LLD",
-        });
-
-        setAmount("");
-        fetchUserInfo();
-      }
-    } catch (error) {
-      dispatch(
-        showSnackbar({
-          message:
-            error?.response?.data?.message ||
-            error?.message ||
-            "Failed to process withdrawal. Try again!",
-          severity: "error",
-        }),
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const quickAmount = (percentage) => {
-    const value = Math.floor((balance * percentage) / 100);
-
-    if (value >= MIN_WITHDRAWAL_AMOUNT) {
-      setAmount(value.toString());
+  const handleActivateClick = () => {
+    if (user?.status) {
+      // status true hai → Already Activated popup
+      setActivationPopup({ type: "already-activated" });
+    } else {
+      // status false hai → Deposit modal khol do
+      setDepositOpen(true);
     }
   };
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-6 pb-24">
       <div className="max-w-lg mx-auto space-y-5">
-        {/* =========================================
-            HEADER
-        ========================================= */}
+        {/* HEADER */}
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/20">
             <Wallet size={21} className="text-white" />
@@ -151,11 +67,8 @@ const UserWallet = () => {
           </div>
         </div>
 
-        {/* =========================================
-            MAIN BALANCE CARD
-        ========================================= */}
+        {/* MAIN BALANCE CARD */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 via-blue-600 to-indigo-600 p-5 shadow-xl shadow-blue-600/15">
-          {/* Decorative circles */}
           <div className="absolute -right-12 -top-12 w-36 h-36 rounded-full bg-white/10" />
           <div className="absolute -right-5 -bottom-16 w-32 h-32 rounded-full bg-white/5" />
 
@@ -225,9 +138,7 @@ const UserWallet = () => {
           </div>
         </div>
 
-        {/* =========================================
-            DEPOSIT / WITHDRAW TABS
-        ========================================= */}
+        {/* DEPOSIT / WITHDRAW TABS */}
         <div className="p-1.5 bg-white rounded-2xl border border-slate-200 shadow-sm">
           <div className="grid grid-cols-2 gap-1.5">
             <button
@@ -256,9 +167,7 @@ const UserWallet = () => {
           </div>
         </div>
 
-        {/* =========================================
-            DEPOSIT
-        ========================================= */}
+        {/* DEPOSIT / ACTIVATION */}
         {activeTab === "deposit" && (
           <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_8px_30px_rgba(15,23,42,0.05)] overflow-hidden">
             <div className="h-1 bg-gradient-to-r from-blue-600 to-indigo-500" />
@@ -292,8 +201,9 @@ const UserWallet = () => {
                 </div>
               </div>
 
+              {/* ACTIVATION BUTTON WITH POPUP LOGIC */}
               <button
-                onClick={() => setDepositOpen(true)}
+                onClick={handleActivateClick}
                 className="group mt-5 w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-lg shadow-blue-600/15 transition-all flex items-center justify-center gap-2"
               >
                 <Wallet size={17} />
@@ -312,10 +222,6 @@ const UserWallet = () => {
           </div>
         )}
 
-        {/* =========================================
-            WITHDRAW
-        ========================================= */}
-
         {/* Bottom security note */}
         <div className="flex items-center justify-center gap-1.5 pt-1">
           <ShieldCheck size={13} className="text-slate-400" />
@@ -326,13 +232,19 @@ const UserWallet = () => {
         </div>
       </div>
 
-      {/* =========================================
-          SUCCESS POPUP
-      ========================================= */}
+      {/* SUCCESS POPUP (withdrawal ke liye) */}
       {successData && (
         <WithdrawalRequestPopup
           data={successData}
           onClose={() => setSuccessData(null)}
+        />
+      )}
+
+      {/* ACTIVATION STATUS POPUP */}
+      {activationPopup && (
+        <ActivationStatusPopup
+          type={activationPopup.type}
+          onClose={() => setActivationPopup(null)}
         />
       )}
     </div>
@@ -340,67 +252,207 @@ const UserWallet = () => {
 };
 
 // ========================================
-// PREMIUM WITHDRAWAL SUCCESS POPUP
+// ACTIVATION STATUS POPUP COMPONENT
+// ========================================
+const ActivationStatusPopup = ({ type, onClose }) => {
+  const isNotActivated = type === "not-activated";
+
+  return (
+    <>
+      <style>{`
+        @keyframes popupFadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes popupScaleIn {
+          0% {
+            transform: scale(0.85) translateY(25px);
+            opacity: 0;
+          }
+          100% {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+          }
+        }
+        @keyframes iconPop {
+          0% {
+            transform: scale(0.5);
+            opacity: 0;
+          }
+          70% {
+            transform: scale(1.08);
+          }
+          100% {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+        @keyframes ringPulse {
+          0% {
+            transform: scale(0.85);
+            opacity: 0.6;
+          }
+          100% {
+            transform: scale(1.8);
+            opacity: 0;
+          }
+        }
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(12px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
+
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-sm"
+        style={{
+          animation: "popupFadeIn 0.25s ease-out",
+        }}
+        onClick={onClose}
+      >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="relative w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl"
+          style={{
+            animation: "popupScaleIn 0.35s cubic-bezier(0.34, 1.25, 0.64, 1)",
+          }}
+        >
+          {/* Top Accent */}
+          <div className="h-1 bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-500" />
+
+          {/* Close */}
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-700 transition-all"
+          >
+            <X size={16} />
+          </button>
+
+          <div className="p-7 pt-9">
+            {/* Success Icon */}
+            <div className="relative flex items-center justify-center h-24 mb-5">
+              <div
+                className="absolute w-20 h-20 rounded-full border-2 border-blue-200"
+                style={{
+                  animation: "ringPulse 1.5s ease-out infinite",
+                }}
+              />
+
+              <div
+                className="relative w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/25"
+                style={{
+                  animation: "iconPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                }}
+              >
+                {isNotActivated ? (
+                  <Info size={34} className="text-white" strokeWidth={2.3} />
+                ) : (
+                  <CheckCircle2
+                    size={34}
+                    className="text-white"
+                    strokeWidth={2.3}
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* Heading */}
+            <div
+              className="text-center"
+              style={{
+                animation: "slideUp 0.4s ease-out 0.15s both",
+              }}
+            >
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 mb-3">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                <span className="text-blue-600 text-[10px] font-bold uppercase tracking-wider">
+                  {isNotActivated ? "Account Status" : "Activation Status"}
+                </span>
+              </div>
+
+              <h2 className="text-slate-900 text-2xl font-extrabold tracking-tight">
+                {isNotActivated ? "Account Not Activated" : "Already Activated"}
+              </h2>
+
+              <p className="text-slate-500 text-xs mt-2 leading-5">
+                {isNotActivated
+                  ? "Your account is not activated yet. Please contact admin for activation."
+                  : "Your account is already activated. You can proceed with deposits and withdrawals."}
+              </p>
+            </div>
+
+            {/* Button */}
+            <button
+              onClick={onClose}
+              className="mt-6 w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-lg shadow-blue-600/15 transition-all active:scale-[0.98]"
+              style={{
+                animation: "slideUp 0.4s ease-out 0.25s both",
+              }}
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+// ========================================
+// WITHDRAWAL SUCCESS POPUP (PEHLE WALA HI)
 // ========================================
 const WithdrawalRequestPopup = ({ data, onClose }) => {
   return (
     <>
       <style>{`
         @keyframes popupFadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
-
         @keyframes popupScaleIn {
           0% {
             transform: scale(0.85) translateY(25px);
             opacity: 0;
           }
-
           100% {
             transform: scale(1) translateY(0);
             opacity: 1;
           }
         }
-
         @keyframes iconPop {
           0% {
             transform: scale(0.5);
             opacity: 0;
           }
-
           70% {
             transform: scale(1.08);
           }
-
           100% {
             transform: scale(1);
             opacity: 1;
           }
         }
-
         @keyframes ringPulse {
           0% {
             transform: scale(0.85);
             opacity: 0.6;
           }
-
           100% {
             transform: scale(1.8);
             opacity: 0;
           }
         }
-
         @keyframes slideUp {
           from {
             opacity: 0;
             transform: translateY(12px);
           }
-
           to {
             opacity: 1;
             transform: translateY(0);
@@ -462,7 +514,6 @@ const WithdrawalRequestPopup = ({ data, onClose }) => {
             >
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 mb-3">
                 <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
-
                 <span className="text-blue-600 text-[10px] font-bold uppercase tracking-wider">
                   Request Submitted
                 </span>
