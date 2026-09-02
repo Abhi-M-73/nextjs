@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   ArrowUpRight,
   ArrowDownLeft,
@@ -19,16 +19,19 @@ import DepositModal from "../../components/all/DepositModel";
 const UserWallet = () => {
   const { fetchUserInfo } = useFetchProfile();
   const { user } = useSelector((state) => state.auth);
-  console.log(user);
-  console.log("Status field:", user?.status);
-  console.log("Status type:", typeof user?.status);
+
   const [activeTab, setActiveTab] = useState("deposit");
   const [depositOpen, setDepositOpen] = useState(false);
   const [successData, setSuccessData] = useState(null);
-  const [activationPopup, setActivationPopup] = useState(null); // { type: 'not-activated' | 'already-activated' }
+  const [activationPopup, setActivationPopup] = useState(null);
 
   const balance = Number(user?.mainWallet || 0);
   const totalPayouts = Number(user?.totalPayouts || 0);
+
+  // Display amount (UI me dikhega)
+  const DISPLAY_AMOUNT = 1199;
+  // Actual amount (payload me jayega)
+  const ACTUAL_AMOUNT = 999;
 
   const formatCurrency = (value) => {
     return Number(value || 0).toLocaleString("en-IN", {
@@ -39,10 +42,8 @@ const UserWallet = () => {
 
   const handleActivateClick = () => {
     if (user?.status) {
-      // status true hai → Already Activated popup
       setActivationPopup({ type: "already-activated" });
     } else {
-      // status false hai → Deposit modal khol do
       setDepositOpen(true);
     }
   };
@@ -201,7 +202,6 @@ const UserWallet = () => {
                 </div>
               </div>
 
-              {/* ACTIVATION BUTTON WITH POPUP LOGIC */}
               <button
                 onClick={handleActivateClick}
                 className="group mt-5 w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-lg shadow-blue-600/15 transition-all flex items-center justify-center gap-2"
@@ -217,12 +217,13 @@ const UserWallet = () => {
               <DepositModal
                 open={depositOpen}
                 onClose={() => setDepositOpen(false)}
+                displayAmount={DISPLAY_AMOUNT}
+                actualAmount={ACTUAL_AMOUNT}
               />
             </div>
           </div>
         )}
 
-        {/* Bottom security note */}
         <div className="flex items-center justify-center gap-1.5 pt-1">
           <ShieldCheck size={13} className="text-slate-400" />
 
@@ -232,7 +233,6 @@ const UserWallet = () => {
         </div>
       </div>
 
-      {/* SUCCESS POPUP (withdrawal ke liye) */}
       {successData && (
         <WithdrawalRequestPopup
           data={successData}
@@ -240,7 +240,6 @@ const UserWallet = () => {
         />
       )}
 
-      {/* ACTIVATION STATUS POPUP */}
       {activationPopup && (
         <ActivationStatusPopup
           type={activationPopup.type}
@@ -405,7 +404,7 @@ const ActivationStatusPopup = ({ type, onClose }) => {
 };
 
 // ========================================
-// WITHDRAWAL SUCCESS POPUP (PEHLE WALA HI)
+// WITHDRAWAL SUCCESS POPUP
 // ========================================
 const WithdrawalRequestPopup = ({ data, onClose }) => {
   return (
