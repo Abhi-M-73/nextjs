@@ -222,7 +222,7 @@ const AdminLevelIncomeHistory = () => {
       render: (value) => value ?? "—",
     },
     {
-      key: "creditedAt",
+      key: "createdAt",
       label: "Credited On",
       render: (value) => (value ? dateFormatter(value) : "—"),
     },
