@@ -79,6 +79,12 @@ const UserLevelIncomeHistory = () => {
                   "Unknown"}
               </p>
             </div>
+            <div>
+              <p className="text-gray-400 text-[10px]">Member ID</p>
+              <p className="text-gray-900 text-[10px] uppercase font-medium mt-0.5">
+                {item?.fromUserId?.name || "Unknown"}
+              </p>
+            </div>
 
             <div className="text-center">
               <p className="text-gray-400 text-[10px]">Member Name</p>

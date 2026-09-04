@@ -171,11 +171,29 @@ const AdminLevelIncomeHistory = () => {
       ),
     },
     {
+      key: "name",
+      label: "Earned By Name",
+      render: (_, row) => (
+        <span className="font-semibold text-slate-700">
+          {row?.userId?.name?.toUpperCase() || "—"}
+        </span>
+      ),
+    },
+    {
       key: "fromUsername",
       label: "From Downline",
       render: (_, row) => (
         <span className="text-slate-600">
           {row?.fromUserId?.username?.toUpperCase() || "—"}
+        </span>
+      ),
+    },
+    {
+      key: "fromName",
+      label: "From Downline Name",
+      render: (_, row) => (
+        <span className="text-slate-600">
+          {row?.fromUserId?.name?.toUpperCase() || "—"}
         </span>
       ),
     },
@@ -212,43 +230,6 @@ const AdminLevelIncomeHistory = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
-      {/* Top Navigation Bar */}
-      <div className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div>
-            <h1 className="bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-xl font-bold text-transparent">
-              Level Income History
-            </h1>
-            <p className="text-xs text-slate-500">
-              Track income generated from the referral network
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {lastUpdated && (
-              <div className="hidden items-center gap-1.5 text-xs text-slate-500 sm:flex">
-                <Calendar className="h-3.5 w-3.5" />
-                <span>Updated: {lastUpdated.toLocaleTimeString()}</span>
-              </div>
-            )}
-
-            <button
-              type="button"
-              onClick={fetchLevelHistory}
-              disabled={loading}
-              title="Refresh level income history"
-              className="rounded-lg p-2 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <RefreshCw
-                className={`h-4 w-4 text-slate-600 ${
-                  loading ? "animate-spin" : ""
-                }`}
-              />
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* Main Content */}
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Section Header */}
