@@ -25,12 +25,13 @@ import {
 import { useNavigate } from "react-router-dom";
 import useFetchProfile from "../../hooks/useFetchProfile";
 import dashboardImage from "../../assets/dashboardImg.png";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { showSnackbar } from "../../redux/slices/snackbarSlice";
 
 const UserHome = () => {
   const { user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
   const { fetchUserInfo } = useFetchProfile();
-  const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -42,6 +43,50 @@ const UserHome = () => {
     month: "short",
     year: "numeric",
   });
+
+  const referralLink = `${window.location.origin}/auth/register?referredBy=${user?.referralCode}`;
+
+  const handleInviteShare = async () => {
+    const shareData = {
+      title: "Join now!",
+      text: `Use my referral code ${user?.referralCode} and join now 🚀`,
+      url: referralLink,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        // user ne share cancel kiya to chup chap ignore
+        if (err.name !== "AbortError") {
+          dispatch(
+            showSnackbar({
+              message: "Unable to share right now.",
+              severity: "error",
+            }),
+          );
+        }
+      }
+    } else {
+      // fallback: share API support nahi (desktop) -> copy kar do
+      try {
+        await navigator.clipboard.writeText(referralLink);
+        dispatch(
+          showSnackbar({
+            message: "Referral link copied to clipboard! 📋",
+            severity: "success",
+          }),
+        );
+      } catch {
+        dispatch(
+          showSnackbar({
+            message: "Failed to copy referral link. Try again! ❌",
+            severity: "error",
+          }),
+        );
+      }
+    }
+  };
 
   const overviewCards = [
     {
@@ -174,9 +219,7 @@ const UserHome = () => {
       <div className="max-w-lg mx-auto space-y-7">
         {/* Hero */}
         <div className="relative overflow-hidden mx-3 mt-3 rounded-2xl shadow-lg shadow-blue-100">
-          {/* Banner Image */}
           <img src={dashboardImage} alt="Dashboard" className="w-full h-auto" />
-
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/10 to-transparent" />
         </div>
 
@@ -266,7 +309,6 @@ const UserHome = () => {
                   className="group text-center relative bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-blue-100/60 hover:-translate-y-0.5 hover:border-blue-100 transition-all duration-300 ease-out flex flex-col items-center overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-50/0 to-blue-50/0 group-hover:from-blue-50/60 group-hover:to-transparent transition-all duration-300" />
-
                   <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mb-2.5 shadow-md shadow-blue-200 group-hover:scale-110 transition-transform duration-300">
                     <Icon size={20} className="text-white" strokeWidth={2} />
                   </div>
@@ -289,7 +331,6 @@ const UserHome = () => {
         {/* Invite banner */}
         <div className="px-5">
           <div className="relative flex items-center justify-between bg-gradient-to-br from-blue-600 via-blue-600 to-indigo-700 rounded-2xl p-5 shadow-lg shadow-blue-200 overflow-hidden">
-            {/* Decorative glow circles */}
             <div className="pointer-events-none absolute -top-8 -right-8 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
             <div className="pointer-events-none absolute -bottom-10 -left-6 w-28 h-28 bg-white/10 rounded-full blur-2xl" />
 
@@ -307,7 +348,7 @@ const UserHome = () => {
               </div>
             </div>
             <Button
-              onClick={() => navigate("/user/profile")}
+              onClick={handleInviteShare}
               endIcon={<ChevronRight size={16} />}
               sx={{
                 background: "#fff",
