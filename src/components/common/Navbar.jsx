@@ -53,10 +53,11 @@ const Navbar = () => {
       `}</style>
 
       <div
-        className={`flex items-center justify-between w-full px-5 py-2.5 border transition-all duration-500 ${scrolled
+        className={`flex items-center justify-between w-full px-5 py-2.5 border transition-all duration-500 ${
+          scrolled
             ? "bg-white/90 border-slate-200 shadow-[0_8px_32px_-8px_rgba(15,23,42,0.15)]"
             : "border-gray-200"
-          } backdrop-blur-xl md:px-20`}
+        } backdrop-blur-xl md:px-20`}
       >
         {/* Logo */}
         <div className="flex gap-2.5 shrink-0">
@@ -67,10 +68,11 @@ const Navbar = () => {
             <h1 className="text-slate-900 font-bold text-xl leading-none tracking-tight">
               BINEXT
             </h1>
-            <span className="text-xs font-normal text-slate-500">Invest Today, Grow Tomorrow</span>
+            <span className="text-xs font-normal text-slate-500">
+              Invest Today, Grow Tomorrow
+            </span>
           </div>
         </div>
-
 
         {/* Right */}
         {/* <div className="hidden md:flex items-center gap-4 shrink-0">
@@ -136,13 +138,13 @@ const Navbar = () => {
 
             <Link
               to="/auth/login"
-              className="text-slate-500 text-sm font-medium py-2 hover:text-slate-900 transition-colors"
+              className="text-white text-sm font-medium py-2 px-4 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:scale-[1.02] transition-transform shadow-[0_6px_20px_rgba(16,185,129,0.35)]"
             >
               Log In
             </Link>
             <Link
               to="/auth/register"
-              className="px-4 py-3 rounded-full bg-gradient-to-r from-blue-600 to-indigo-500 text-white text-sm font-semibold hover:scale-[1.02] transition-transform shadow-[0_6px_20px_rgba(37,99,235,0.35)]"
+              className="px-4 py-3 rounded-full bg-gradient-to-r from-orange-500 to-pink-500 text-white text-sm font-semibold hover:scale-[1.02] transition-transform shadow-[0_6px_20px_rgba(249,115,22,0.35)]"
             >
               Register Now
             </Link>

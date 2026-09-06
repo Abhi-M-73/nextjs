@@ -130,7 +130,7 @@ const UserHeader = () => {
   const { user } = useSelector((state) => state.auth);
 
   // status assume kar raha hu backend se aata hoga user.isActive ya user.status
-  const isActive = user?.isActive === true || user?.status === "active";
+  const isActive = user?.status === true || user?.status === true;
 
   const [anchorEl, setAnchorEl] = useState(null);
   const menuOpen = Boolean(anchorEl);
@@ -166,7 +166,7 @@ const UserHeader = () => {
               className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white ${
                 isActive ? "bg-green-500" : "bg-gray-400"
               }`}
-              title={isActive ? "Active" : "Inactive"}
+              title={status ? "Active" : "Inactive"}
             />
           </span>
           <ChevronDown
