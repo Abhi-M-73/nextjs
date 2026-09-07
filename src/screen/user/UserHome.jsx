@@ -138,6 +138,18 @@ const UserHome = () => {
       type: "currency",
     },
     {
+      label: "TODAY LEVEL INCOME",
+      sub: "Today Level Earnings",
+      value: user?.todayLevel ?? 0,
+      icon: TrendingUp,
+      gradient: "from-indigo-500 to-indigo-600",
+      iconBg: "bg-indigo-50",
+      iconColor: "text-indigo-600",
+      barGradient: "from-indigo-400 to-indigo-600",
+      onClick: () => navigate("/user/history"),
+      type: "currency",
+    },
+    {
       label: "LEVEL INCOME",
       sub: "Total Level Earnings",
       value: user?.levelIncome ?? 0,
@@ -146,7 +158,7 @@ const UserHome = () => {
       iconBg: "bg-indigo-50",
       iconColor: "text-indigo-600",
       barGradient: "from-indigo-400 to-indigo-600",
-      onClick: () => navigate("/user/income/level"),
+      onClick: () => navigate("/user/history"),
       type: "currency",
     },
     {

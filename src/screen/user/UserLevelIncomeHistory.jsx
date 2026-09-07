@@ -12,7 +12,13 @@ const UserLevelIncomeHistory = () => {
       setLoading(true);
       const res = await getLevelIncomeHistory();
       if (res?.success) {
-        setLevelIncomeHistory(res.data || []);
+        const sorted = [...(res.data || [])].sort((a, b) => {
+          // pehle level ke hisaab se (1,2,3...)
+          if (a.level !== b.level) return a.level - b.level;
+          // same level ho to latest date pehle
+          return new Date(b.creditedAt) - new Date(a.creditedAt);
+        });
+        setLevelIncomeHistory(sorted);
       }
     } catch (err) {
       console.log("Error fetching level income history:", err);

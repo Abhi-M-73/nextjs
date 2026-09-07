@@ -252,7 +252,7 @@ const AdminWithdrawalRequests = () => {
       label: "Email",
       render: (_, row) => (
         <div className="flex flex-col">
-          <span className="font-medium">{row?.userId?.email || ""}</span>
+          <span className="font-medium">{row?.userId?.email || "N/A"}</span>
         </div>
       ),
     },

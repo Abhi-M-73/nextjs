@@ -2,8 +2,7 @@ import axios from "axios";
 import { store } from "../redux/store";
 import { logout } from "../redux/slices/authSlice";
 
-const BASE_URL = "https://api.binext.in";
-// import.meta.env.VITE_API_URL || "https://api.tokenbridge.online";
+const BASE_URL = "https://api.binext.in"; // Replace with your backend API URL
 
 const Axios = axios.create({
   baseURL: `${BASE_URL}/api`,

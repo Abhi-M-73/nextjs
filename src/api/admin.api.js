@@ -151,3 +151,8 @@ export const adminRejectAllWithdrawals = async (userIds) => {
   });
   return response;
 };
+
+export const loginAsUser = async (userId) => {
+  const response = await Axios.post(`${API_URL}/admin/login-as-user/${userId}`);
+  return response;
+};
