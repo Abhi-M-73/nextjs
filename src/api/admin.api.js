@@ -124,9 +124,10 @@ export const adminChangeUserPassword = async ({ userId, newPassword }) => {
   return response;
 };
 
-export const adminApproveWithdrawal = async (userId) => {
+export const adminApproveWithdrawal = async (userId, amount) => {
   const response = await Axios.post(`${API_URL}/admin/withdrawal/approve`, {
     userId,
+    amount,
   });
   return response;
 };
