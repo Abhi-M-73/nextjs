@@ -16,7 +16,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { showSnackbar } from "../../redux/slices/snackbarSlice";
 import { Button } from "@mui/material";
-import { logout } from "../../redux/slices/authSlice";
+import { logout, setToken, setUser } from "../../redux/slices/authSlice";
 import { dateFormatter } from "../../utils/AdditionalFn";
 
 const UserProfile = () => {
@@ -76,8 +76,23 @@ const UserProfile = () => {
       });
   };
 
+  const isImpersonating = Boolean(sessionStorage.getItem("adminBackupToken"));
+
   const handleLogout = () => {
     dispatch(logout());
+  };
+
+  const handleBackToAdmin = () => {
+    const adminToken = sessionStorage.getItem("adminBackupToken");
+    const adminUser = sessionStorage.getItem("adminBackupUser");
+    if (!adminToken) return;
+    dispatch(setToken(adminToken));
+    dispatch(setUser(adminUser ? JSON.parse(adminUser) : null));
+    sessionStorage.removeItem("adminBackupToken");
+    sessionStorage.removeItem("adminBackupUser");
+    sessionStorage.removeItem("user");
+    sessionStorage.removeItem("token");
+    window.location.replace("/admin/dashboard");
   };
 
   const formatINR = (val) =>
@@ -183,11 +198,10 @@ const UserProfile = () => {
             return (
               <div
                 key={item.label}
-                className={`flex justify-between items-center py-3.5 text-sm ${
-                  idx !== incomeBreakdown.length - 1
-                    ? "border-b border-gray-50"
-                    : ""
-                }`}
+                className={`flex justify-between items-center py-3.5 text-sm ${idx !== incomeBreakdown.length - 1
+                  ? "border-b border-gray-50"
+                  : ""
+                  }`}
               >
                 <div className="flex items-center gap-2.5 text-gray-500 font-medium">
                   <div className="w-7 h-7 rounded-lg bg-gray-50 flex items-center justify-center">
@@ -259,20 +273,39 @@ const UserProfile = () => {
             </div>
           </a>
 
-          <button
-            onClick={handleLogout}
-            className="group w-full flex items-center justify-between bg-red-50 border border-red-100 rounded-xl px-4 py-3.5 hover:bg-red-100 transition-all duration-300 text-red-500"
-          >
-            <div className="flex items-center gap-2.5 font-semibold">
-              <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center group-hover:bg-red-500 transition-colors duration-300">
-                <LogOut
-                  size={14}
-                  className="text-red-500 group-hover:text-white transition-colors duration-300"
-                />
+          {isImpersonating ? (
+            <button
+              onClick={handleBackToAdmin}
+              className="group w-full flex items-center justify-between bg-red-50 border border-red-100 rounded-xl px-4 py-3.5 hover:bg-red-100 transition-all duration-300 text-red-500"
+            >
+              <div className="flex items-center gap-2.5 font-semibold">
+                <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center group-hover:bg-red-500 transition-colors duration-300">
+                  <LogOut
+                    size={14}
+                    className="text-red-500 group-hover:text-white transition-colors duration-300"
+                  />
+                </div>
+                Back to Admin
               </div>
-              Logout
-            </div>
-          </button>
+            </button>
+          ) : (
+            <button
+              onClick={handleLogout}
+              className="group w-full flex items-center justify-between bg-red-50 border border-red-100 rounded-xl px-4 py-3.5 hover:bg-red-100 transition-all duration-300 text-red-500"
+            >
+              <div className="flex items-center gap-2.5 font-semibold">
+                <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center group-hover:bg-red-500 transition-colors duration-300">
+                  <LogOut
+                    size={14}
+                    className="text-red-500 group-hover:text-white transition-colors duration-300"
+                  />
+                </div>
+                Logout
+              </div>
+            </button>
+          )}
+
+
           <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm shadow-gray-100">
             <div className="flex items-center gap-2.5 mb-4">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-200">
