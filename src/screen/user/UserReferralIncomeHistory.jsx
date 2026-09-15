@@ -25,8 +25,11 @@ const UserReferralIncomeHistory = () => {
     fetchReferralIncomeHistory();
   }, []);
 
-  const formatINR = (val) =>
-    `₹${(val || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const formatUSD = (val) =>
+    `${Number(val || 0).toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })} USDT`;
 
   return (
     <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
@@ -40,7 +43,7 @@ const UserReferralIncomeHistory = () => {
       {/* Empty */}
       {!loading && referralIncomeHistory.length === 0 && (
         <p className="text-center text-gray-400 text-sm py-6">
-          No referral income yet
+          No Affiliate income yet
         </p>
       )}
 
@@ -58,7 +61,7 @@ const UserReferralIncomeHistory = () => {
               </div>
               <div>
                 <p className="text-gray-900 text-sm font-semibold">
-                  Referral Bonus
+                  Affiliate Income
                 </p>
                 <p className="text-gray-400 text-xs">
                   {dateFormatter(item.createdAt)}
@@ -67,7 +70,7 @@ const UserReferralIncomeHistory = () => {
             </div>
 
             <p className="text-green-600 font-bold text-md">
-              +{formatINR(item.amount)}
+              +{formatUSD(item.amount)}
             </p>
           </div>
 
@@ -80,10 +83,17 @@ const UserReferralIncomeHistory = () => {
               </p>
             </div>
 
-            <div className="text-right">
-              <p className="text-gray-400">Package Amount</p>
+            <div className="text-center">
+              <p className="text-gray-400">Deposit Amount</p>
               <p className="text-gray-900 font-medium mt-0.5">
-                {formatINR("1199")}
+                {formatUSD(item.baseAmount)}
+              </p>
+            </div>
+
+            <div className="text-right">
+              <p className="text-gray-400">Bonus %</p>
+              <p className="text-gray-900 font-medium mt-0.5">
+                {item.percent}%
               </p>
             </div>
           </div>

@@ -7,7 +7,6 @@ import AuthLayout from "../layout/AuthLayout";
 import Impersonate from "../screen/landing/Impersonate";
 
 const AuthRoutes = () => {
-  console.log("AuthRoutes MOUNTED, path:", window.location.pathname);
   return (
     <Routes>
       <Route path="/impersonate" element={<Impersonate />} />

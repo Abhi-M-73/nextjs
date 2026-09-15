@@ -87,12 +87,12 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center bg-gradient-to-b from-slate-50 via-white to-blue-50/40 w-full px-4 overflow-hidden">
-      {/* Ambient glow background */}
-      <div className="pointer-events-none absolute -top-40 -left-32 w-96 h-96 bg-blue-200/40 rounded-full blur-[120px]" />
-      <div className="pointer-events-none absolute -bottom-40 -right-32 w-96 h-96 bg-indigo-200/40 rounded-full blur-[120px]" />
+    <div className="min-h-screen relative flex items-center justify-center bg-white w-full px-4 overflow-hidden">
+      {/* Subtle ambient tint, no blur glow */}
+      <div className="pointer-events-none absolute -top-40 -left-32 w-96 h-96 bg-blue-50 rounded-full" />
+      <div className="pointer-events-none absolute -bottom-40 -right-32 w-96 h-96 bg-indigo-50 rounded-full" />
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.03]"
+        className="pointer-events-none absolute inset-0 opacity-[0.025]"
         style={{
           backgroundImage:
             "linear-gradient(#1d4ed8 1px, transparent 1px), linear-gradient(90deg, #1d4ed8 1px, transparent 1px)",
@@ -100,9 +100,9 @@ const Login = () => {
         }}
       />
 
-      <div className="relative w-full max-w-[440px] bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl shadow-blue-100 border border-white py-8">
+      <div className="relative w-full max-w-[440px] bg-white rounded-3xl border border-gray-100 py-8">
         {/* subtle top accent line */}
-        <div className="absolute top-0 left-8 right-8 h-px bg-gradient-to-r from-transparent via-blue-400/60 to-transparent" />
+        <div className="absolute top-0 left-8 right-8 h-px bg-gradient-to-r from-transparent via-blue-400/50 to-transparent" />
 
         <div className="w-full flex justify-between items-center mb-6 px-6">
           <div>
@@ -116,14 +116,11 @@ const Login = () => {
               Login
             </Link>
           </div>
-          <div className="relative">
-            <div className="absolute inset-0 bg-blue-400/20 rounded-full blur-lg" />
-            <img
-              src={loginPageElement}
-              className="relative h-16 w-16 object-cover rounded-full ring-2 ring-blue-100"
-              alt="img"
-            />
-          </div>
+          <img
+            src={loginPageElement}
+            className="h-16 w-16 object-cover rounded-full ring-1 ring-blue-100"
+            alt="img"
+          />
         </div>
 
         <div className="px-6">
@@ -133,11 +130,11 @@ const Login = () => {
                 USERNAME <span className="text-red-500">*</span>
               </label>
               <div
-                className={`flex items-center gap-2.5 rounded-xl border transition-all duration-300 bg-gray-50 px-3.5 ${
+                className={`flex items-center gap-2.5 rounded-xl border transition-colors duration-200 bg-gray-50 px-3.5 ${
                   errors.email
                     ? "border-red-400"
                     : focusedField === "email"
-                      ? "border-blue-500 bg-white shadow-[0_0_0_3px_rgba(37,99,235,0.12)]"
+                      ? "border-blue-500 bg-white"
                       : "border-gray-200"
                 }`}
               >
@@ -171,11 +168,11 @@ const Login = () => {
                 PASSWORD <span className="text-red-500">*</span>
               </label>
               <div
-                className={`flex items-center gap-2.5 rounded-xl border transition-all duration-300 bg-gray-50 px-3.5 ${
+                className={`flex items-center gap-2.5 rounded-xl border transition-colors duration-200 bg-gray-50 px-3.5 ${
                   errors.password
                     ? "border-red-400"
                     : focusedField === "password"
-                      ? "border-blue-500 bg-white shadow-[0_0_0_3px_rgba(37,99,235,0.12)]"
+                      ? "border-blue-500 bg-white"
                       : "border-gray-200"
                 }`}
               >
@@ -245,17 +242,17 @@ const Login = () => {
               disabled={loading}
               startIcon={!loading && <LoginIcon />}
               sx={{
-                background: "linear-gradient(135deg, #2563eb, #4338ca)",
+                background: "#2867ef",
                 color: "#fff",
                 fontWeight: 800,
                 textTransform: "none",
                 borderRadius: "12px",
                 py: 1.3,
                 fontSize: "15px",
-                boxShadow: "0 8px 24px rgba(37,99,235,0.3)",
+                boxShadow: "none",
                 "&:hover": {
-                  background: "linear-gradient(135deg, #1d4ed8, #3730a3)",
-                  boxShadow: "0 10px 28px rgba(37,99,235,0.4)",
+                  background: "#1550d3",
+                  boxShadow: "none",
                 },
                 "&.Mui-disabled": {
                   background: "rgba(37,99,235,0.2)",

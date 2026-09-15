@@ -1,0 +1,14 @@
+{
+  "nav": {
+    "home": "Home",
+    "packages": "Packages",
+    "howItWorks": "How it works",
+    "faq": "FAQ"
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "getStarted": "Get started",
+    "username": "Username",
+    "password": "Password"
+  }
+}

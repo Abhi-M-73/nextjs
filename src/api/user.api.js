@@ -46,7 +46,7 @@ export const stakeDepositLLD = async (payload) => {
 };
 
 export const withdrawRequest = async (payload) => {
-  const response = await Axios.post(`${API_URL}/withdraw123`, payload, {
+  const response = await Axios.post(`${API_URL}/withdraw`, payload, {
     timeout: 120000,
   });
   return response;
@@ -84,6 +84,10 @@ export const getReactivationCapHistory = async () => {
 
 export const addBankAccount = async (payload) => {
   const response = await Axios.post(`${API_URL}/add-bank`, payload);
+  return response;
+};
+export const purchase = async (payload) => {
+  const response = await Axios.post(`${API_URL}/purchase`, payload);
   return response;
 };
 

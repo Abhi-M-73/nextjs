@@ -1,16 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   Wallet,
   Link,
   LogOut,
   Send,
-  TrendingUp,
   Users,
   Layers,
   ArrowDownToLine,
   Banknote,
   Clock,
-  PackageX,
   Copy,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
@@ -24,44 +22,13 @@ const UserProfile = () => {
   const referralLink = `${window.location.origin}/auth/register?referredBy=${user?.referralCode}`;
   const dispatch = useDispatch();
 
-  const [timeLeft, setTimeLeft] = useState(null);
-
-  useEffect(() => {
-    if (!user?.packageExpiryDate) {
-      setTimeLeft(null);
-      return;
-    }
-
-    const calculateTimeLeft = () => {
-      const expiry = new Date(user.packageExpiryDate).getTime();
-      const now = new Date().getTime();
-      const diff = expiry - now;
-
-      if (diff <= 0) {
-        setTimeLeft({ expired: true });
-        return;
-      }
-
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-      const minutes = Math.floor((diff / (1000 * 60)) % 60);
-      const seconds = Math.floor((diff / 1000) % 60);
-
-      setTimeLeft({ days, hours, minutes, seconds, expired: false });
-    };
-
-    calculateTimeLeft();
-    const interval = setInterval(calculateTimeLeft, 1000);
-    return () => clearInterval(interval);
-  }, [user?.packageExpiryDate]);
-
   const handleCopy = () => {
     navigator.clipboard
       .writeText(referralLink)
       .then(() => {
         dispatch(
           showSnackbar({
-            message: "Referral link copied to clipboard! 📋",
+            message: "Referral link copied to clipboard!",
             severity: "success",
           }),
         );
@@ -95,8 +62,8 @@ const UserProfile = () => {
     window.location.replace("/admin/dashboard");
   };
 
-  const formatINR = (val) =>
-    `₹${(val || 0).toLocaleString("en-IN", {
+  const formatUSD = (val) =>
+    `$${(val || 0).toLocaleString("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`;
@@ -104,13 +71,13 @@ const UserProfile = () => {
   const stats = [
     {
       label: "Available Balance",
-      value: formatINR(user?.mainWallet),
+      value: formatUSD(user?.mainWallet),
       icon: Wallet,
       gradient: "from-indigo-500 to-blue-600",
     },
     {
       label: "Total Payouts",
-      value: formatINR(user?.totalPayouts),
+      value: formatUSD(user?.totalPayouts),
       icon: Banknote,
       gradient: "from-amber-500 to-orange-500",
     },
@@ -118,12 +85,15 @@ const UserProfile = () => {
 
   const incomeBreakdown = [
     {
-      label: "Cashback Income",
-      value: user?.cashbackWallet,
+      label: "Total Payouts",
+      value: user?.totalPayouts,
       icon: ArrowDownToLine,
     },
-    { label: "Referral Income", value: user?.directReferalAmount, icon: Users },
-    { label: "Level Income", value: user?.levelIncome, icon: Layers },
+    {
+      label: "Affiliate Income",
+      value: user?.directReferalAmount,
+      icon: Users,
+    },
   ];
 
   return (
@@ -150,7 +120,43 @@ const UserProfile = () => {
           </p>
         </div>
 
-        {/* Package Expiry / Countdown Section */}
+        {/* Referral Section */}
+        <div className="bg-white border border-gray-100 rounded-2xl p-5 space-y-3 shadow-sm shadow-gray-100">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-200">
+              <Link size={16} className="text-white" />
+            </div>
+            <h2 className="text-gray-900 font-extrabold text-[15px] tracking-tight">
+              Referral Info
+            </h2>
+          </div>
+
+          <p className="text-gray-500 text-sm break-all bg-gray-50 border border-gray-100 rounded-xl px-3.5 py-2.5">
+            {referralLink}
+          </p>
+
+          <Button
+            variant="contained"
+            fullWidth
+            size="small"
+            startIcon={<Copy size={15} />}
+            onClick={handleCopy}
+            sx={{
+              background: "linear-gradient(135deg, #2563eb, #4338ca)",
+              textTransform: "none",
+              fontWeight: 700,
+              borderRadius: "999px",
+              boxShadow: "0 4px 14px rgba(37,99,235,0.3)",
+              py: 1.1,
+              "&:hover": {
+                background: "linear-gradient(135deg, #1d4ed8, #3730a3)",
+                boxShadow: "0 6px 18px rgba(37,99,235,0.4)",
+              },
+            }}
+          >
+            Copy Referral Link
+          </Button>
+        </div>
 
         {/* Financial Stats Grid */}
         <div>
@@ -198,10 +204,11 @@ const UserProfile = () => {
             return (
               <div
                 key={item.label}
-                className={`flex justify-between items-center py-3.5 text-sm ${idx !== incomeBreakdown.length - 1
-                  ? "border-b border-gray-50"
-                  : ""
-                  }`}
+                className={`flex justify-between items-center py-3.5 text-sm ${
+                  idx !== incomeBreakdown.length - 1
+                    ? "border-b border-gray-50"
+                    : ""
+                }`}
               >
                 <div className="flex items-center gap-2.5 text-gray-500 font-medium">
                   <div className="w-7 h-7 rounded-lg bg-gray-50 flex items-center justify-center">
@@ -210,49 +217,11 @@ const UserProfile = () => {
                   {item.label}
                 </div>
                 <span className="text-gray-900 font-extrabold">
-                  {formatINR(item.value)}
+                  {formatUSD(item.value)}
                 </span>
               </div>
             );
           })}
-        </div>
-
-        {/* Referral Section */}
-        <div className="bg-white border border-gray-100 rounded-2xl p-5 space-y-3 shadow-sm shadow-gray-100">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-200">
-              <Link size={16} className="text-white" />
-            </div>
-            <h2 className="text-gray-900 font-extrabold text-[15px] tracking-tight">
-              Referral Info
-            </h2>
-          </div>
-
-          <p className="text-gray-500 text-sm break-all bg-gray-50 border border-gray-100 rounded-xl px-3.5 py-2.5">
-            {referralLink}
-          </p>
-
-          <Button
-            variant="contained"
-            fullWidth
-            size="small"
-            startIcon={<Copy size={15} />}
-            onClick={handleCopy}
-            sx={{
-              background: "linear-gradient(135deg, #2563eb, #4338ca)",
-              textTransform: "none",
-              fontWeight: 700,
-              borderRadius: "999px",
-              boxShadow: "0 4px 14px rgba(37,99,235,0.3)",
-              py: 1.1,
-              "&:hover": {
-                background: "linear-gradient(135deg, #1d4ed8, #3730a3)",
-                boxShadow: "0 6px 18px rgba(37,99,235,0.4)",
-              },
-            }}
-          >
-            Copy Referral Link
-          </Button>
         </div>
 
         <div className="bg-white border border-gray-100 rounded-2xl p-5 space-y-3 shadow-sm shadow-gray-100">
@@ -304,72 +273,6 @@ const UserProfile = () => {
               </div>
             </button>
           )}
-
-
-          <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm shadow-gray-100">
-            <div className="flex items-center gap-2.5 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-200">
-                <Clock size={16} className="text-white" />
-              </div>
-              <h2 className="text-gray-900 font-extrabold text-[15px] tracking-tight">
-                Package Expiry
-              </h2>
-            </div>
-
-            {!user?.packageExpiryDate ? (
-              <div className="flex flex-col items-center justify-center py-6 text-center">
-                <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-2">
-                  <PackageX size={22} className="text-red-500" />
-                </div>
-                <p className="text-gray-900 font-semibold text-sm">
-                  No Active Investment
-                </p>
-                <p className="text-gray-400 text-xs mt-1">
-                  Purchase a package to activate your countdown
-                </p>
-              </div>
-            ) : timeLeft?.expired ? (
-              <div className="flex flex-col items-center justify-center py-6 text-center">
-                <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-2">
-                  <PackageX size={22} className="text-red-500" />
-                </div>
-                <p className="text-red-500 font-semibold text-sm">
-                  Package Expired
-                </p>
-                <p className="text-gray-400 text-xs mt-1">
-                  {user?.packageExpiryDate
-                    ? dateFormatter(user.packageExpiryDate)
-                    : "--"}
-                </p>
-              </div>
-            ) : timeLeft ? (
-              <div>
-                <div className="grid grid-cols-4 gap-2.5">
-                  {[
-                    { label: "Days", value: timeLeft.days },
-                    { label: "Hours", value: timeLeft.hours },
-                    { label: "Mins", value: timeLeft.minutes },
-                    { label: "Secs", value: timeLeft.seconds },
-                  ].map((unit) => (
-                    <div
-                      key={unit.label}
-                      className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-xl py-3 text-center"
-                    >
-                      <p className="text-xl font-extrabold text-blue-700 tabular-nums">
-                        {String(unit.value).padStart(2, "0")}
-                      </p>
-                      <p className="text-[10px] text-blue-500 font-semibold mt-0.5">
-                        {unit.label}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-gray-400 text-xs mt-3.5 text-center">
-                  Expires on {dateFormatter(user.packageExpiryDate)}
-                </p>
-              </div>
-            ) : null}
-          </div>
         </div>
       </div>
     </div>
