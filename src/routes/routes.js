@@ -40,7 +40,6 @@ import UserBankAccount from "./UserBankAccount";
 import AdminWithdrawalEligibleUsers from "../screen/admin/AdminWithdrawalEligibleUsers";
 import AdminWithdrawalRequests from "../screen/admin/AdminWithdrawalRequests";
 import AdminTopup from "../screen/admin/AdminTopup";
-import Mining from "../screen/user/Mining";
 
 export const authRoutes = [
   {
@@ -52,6 +51,7 @@ export const authRoutes = [
     element: Register,
   },
 ];
+
 export const userRoutes = [
   {
     path: "/home",
@@ -66,10 +66,6 @@ export const userRoutes = [
     element: UserTeam,
   },
   {
-    path: "/mining",
-    element: Mining,
-  },
-  {
     path: "/history",
     element: UserHistory,
   },
@@ -78,7 +74,7 @@ export const userRoutes = [
     element: UserWallet,
   },
   {
-    path: "/package",
+    path: "/bank-account",
     element: UserBankAccount,
   },
   {

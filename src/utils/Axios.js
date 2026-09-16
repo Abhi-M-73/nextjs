@@ -2,7 +2,8 @@ import axios from "axios";
 import { store } from "../redux/store";
 import { logout } from "../redux/slices/authSlice";
 
-const BASE_URL = "http://localhost:6050";
+// const BASE_URL = "http://localhost:6050";
+const BASE_URL = "https://api.binext.in";
 
 const Axios = axios.create({
   baseURL: `${BASE_URL}/api`,

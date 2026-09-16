@@ -12,10 +12,11 @@ import LLDChart from "./LLDChart";
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white">
+      <Navbar />
       <HeroSection />
-      {/* <HowItsWork />
+      <HowItsWork />
       <StatsSection />
-      <Footer /> */}
+      <Footer />
     </div>
   );
 }

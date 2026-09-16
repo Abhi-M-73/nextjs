@@ -12,13 +12,16 @@ const UserReactivationCapHistory = lazy(
   () => import("./UserReactivationCapHistory"),
 );
 const UserHistory = () => {
-  const [activeTab, setActiveTab] = useState("activation");
+  const [activeTab, setActiveTab] = useState("level");
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const tabs = [
-    { key: "activation", label: "Package Purchased" },
-    { key: "referral", label: "Affiliate Income" },
-    { key: "withdraw", label: "Withdraw History" },
+    { key: "activation", label: "Activation" },
+    { key: "cashback", label: "Cashback" },
+    { key: "referral", label: "Referral" },
+    { key: "level", label: "Level" },
+    { key: "reactivation-cap", label: "Reactivation Cap" },
+    { key: "withdraw", label: "Withdraw" },
   ];
 
   const activeLabel = tabs.find((t) => t.key === activeTab)?.label;
