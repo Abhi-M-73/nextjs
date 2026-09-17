@@ -149,9 +149,6 @@ export const adminRoutes = [
         path: "/admin-control",
         element: AdminControl,
       },
-      // { name: "Invoice", icon: <FileText size={18} />, path: "/admin/invoice" },
-      // { name: "CRM", icon: <Users size={18} />, path: "/admin/crm" },
-      // { name: "Blog", icon: <BookOpen size={18} />, path: "/admin/blog" },
     ],
   },
 ];

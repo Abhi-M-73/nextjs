@@ -72,6 +72,12 @@
 //     fetchQr();
 //   }, [open]);
 
+//   useEffect(() => {
+//     if (actualAmount) {
+//       setAmountInr(actualAmount);
+//     }
+//   }, [actualAmount]);
+
 //   const fetchQr = async () => {
 //     try {
 //       setQrLoading(true);
@@ -91,7 +97,7 @@
 //   };
 
 //   const resetForm = () => {
-//     setAmountInr(DEFAULT_AMOUNT_INR);
+//     setAmountInr(actualAmount || DEFAULT_AMOUNT_INR);
 //     setPaymentMethod("UPI");
 //     setScreenshot(null);
 //     setScreenshotPreview(null);
@@ -122,8 +128,8 @@
 //       setErrorMsg("Enter a valid amount.");
 //       return;
 //     }
-//     if (!screenshot) {
-//       setErrorMsg("Please upload the payment screenshot.");
+//     if (!utr) {
+//       setErrorMsg("Enter a valid UTR number.");
 //       return;
 //     }
 
@@ -132,13 +138,12 @@
 //       setErrorMsg("");
 //       setUploadProgress(0);
 
-//       // 1. Screenshot Cloudinary pe upload karo, progress track karte hue
 //       const cloudinaryRes = await uploadToCloudinary(
 //         screenshot,
 //         setUploadProgress,
 //       );
 
-//       // 2. Sirf yeh 4 fields backend ko bhejo
+//       // 2. Sirf yeh 4 fields backend ko bhejo (actualAmount = amountInr)
 //       const res = await submitDeposit({
 //         investmentAmount: Number(amountInr),
 //         paymentMethod,
@@ -161,10 +166,7 @@
 //       }
 //     } catch (err) {
 //       console.error("Deposit submit error:", err);
-//       setErrorMsg(
-//         err?.response?.data?.message ||
-//           "Something went wrong. Please try again.",
-//       );
+//       setErrorMsg(err?.message || "Something went wrong. Please try again.");
 //     } finally {
 //       setLoading(false);
 //       setUploadProgress(null);
@@ -224,20 +226,19 @@
 //             <label className="text-xs font-semibold text-gray-500 mb-1 block">
 //               Amount (INR)
 //             </label>
+//             {/* UI me displayAmount dikhaao (1199), lekin payload me actualAmount (999) jayega */}
 //             <input
-//               type="number"
-//               // value={amountInr}
-//               value={actualAmount}
-
-//               onChange={(e) => setAmountInr(e.target.value)}
-//               className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 text-sm font-semibold outline-none focus:border-blue-500 focus:bg-white transition"
-//               onWheel={(e) => e.target.blur()}
-//               disabled={loading}
+//               type="text"
+//               value={`₹${displayAmount || actualAmount}`}
+//               className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 text-sm font-semibold outline-none focus:border-blue-500 focus:bg-white transition cursor-not-allowed"
+//               disabled
 //             />
+//             {/* Hidden field jo actualAmount hold karega (agar logic me zaroorat pade) */}
+//             <input type="hidden" value={actualAmount} readOnly />
 //           </div>
 
 //           <div>
-//             <label className="text-xs font-semibold text-gray-500 mb-1 block">
+//             {/* <label className="text-xs font-semibold text-gray-500 mb-1 block">
 //               Payment Screenshot
 //             </label>
 //             <label
@@ -248,7 +249,7 @@
 //               <span className="text-sm text-gray-600 truncate">
 //                 {screenshot ? screenshot.name : "Tap to upload screenshot"}
 //               </span>
-//             </label>
+//             </label> */}
 //             <input
 //               id="deposit-screenshot"
 //               type="file"
@@ -367,6 +368,7 @@ export default function LLDStakeModal({
 
   const [amountInr, setAmountInr] = useState(DEFAULT_AMOUNT_INR);
   const [paymentMethod, setPaymentMethod] = useState("UPI");
+  const [utr, setUtr] = useState("");
   const [screenshot, setScreenshot] = useState(null);
   const [screenshotPreview, setScreenshotPreview] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(null);
@@ -405,6 +407,7 @@ export default function LLDStakeModal({
   const resetForm = () => {
     setAmountInr(actualAmount || DEFAULT_AMOUNT_INR);
     setPaymentMethod("UPI");
+    setUtr("");
     setScreenshot(null);
     setScreenshotPreview(null);
     setUploadProgress(null);
@@ -434,8 +437,8 @@ export default function LLDStakeModal({
       setErrorMsg("Enter a valid amount.");
       return;
     }
-    if (!screenshot) {
-      setErrorMsg("Please upload the payment screenshot.");
+    if (!utr.trim()) {
+      setErrorMsg("Enter a valid UTR number.");
       return;
     }
 
@@ -444,17 +447,17 @@ export default function LLDStakeModal({
       setErrorMsg("");
       setUploadProgress(0);
 
-      const cloudinaryRes = await uploadToCloudinary(
-        screenshot,
-        setUploadProgress,
-      );
+      // const cloudinaryRes = await uploadToCloudinary(
+      //   screenshot,
+      //   setUploadProgress,
+      // );
 
-      // 2. Sirf yeh 4 fields backend ko bhejo (actualAmount = amountInr)
       const res = await submitDeposit({
         investmentAmount: Number(amountInr),
         paymentMethod,
-        url: cloudinaryRes.secure_url,
-        public_id: cloudinaryRes.public_id,
+        utr: utr.trim(),
+        // url: cloudinaryRes.secure_url,
+        // public_id: cloudinaryRes.public_id,
       });
 
       if (res?.success) {
@@ -532,19 +535,31 @@ export default function LLDStakeModal({
             <label className="text-xs font-semibold text-gray-500 mb-1 block">
               Amount (INR)
             </label>
-            {/* UI me displayAmount dikhaao (1199), lekin payload me actualAmount (999) jayega */}
             <input
               type="text"
               value={`₹${displayAmount || actualAmount}`}
               className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 text-sm font-semibold outline-none focus:border-blue-500 focus:bg-white transition cursor-not-allowed"
               disabled
             />
-            {/* Hidden field jo actualAmount hold karega (agar logic me zaroorat pade) */}
             <input type="hidden" value={actualAmount} readOnly />
           </div>
 
           <div>
             <label className="text-xs font-semibold text-gray-500 mb-1 block">
+              UTR Number
+            </label>
+            <input
+              type="text"
+              value={utr}
+              onChange={(e) => setUtr(e.target.value)}
+              placeholder="Enter 12-digit UTR number"
+              disabled={loading}
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 text-sm font-semibold outline-none focus:border-blue-500 focus:bg-white transition"
+            />
+          </div>
+
+          <div>
+            {/* <label className="text-xs font-semibold text-gray-500 mb-1 block">
               Payment Screenshot
             </label>
             <label
@@ -555,7 +570,7 @@ export default function LLDStakeModal({
               <span className="text-sm text-gray-600 truncate">
                 {screenshot ? screenshot.name : "Tap to upload screenshot"}
               </span>
-            </label>
+            </label> */}
             <input
               id="deposit-screenshot"
               type="file"
