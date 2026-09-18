@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { addBankAccount, getBankAccount } from "../api/user.api";
 import toast from "react-hot-toast";
-import useFetchProfile from "../hooks/useFetchProfile";
 import {
   Building2,
   CreditCard,
@@ -11,14 +10,9 @@ import {
   CheckCircle2,
   ArrowRight,
   Loader2,
-  Lock,
 } from "lucide-react";
 
-const MIN_WALLET_BALANCE = 700;
-
 const UserBankAccount = () => {
-  const { userInfo, fetchUserInfo } = useFetchProfile();
-
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [bankData, setBankData] = useState(null);
@@ -30,10 +24,6 @@ const UserBankAccount = () => {
     ifscCode: "",
     upiId: "",
   });
-
-  // Jo bhai ka mainWallet 700 se zyada hai wahi add/update kar payega
-  const mainWalletBalance = Number(userInfo?.mainWallet || 0);
-  const isEligible = mainWalletBalance > MIN_WALLET_BALANCE;
 
   const fetchBankAccount = async () => {
     try {
@@ -60,9 +50,7 @@ const UserBankAccount = () => {
   };
 
   useEffect(() => {
-    fetchUserInfo();
     fetchBankAccount();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleChange = (e) => {
@@ -76,13 +64,6 @@ const UserBankAccount = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!isEligible) {
-      toast.error(
-        `Wallet balance must be above ₹${MIN_WALLET_BALANCE} to save bank account`,
-      );
-      return;
-    }
 
     if (
       !form.bankName ||
@@ -127,7 +108,7 @@ const UserBankAccount = () => {
   }
 
   const inputClass =
-    "w-full h-12 pl-11 pr-4 rounded-xl bg-slate-50/80 border border-slate-200 text-[13px] font-medium text-slate-800 placeholder:text-slate-400 outline-none transition-all duration-200 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 disabled:opacity-60 disabled:cursor-not-allowed";
+    "w-full h-12 pl-11 pr-4 rounded-xl bg-slate-50/80 border border-slate-200 text-[13px] font-medium text-slate-800 placeholder:text-slate-400 outline-none transition-all duration-200 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10";
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-6 md:py-10">
@@ -184,159 +165,140 @@ const UserBankAccount = () => {
               )}
             </div>
 
-            {/* Eligibility Warning */}
-            {!isEligible && (
-              <div className="flex items-start gap-2.5 mb-5 p-3.5 rounded-xl bg-amber-50 border border-amber-200">
-                <Lock size={16} className="text-amber-600 mt-0.5 shrink-0" />
-                <p className="text-[11px] leading-4 font-medium text-amber-700">
-                  Your main wallet balance is ₹{mainWalletBalance}. Balance must
-                  be above ₹{MIN_WALLET_BALANCE} to add or update bank account
-                  details.
-                </p>
-              </div>
-            )}
-
             {/* Form */}
-            <fieldset disabled={!isEligible} className="contents">
-              <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-                {/* Bank Name */}
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
-                    Bank Name
-                  </label>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+              {/* Bank Name */}
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
+                  Bank Name
+                </label>
 
-                  <div className="relative">
-                    <Building2
-                      size={17}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                    />
+                <div className="relative">
+                  <Building2
+                    size={17}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                  />
 
-                    <input
-                      type="text"
-                      name="bankName"
-                      value={form.bankName}
-                      onChange={handleChange}
-                      placeholder="e.g. State Bank of India"
-                      className={inputClass}
-                    />
-                  </div>
+                  <input
+                    type="text"
+                    name="bankName"
+                    value={form.bankName}
+                    onChange={handleChange}
+                    placeholder="e.g. State Bank of India"
+                    className={inputClass}
+                  />
                 </div>
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
-                    Bank Holder Name
-                  </label>
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
+                  Bank Holder Name
+                </label>
 
-                  <div className="relative">
-                    <Building2
-                      size={17}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                    />
-                    <input
-                      type="text"
-                      name="bankHoldername"
-                      value={form.bankHoldername}
-                      onChange={handleChange}
-                      placeholder="e.g. State Bank of India"
-                      className={inputClass}
-                    />
-                  </div>
+                <div className="relative">
+                  <Building2
+                    size={17}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                  />
+                  <input
+                    type="text"
+                    name="bankHoldername"
+                    value={form.bankHoldername}
+                    onChange={handleChange}
+                    placeholder="e.g. State Bank of India"
+                    className={inputClass}
+                  />
                 </div>
-                {/* Account Number */}
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
-                    Account Number
-                  </label>
+              </div>
+              {/* Account Number */}
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
+                  Account Number
+                </label>
 
-                  <div className="relative">
-                    <CreditCard
-                      size={17}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                    />
+                <div className="relative">
+                  <CreditCard
+                    size={17}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                  />
 
-                    <input
-                      type="text"
-                      name="accountNumber"
-                      value={form.accountNumber}
-                      onChange={handleChange}
-                      placeholder="Enter account number"
-                      inputMode="numeric"
-                      className={inputClass}
-                    />
-                  </div>
+                  <input
+                    type="text"
+                    name="accountNumber"
+                    value={form.accountNumber}
+                    onChange={handleChange}
+                    placeholder="Enter account number"
+                    inputMode="numeric"
+                    className={inputClass}
+                  />
                 </div>
-                {/* IFSC */}
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
-                    IFSC Code
-                  </label>
+              </div>
+              {/* IFSC */}
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
+                  IFSC Code
+                </label>
 
-                  <div className="relative">
-                    <Hash
-                      size={17}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                    />
+                <div className="relative">
+                  <Hash
+                    size={17}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                  />
 
-                    <input
-                      type="text"
-                      name="ifscCode"
-                      value={form.ifscCode}
-                      onChange={handleChange}
-                      placeholder="e.g. SBIN0001234"
-                      className={`${inputClass} uppercase`}
-                    />
-                  </div>
+                  <input
+                    type="text"
+                    name="ifscCode"
+                    value={form.ifscCode}
+                    onChange={handleChange}
+                    placeholder="e.g. SBIN0001234"
+                    className={`${inputClass} uppercase`}
+                  />
                 </div>
-                {/* UPI */}
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
-                    UPI ID
-                  </label>
+              </div>
+              {/* UPI */}
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
+                  UPI ID
+                </label>
 
-                  <div className="relative">
-                    <Smartphone
-                      size={17}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                    />
+                <div className="relative">
+                  <Smartphone
+                    size={17}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                  />
 
-                    <input
-                      type="text"
-                      name="upiId"
-                      value={form.upiId}
-                      onChange={handleChange}
-                      placeholder="e.g. username@upi"
-                      className={inputClass}
-                    />
-                  </div>
+                  <input
+                    type="text"
+                    name="upiId"
+                    value={form.upiId}
+                    onChange={handleChange}
+                    placeholder="e.g. username@upi"
+                    className={inputClass}
+                  />
                 </div>
-                {/* Submit */}
-                <button
-                  type="submit"
-                  disabled={saving || !isEligible}
-                  className="group relative mt-1 w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white text-sm font-bold shadow-lg shadow-blue-600/20 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  {saving ? (
-                    <>
-                      <Loader2 size={17} className="animate-spin" />
-                      Saving Account...
-                    </>
-                  ) : !isEligible ? (
-                    <>
-                      <Lock size={16} />
-                      Insufficient Wallet Balance
-                    </>
-                  ) : (
-                    <>
-                      {bankData ? "Update Bank Account" : "Save Bank Account"}
+              </div>
+              {/* Submit */}
+              <button
+                type="submit"
+                disabled={saving}
+                className="group relative mt-1 w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white text-sm font-bold shadow-lg shadow-blue-600/20 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {saving ? (
+                  <>
+                    <Loader2 size={17} className="animate-spin" />
+                    Saving Account...
+                  </>
+                ) : (
+                  <>
+                    {bankData ? "Update Bank Account" : "Save Bank Account"}
 
-                      <ArrowRight
-                        size={17}
-                        className="group-hover:translate-x-0.5 transition-transform"
-                      />
-                    </>
-                  )}
-                </button>
-              </form>
-            </fieldset>
+                    <ArrowRight
+                      size={17}
+                      className="group-hover:translate-x-0.5 transition-transform"
+                    />
+                  </>
+                )}
+              </button>
+            </form>
 
             {/* Security Note */}
             <div className="mt-5 flex items-start gap-2.5 px-1">

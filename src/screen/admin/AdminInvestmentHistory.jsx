@@ -141,6 +141,11 @@ const AdminDepositHistory = () => {
       label: "Amount",
       render: (val) => `₹${Number(val || 0).toLocaleString("en-IN")}`,
     },
+    {
+      key: "utr",
+      label: "UTR",
+      render: (val) => val || "N/A",
+    },
 
     {
       key: "paymentMethod",
