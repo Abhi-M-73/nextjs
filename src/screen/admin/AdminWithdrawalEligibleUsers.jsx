@@ -177,6 +177,13 @@ const AdminWithdrawalEligibleUsers = () => {
       ),
     },
     {
+      key: "mainWallet",
+      label: "Payable Balance",
+      render: (val) => (
+        <span className="text-green-500 font-semibold">{formatINR(val)}</span>
+      ),
+    },
+    {
       key: "bankName",
       label: "Bank Name",
       render: (_, row) => row?.bankDetails?.bankName || "—",
