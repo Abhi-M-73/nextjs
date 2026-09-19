@@ -173,7 +173,7 @@ const AdminDashboard = () => {
           />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <MetricCard
-              title="ROI Income"
+              title="CASHBACK Income"
               value={data.totalRoi || 0}
               unit="₹"
               icon={<Banknote className="w-5 h-5" />}

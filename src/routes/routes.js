@@ -101,7 +101,7 @@ export const adminRoutes = [
         element: AdminInvestmentHistory,
       },
       {
-        name: "ROI Income History",
+        name: "Cashback Income History",
         icon: ChartCandlestick,
         path: "/roi-income-history",
         element: AdminRoiIncomeHistory,
@@ -125,7 +125,7 @@ export const adminRoutes = [
         element: AdminReactivationCapHistory,
       },
       {
-        name: "Withdrawal Eligible Users",
+        name: "Withdrawal Eligible",
         icon: Users,
         path: "/withdrawal-eligible-users",
         element: AdminWithdrawalEligibleUsers,

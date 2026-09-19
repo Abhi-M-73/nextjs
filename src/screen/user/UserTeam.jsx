@@ -221,6 +221,9 @@ const UserTeam = () => {
                                     <p className="text-gray-400 text-xs uppercase truncate">
                                       {user?.username || "—"}
                                     </p>
+                                    <p className="text-gray-400 text-xs uppercase truncate">
+                                      {user?.phone || "—"}
+                                    </p>
                                   </div>
                                 </div>
 
