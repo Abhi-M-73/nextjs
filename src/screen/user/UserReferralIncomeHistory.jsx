@@ -1,7 +1,27 @@
 import React, { useEffect, useState } from "react";
 import { getReferralIncomeHistory } from "../../api/user.api";
-import { dateFormatter } from "../../utils/AdditionalFn";
 import { Users } from "lucide-react";
+
+const formatINR = (val) =>
+  `₹${Number(val || 0).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+
+const formatIST = (date) => {
+  if (!date) return "--";
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return "--";
+  return d.toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
 
 const UserReferralIncomeHistory = () => {
   const [referralIncomeHistory, setReferralIncomeHistory] = useState([]);
@@ -24,12 +44,6 @@ const UserReferralIncomeHistory = () => {
   useEffect(() => {
     fetchReferralIncomeHistory();
   }, []);
-
-  const formatUSD = (val) =>
-    `${Number(val || 0).toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })} USDT`;
 
   return (
     <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
@@ -64,13 +78,13 @@ const UserReferralIncomeHistory = () => {
                   Affiliate Income
                 </p>
                 <p className="text-gray-400 text-xs">
-                  {dateFormatter(item.createdAt)}
+                  {formatIST(item.createdAt)}
                 </p>
               </div>
             </div>
 
             <p className="text-green-600 font-bold text-md">
-              +{formatUSD(item.amount)}
+              +{formatINR(item.amount)}
             </p>
           </div>
 
@@ -86,14 +100,22 @@ const UserReferralIncomeHistory = () => {
             <div className="text-center">
               <p className="text-gray-400">Deposit Amount</p>
               <p className="text-gray-900 font-medium mt-0.5">
-                {formatUSD(item.baseAmount)}
+                {formatINR(item.baseAmount)}
               </p>
             </div>
 
             <div className="text-right">
-              <p className="text-gray-400">Bonus %</p>
-              <p className="text-gray-900 font-medium mt-0.5">
-                {item.percent}%
+              <p className="text-gray-400">Type</p>
+              <p
+                className={`font-medium mt-0.5 ${
+                  item.isRepeatTopup ? "text-indigo-600" : "text-green-600"
+                }`}
+              >
+                {item.percent != null
+                  ? `${item.percent}%`
+                  : item.isRepeatTopup
+                    ? "Repeat Topup"
+                    : "New Activation"}
               </p>
             </div>
           </div>
