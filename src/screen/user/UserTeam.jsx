@@ -6,16 +6,28 @@ import {
   ChevronDown,
   ChevronUp,
   UserCheck2,
-  Sparkles,
   ShieldCheck,
+  CalendarCheck2,
 } from "lucide-react";
-import { dateFormatter } from "../../utils/AdditionalFn";
 
 const MAX_LEVEL = 15;
 
+// 👇 IST (Asia/Kolkata) me Indian format: 25 Sep 2026
+const formatIST = (date) => {
+  if (!date) return null;
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return null;
+  return d.toLocaleDateString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
+
 const UserTeam = () => {
   const [activeLevel, setActiveLevel] = useState(null);
-  const defaultLevels = Array.from({ length: MAX_LEVEL }, (_, i) => i + 1); // 👈 fix: 1 se 15 tak levels
+  const defaultLevels = Array.from({ length: MAX_LEVEL }, (_, i) => i + 1);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["team"],
@@ -27,17 +39,10 @@ const UserTeam = () => {
   const formattedData = defaultLevels
     .map((level) => {
       const found = response.find((item) => item.level === level);
-      return (
-        found || {
-          level,
-          count: 0,
-          users: [],
-        }
-      );
+      return found || { level, count: 0, users: [] };
     })
-    .filter((team) => team.count > 0); // 👈 sirf wahi levels dikhao jinme members hain
+    .filter((team) => team.count > 0);
 
-  // 👇 total users + total active users (saare levels milaake)
   const totalUsers = formattedData.reduce(
     (sum, team) => sum + (team.count || 0),
     0,
@@ -47,23 +52,6 @@ const UserTeam = () => {
       sum + (team.users?.filter((u) => u?.isVerified)?.length || 0),
     0,
   );
-  const totalInactiveUsers = totalUsers - totalActiveUsers;
-
-  const formatINR = (value) =>
-    `₹${(value || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
-  const getValidityDays = (expiryDate) => {
-    if (!expiryDate) return { label: "No Package", isExpired: true };
-
-    const expiry = new Date(expiryDate);
-    const now = new Date();
-    const diffMs = expiry.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffDays < 0) return { label: "Expired", isExpired: true };
-    if (diffDays === 0) return { label: "Expires today", isExpired: false };
-    return { label: `${diffDays} days left`, isExpired: false };
-  };
 
   if (isLoading) {
     return (
@@ -147,7 +135,7 @@ const UserTeam = () => {
           </div>
 
           <div className="space-y-3.5 max-h-[560px] overflow-y-auto pr-1">
-            {formattedData?.length > 0 ? (
+            {formattedData.length > 0 ? (
               formattedData.map((team) => {
                 const isOpen = activeLevel === team.level;
                 return (
@@ -178,9 +166,7 @@ const UserTeam = () => {
 
                       <button
                         onClick={() =>
-                          setActiveLevel(
-                            activeLevel === team.level ? null : team.level,
-                          )
+                          setActiveLevel(isOpen ? null : team.level)
                         }
                         className={`flex items-center gap-1 text-xs font-semibold px-3.5 py-1.5 rounded-full border transition-all duration-300 ${
                           isOpen
@@ -202,7 +188,8 @@ const UserTeam = () => {
                       <div className="mt-3.5 space-y-2 max-h-[220px] overflow-y-auto">
                         {team.users?.length > 0 ? (
                           team.users.map((user) => {
-                            const validity = getValidityDays(user?.createdAt);
+                            const activatedOn = formatIST(user?.activeDate);
+
                             return (
                               <div
                                 key={user?._id}
@@ -221,8 +208,31 @@ const UserTeam = () => {
                                     <p className="text-gray-400 text-xs uppercase truncate">
                                       {user?.username || "—"}
                                     </p>
-                                    <p className="text-gray-400 text-xs uppercase truncate">
-                                      {user?.phone || "—"}
+
+                                    {/* 👇 Activation date (IST) */}
+                                    <p className="mt-0.5 flex items-center gap-1 text-[11px] font-medium truncate">
+                                      <CalendarCheck2
+                                        size={11}
+                                        className={
+                                          activatedOn
+                                            ? "text-green-500"
+                                            : "text-gray-300"
+                                        }
+                                      />
+                                      {activatedOn ? (
+                                        <>
+                                          <span className="text-green-500">
+                                            Active on
+                                          </span>
+                                          <span className="text-gray-600">
+                                            {activatedOn}
+                                          </span>
+                                        </>
+                                      ) : (
+                                        <span className="text-gray-400">
+                                          Not activated
+                                        </span>
+                                      )}
                                     </p>
                                   </div>
                                 </div>
@@ -245,16 +255,6 @@ const UserTeam = () => {
                                     />
                                     {user?.isVerified ? "Active" : "Inactive"}
                                   </span>
-
-                                  {/* <span
-                                    className={`text-[11px] font-semibold ${
-                                      validity.isExpired
-                                        ? "text-red-500"
-                                        : "text-blue-600"
-                                    }`}
-                                  >
-                                    {validity.label}
-                                  </span> */}
                                 </div>
                               </div>
                             );

@@ -16,6 +16,7 @@ import { showSnackbar } from "../../redux/slices/snackbarSlice";
 import { Button } from "@mui/material";
 import { logout, setToken, setUser } from "../../redux/slices/authSlice";
 import { dateFormatter } from "../../utils/AdditionalFn";
+import ValidityTimer from "./ValidityTimer";
 
 const UserProfile = () => {
   const { user } = useSelector((state) => state.auth);
@@ -119,6 +120,11 @@ const UserProfile = () => {
             Joined {user?.createdAt ? dateFormatter(user?.createdAt) : "--"}
           </p>
         </div>
+        {/* Package Validity Timer */}
+        <ValidityTimer
+          activeDate={user?.activeDate}
+          expiryDate={user?.packageExpiryDate}
+        />
 
         {/* Referral Section */}
         <div className="bg-white border border-gray-100 rounded-2xl p-5 space-y-3 shadow-sm shadow-gray-100">
