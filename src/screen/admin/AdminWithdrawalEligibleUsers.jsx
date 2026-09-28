@@ -19,6 +19,8 @@
 // } from "@mui/material";
 // import { toast } from "react-toastify";
 
+// const PAYOUT_CUT_PERCENT = 10; // admin ke liye 10% cut
+
 // const AdminWithdrawalEligibleUsers = () => {
 //   const [data, setData] = useState([]);
 //   const [loading, setLoading] = useState(false);
@@ -61,16 +63,18 @@
 //       maximumFractionDigits: 2,
 //     })}`;
 
+//   // Wallet balance se 10% cut karke jo actually payable hai wo nikalta hai
+//   const getPayableAmount = (mainWallet) =>
+//     (mainWallet || 0) * (1 - PAYOUT_CUT_PERCENT / 100);
+
 //   const openConfirm = (type, user = null) => {
 //     setConfirmDialog({ open: true, type, user });
-//     // approve type ho to default me poora wallet balance prefill kar do
 //     if (type === "approve") {
-//       setApproveAmount(String(user?.mainWallet ?? ""));
+//       setApproveAmount(String(user?.mainWallet));
 //     } else {
 //       setApproveAmount("");
 //     }
 //   };
-
 //   const closeConfirm = () => {
 //     if (actionLoading) return;
 //     setConfirmDialog({ open: false, type: null, user: null });
@@ -81,7 +85,7 @@
 //   const isApproveAmountValid =
 //     confirmDialog.type !== "approve" ||
 //     (numApproveAmount > 0 &&
-//       numApproveAmount <= (confirmDialog.user?.mainWallet || 0));
+//       numApproveAmount <= getPayableAmount(confirmDialog.user?.mainWallet));
 
 //   const addToPayoutPending = (entries) => {
 //     setPayoutPending((prev) => [...entries, ...prev]);
@@ -137,7 +141,7 @@
 //             accountNumber: u?.bankDetails?.accountNumber,
 //             ifscCode: u?.bankDetails?.ifscCode,
 //             upiId: u?.bankDetails?.upiId,
-//             payoutAmount: u?.mainWallet || 0,
+//             payoutAmount: getPayableAmount(u?.mainWallet),
 //             approvedAt: new Date().toISOString(),
 //           })),
 //         );
@@ -178,9 +182,11 @@
 //     },
 //     {
 //       key: "mainWallet",
-//       label: "Payable Balance",
+//       label: "Payable Balance (after 10% fee)",
 //       render: (val) => (
-//         <span className="text-green-500 font-semibold">{formatINR(val)}</span>
+//         <span className="text-green-500 font-semibold">
+//           {formatINR(getPayableAmount(val))}
+//         </span>
 //       ),
 //     },
 //     {
@@ -269,11 +275,11 @@
 //   const getDialogText = () => {
 //     const { type, user } = confirmDialog;
 //     if (type === "approve")
-//       return `Enter the amount to withdraw for ${user?.name} (${user?.username}). Wallet balance: ${formatINR(user?.mainWallet)}`;
+//       return `Enter the amount to withdraw for ${user?.name} (${user?.username}). Payable balance (after ${PAYOUT_CUT_PERCENT}% cut): ${formatINR(user?.mainWallet)}`;
 //     if (type === "reject")
 //       return `Are you sure you want to reject withdrawal for ${user?.name} (${user?.username})?`;
 //     if (type === "approveAll")
-//       return `Are you sure you want to approve withdrawal for ALL ${data.length} eligible users? This will deduct their full main wallet balance.`;
+//       return `Are you sure you want to approve withdrawal for ALL ${data.length} eligible users? This will pay out their payable balance (after ${PAYOUT_CUT_PERCENT}% cut).`;
 //     if (type === "rejectAll")
 //       return `Are you sure you want to reject withdrawal for ALL ${data.length} eligible users?`;
 //     return "";
@@ -305,7 +311,7 @@
 
 //       <DynamicTable
 //         dataKey="_id"
-//         title="Withdrawal Eligible "
+//         title="Withdrawal Eligible Users"
 //         data={data}
 //         columns={columns}
 //         loading={loading}
@@ -356,7 +362,7 @@
 //               error={approveAmount !== "" && !isApproveAmountValid}
 //               helperText={
 //                 approveAmount !== "" && !isApproveAmountValid
-//                   ? `Enter an amount between ₹1 and ${formatINR(confirmDialog.user?.mainWallet)}`
+//                   ? `Enter an amount between ₹1 and ${formatINR(getPayableAmount(confirmDialog.user?.mainWallet))}`
 //                   : ""
 //               }
 //             />
@@ -416,16 +422,16 @@ import {
 } from "@mui/material";
 import { toast } from "react-toastify";
 
-const PAYOUT_CUT_PERCENT = 10; // admin ke liye 10% cut
+// Fee percentage used for display only (not deducted from the approved amount)
+const PAYOUT_CUT_PERCENT = 10;
 
 const AdminWithdrawalEligibleUsers = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
-  // Users admin has just approved — kept here (client-side only) so the
-  // exact payout amount + bank/UPI details stay visible for paying,
-  // even after the user drops out of the "eligible" list.
+  // Users the admin has just approved. Kept client-side so the payout
+  // amount and bank/UPI details stay visible after the user leaves the eligible list.
   const [payoutPending, setPayoutPending] = useState([]);
 
   const [confirmDialog, setConfirmDialog] = useState({
@@ -460,18 +466,14 @@ const AdminWithdrawalEligibleUsers = () => {
       maximumFractionDigits: 2,
     })}`;
 
-  // Wallet balance se 10% cut karke jo actually payable hai wo nikalta hai
+  // Display-only helper: wallet balance after the fee is deducted
   const getPayableAmount = (mainWallet) =>
     (mainWallet || 0) * (1 - PAYOUT_CUT_PERCENT / 100);
 
   const openConfirm = (type, user = null) => {
     setConfirmDialog({ open: true, type, user });
-    // approve type ho to default me payable (10% cut ke baad wala) amount prefill kar do
-    if (type === "approve") {
-      setApproveAmount(String(getPayableAmount(user?.mainWallet) ?? ""));
-    } else {
-      setApproveAmount("");
-    }
+    // Pre-fill the full wallet balance for single approval
+    setApproveAmount(type === "approve" ? String(user?.mainWallet ?? "") : "");
   };
 
   const closeConfirm = () => {
@@ -481,10 +483,24 @@ const AdminWithdrawalEligibleUsers = () => {
   };
 
   const numApproveAmount = Number(approveAmount);
+  const maxApproveAmount = confirmDialog.user?.mainWallet || 0;
+
+  // Amount must be positive and not exceed the full wallet balance
   const isApproveAmountValid =
     confirmDialog.type !== "approve" ||
-    (numApproveAmount > 0 &&
-      numApproveAmount <= getPayableAmount(confirmDialog.user?.mainWallet));
+    (numApproveAmount > 0 && numApproveAmount <= maxApproveAmount);
+
+  const buildPayoutEntry = (u, amount) => ({
+    _id: u._id,
+    name: u?.name,
+    username: u?.username,
+    bankName: u?.bankDetails?.bankName,
+    accountNumber: u?.bankDetails?.accountNumber,
+    ifscCode: u?.bankDetails?.ifscCode,
+    upiId: u?.bankDetails?.upiId,
+    payoutAmount: amount,
+    approvedAt: new Date().toISOString(),
+  });
 
   const addToPayoutPending = (entries) => {
     setPayoutPending((prev) => [...entries, ...prev]);
@@ -506,23 +522,12 @@ const AdminWithdrawalEligibleUsers = () => {
       setActionLoading(true);
 
       if (type === "approve") {
+        // Send the entered amount (defaults to the full wallet balance)
         await adminApproveWithdrawal(user._id, numApproveAmount);
         toast?.success?.(
           `Approved! Pay ${formatINR(numApproveAmount)} to ${user?.name || user?.username}.`,
         );
-        addToPayoutPending([
-          {
-            _id: user._id,
-            name: user?.name,
-            username: user?.username,
-            bankName: user?.bankDetails?.bankName,
-            accountNumber: user?.bankDetails?.accountNumber,
-            ifscCode: user?.bankDetails?.ifscCode,
-            upiId: user?.bankDetails?.upiId,
-            payoutAmount: numApproveAmount,
-            approvedAt: new Date().toISOString(),
-          },
-        ]);
+        addToPayoutPending([buildPayoutEntry(user, numApproveAmount)]);
       } else if (type === "reject") {
         await adminRejectWithdrawal(user._id);
         toast?.info?.("Withdrawal rejected");
@@ -531,18 +536,9 @@ const AdminWithdrawalEligibleUsers = () => {
         const res = await adminApproveAllWithdrawals(userIds);
         toast?.success?.(`${res?.data?.length || 0} withdrawals approved`);
 
+        // Full wallet balance for every user
         addToPayoutPending(
-          data.map((u) => ({
-            _id: u._id,
-            name: u?.name,
-            username: u?.username,
-            bankName: u?.bankDetails?.bankName,
-            accountNumber: u?.bankDetails?.accountNumber,
-            ifscCode: u?.bankDetails?.ifscCode,
-            upiId: u?.bankDetails?.upiId,
-            payoutAmount: getPayableAmount(u?.mainWallet),
-            approvedAt: new Date().toISOString(),
-          })),
+          data.map((u) => buildPayoutEntry(u, u?.mainWallet || 0)),
         );
       } else if (type === "rejectAll") {
         const userIds = data.map((u) => u._id);
@@ -562,11 +558,7 @@ const AdminWithdrawalEligibleUsers = () => {
 
   const columns = [
     { key: "sr", label: "#", isIndex: true },
-    {
-      key: "name",
-      label: "Name",
-      render: (val) => val || "—",
-    },
+    { key: "name", label: "Name", render: (val) => val || "—" },
     {
       key: "username",
       label: "Username",
@@ -580,11 +572,12 @@ const AdminWithdrawalEligibleUsers = () => {
       ),
     },
     {
-      key: "mainWallet",
-      label: "Payable Balance (after 10% fee)",
-      render: (val) => (
+      // Unique key to avoid a duplicate React key with the "mainWallet" column
+      key: "payableBalance",
+      label: `Payable Balance (after ${PAYOUT_CUT_PERCENT}% fee)`,
+      render: (_, row) => (
         <span className="text-green-500 font-semibold">
-          {formatINR(getPayableAmount(val))}
+          {formatINR(getPayableAmount(row?.mainWallet))}
         </span>
       ),
     },
@@ -674,11 +667,11 @@ const AdminWithdrawalEligibleUsers = () => {
   const getDialogText = () => {
     const { type, user } = confirmDialog;
     if (type === "approve")
-      return `Enter the amount to withdraw for ${user?.name} (${user?.username}). Payable balance (after ${PAYOUT_CUT_PERCENT}% cut): ${formatINR(getPayableAmount(user?.mainWallet))}`;
+      return `Enter the amount to withdraw for ${user?.name} (${user?.username}). Wallet balance: ${formatINR(user?.mainWallet)}`;
     if (type === "reject")
       return `Are you sure you want to reject withdrawal for ${user?.name} (${user?.username})?`;
     if (type === "approveAll")
-      return `Are you sure you want to approve withdrawal for ALL ${data.length} eligible users? This will pay out their payable balance (after ${PAYOUT_CUT_PERCENT}% cut).`;
+      return `Are you sure you want to approve withdrawal for ALL ${data.length} eligible users? Their full wallet balance will be approved.`;
     if (type === "rejectAll")
       return `Are you sure you want to reject withdrawal for ALL ${data.length} eligible users?`;
     return "";
@@ -722,8 +715,8 @@ const AdminWithdrawalEligibleUsers = () => {
             Payout Pending ({payoutPending.length})
           </h2>
           <p className="text-xs text-gray-500 mb-3">
-            These users have requested for payout and are yet to be marked as
-            paid.
+            These users have been approved for payout and are yet to be marked
+            as paid.
           </p>
           <DynamicTable
             dataKey="_id"
@@ -761,7 +754,7 @@ const AdminWithdrawalEligibleUsers = () => {
               error={approveAmount !== "" && !isApproveAmountValid}
               helperText={
                 approveAmount !== "" && !isApproveAmountValid
-                  ? `Enter an amount between ₹1 and ${formatINR(getPayableAmount(confirmDialog.user?.mainWallet))}`
+                  ? `Enter an amount between ₹1 and ${formatINR(maxApproveAmount)}`
                   : ""
               }
             />
