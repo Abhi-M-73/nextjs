@@ -1,0 +1,68 @@
+// Shared date helpers for admin list filters.
+// Place at: src/utils/dateRange.js and reuse in AllUsers.jsx too.
+
+// Format a Date as local "YYYY-MM-DD".
+// Do not use toISOString(): it converts to UTC and shifts the date back in IST.
+export const toLocalDateStr = (date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+};
+
+export const DATE_PRESETS = [
+    { value: "all", label: "All Dates" },
+    { value: "today", label: "Today" },
+    { value: "yesterday", label: "Yesterday" },
+    { value: "this_week", label: "This Week" },
+    { value: "last_week", label: "Last Week" },
+    { value: "this_month", label: "This Month" },
+    { value: "last_month", label: "Last Month" },
+    { value: "custom", label: "Custom" },
+];
+
+// Returns { startDate, endDate } for a preset. Weeks start on Monday.
+export const getPresetRange = (preset) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const daysSinceMonday = (today.getDay() + 6) % 7;
+    const thisMonday = new Date(today);
+    thisMonday.setDate(today.getDate() - daysSinceMonday);
+
+    switch (preset) {
+        case "today":
+            return { startDate: toLocalDateStr(today), endDate: toLocalDateStr(today) };
+
+        case "yesterday": {
+            const yesterday = new Date(today);
+            yesterday.setDate(today.getDate() - 1);
+            return { startDate: toLocalDateStr(yesterday), endDate: toLocalDateStr(yesterday) };
+        }
+
+        case "this_week":
+            return { startDate: toLocalDateStr(thisMonday), endDate: toLocalDateStr(today) };
+
+        case "last_week": {
+            const lastMonday = new Date(thisMonday);
+            lastMonday.setDate(thisMonday.getDate() - 7);
+            const lastSunday = new Date(thisMonday);
+            lastSunday.setDate(thisMonday.getDate() - 1);
+            return { startDate: toLocalDateStr(lastMonday), endDate: toLocalDateStr(lastSunday) };
+        }
+
+        case "this_month": {
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            return { startDate: toLocalDateStr(firstDay), endDate: toLocalDateStr(today) };
+        }
+
+        case "last_month": {
+            const firstDay = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+            const lastDay = new Date(today.getFullYear(), today.getMonth(), 0);
+            return { startDate: toLocalDateStr(firstDay), endDate: toLocalDateStr(lastDay) };
+        }
+
+        default:
+            return { startDate: "", endDate: "" };
+    }
+};

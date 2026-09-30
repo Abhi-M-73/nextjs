@@ -113,74 +113,74 @@ const AllUsers = () => {
     }
   };
 
-const handleLoginAsUser = async (user) => {
-  try {
-    setLoginAsId(user._id);
+  const handleLoginAsUser = async (user) => {
+    try {
+      setLoginAsId(user._id);
 
-    const response = await loginAsUser(user._id);
+      const response = await loginAsUser(user._id);
 
-    if (response?.success && response?.data?.token) {
-      toast.success(`Logging in as ${user.username}`);
+      if (response?.success && response?.data?.token) {
+        toast.success(`Logging in as ${user.username}`);
 
-      // ==========================================
-      // BACKUP CURRENT ADMIN FROM REDUX
-      // ==========================================
+        // ==========================================
+        // BACKUP CURRENT ADMIN FROM REDUX
+        // ==========================================
 
-      const adminToken = adminAuth?.token || "";
-      const adminUser = adminAuth?.user || null;
+        const adminToken = adminAuth?.token || "";
+        const adminUser = adminAuth?.user || null;
 
-      console.log("ADMIN TOKEN =>", adminToken);
-      console.log("ADMIN USER =>", adminUser);
+        console.log("ADMIN TOKEN =>", adminToken);
+        console.log("ADMIN USER =>", adminUser);
 
-      sessionStorage.setItem(
-        "adminBackupToken",
-        adminToken
-      );
+        sessionStorage.setItem(
+          "adminBackupToken",
+          adminToken
+        );
 
-      sessionStorage.setItem(
-        "adminBackupUser",
-        JSON.stringify(adminUser)
-      );
+        sessionStorage.setItem(
+          "adminBackupUser",
+          JSON.stringify(adminUser)
+        );
 
-      // ==========================================
-      // LOGIN AS USER
-      // ==========================================
+        // ==========================================
+        // LOGIN AS USER
+        // ==========================================
 
-      dispatch(setToken(response.data.token));
-      dispatch(setUser(response.data.user));
+        dispatch(setToken(response.data.token));
+        dispatch(setUser(response.data.user));
 
-      // Existing session keys — DON'T CHANGE
-      sessionStorage.setItem(
-        "token",
-        response.data.token
-      );
+        // Existing session keys — DON'T CHANGE
+        sessionStorage.setItem(
+          "token",
+          response.data.token
+        );
 
-      sessionStorage.setItem(
-        "user",
-        JSON.stringify(response.data.user)
-      );
+        sessionStorage.setItem(
+          "user",
+          JSON.stringify(response.data.user)
+        );
 
-      // ==========================================
-      // GO TO USER
-      // ==========================================
+        // ==========================================
+        // GO TO USER
+        // ==========================================
 
-      window.location.replace("/user/home");
-    } else {
+        window.location.replace("/user/home");
+      } else {
+        toast.error(
+          response?.message || "Failed to login as user"
+        );
+      }
+    } catch (error) {
+      console.error("Login as user error:", error);
+
       toast.error(
-        response?.message || "Failed to login as user"
-      );
-    }
-  } catch (error) {
-    console.error("Login as user error:", error);
-
-    toast.error(
-      error?.response?.data?.message ||
+        error?.response?.data?.message ||
         "Failed to login as user"
-    );
-  } finally {
-    setLoginAsId(null);
-  }
-};
+      );
+    } finally {
+      setLoginAsId(null);
+    }
+  };
   const openPasswordModal = (user) => {
     setPasswordModalUser(user);
     setNewPassword("");

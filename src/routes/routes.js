@@ -14,6 +14,7 @@ import {
   ClipboardList,
   Share2,
   Rocket,
+  ShieldCheck,
 } from "lucide-react";
 
 import Login from "../screen/auth/Login";
@@ -40,6 +41,7 @@ import UserBankAccount from "./UserBankAccount";
 import AdminWithdrawalEligibleUsers from "../screen/admin/AdminWithdrawalEligibleUsers";
 import AdminWithdrawalRequests from "../screen/admin/AdminWithdrawalRequests";
 import AdminTopup from "../screen/admin/AdminTopup";
+import AdminKycRequests from "../screen/admin/AdminKycRequests";
 
 export const authRoutes = [
   {
@@ -71,7 +73,7 @@ export const userRoutes = [
   },
   {
     path: "/wallet",
-    element: UserWallet,
+    element: UserBankAccount,
   },
   {
     path: "/bank-account",
@@ -94,6 +96,12 @@ export const adminRoutes = [
         element: AdminDashboard,
       },
       { name: "Users", icon: BarChart2, path: "/users", element: AllUsers },
+      {
+        name: "Member KYC",
+        icon: ShieldCheck,
+        path: "/kyc-requests",
+        element: AdminKycRequests,
+      },
       {
         name: "Deposit History",
         icon: GrCart,
@@ -136,7 +144,6 @@ export const adminRoutes = [
         path: "/withdrawal-requests",
         element: AdminWithdrawalRequests,
       },
-      // { name: "Stake Deposit History", icon: Wallet, path: "/deposit-history", element: DepositHistory },
       {
         name: "Admin Topup",
         icon: Settings,

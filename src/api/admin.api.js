@@ -7,8 +7,13 @@ export const adminLogin = async (payload) => {
   return response;
 };
 
-export const getAllUserList = async () => {
-  const response = await Axios.get(`${API_URL}/getAllUsers`);
+export const getAllUserList = async (params = {}) => {
+  const response = await Axios.get(`${API_URL}/getAllUsers`, { params });
+  return response;
+};
+
+export const exportUsers = async (params = {}) => {
+  const response = await Axios.get(`${API_URL}/export-users`, { params, responseType: 'blob' });
   return response;
 };
 
@@ -16,21 +21,21 @@ export const getDashbboardData = async () => {
   const response = Axios.get(`${API_URL}/getAllIncomes`);
   return response;
 };
-export const getDepositHistory = async () => {
-  const response = Axios.get(`${API_URL}/get-deposit-history`);
+export const getDepositHistory = async (params = {}) => {
+  const response = Axios.get(`${API_URL}/get-deposit-history`, { params });
   return response;
 };
-export const getRoiIncomeHistory = async () => {
-  const response = Axios.get(`${API_URL}/get-roi-history`);
+export const getRoiIncomeHistory = async (params = {}) => {
+  const response = Axios.get(`${API_URL}/get-roi-history`, { params });
   return response;
 };
-export const getReferralIncomeHistory = async () => {
-  const response = Axios.get(`${API_URL}/get-referalBonus-history`);
+export const getReferralIncomeHistory = async (params = {}) => {
+  const response = Axios.get(`${API_URL}/get-referalBonus-history`, { params });
   return response;
 };
 
-export const getLevelIncomeHistory = async () => {
-  const response = Axios.get(`${API_URL}/getAllLevelIncome-history`);
+export const getLevelIncomeHistory = async (params = {}) => {
+  const response = Axios.get(`${API_URL}/getAllLevelIncome-history`, { params });
   return response;
 };
 
@@ -67,8 +72,8 @@ export const viewCredentials = async () => {
   return response;
 };
 
-export const getAdminDepositHistory = async () => {
-  const response = Axios.get(`${API_URL}/get-all-deposits`);
+export const getAdminDepositHistory = async (params = {}) => {
+  const response = Axios.get(`${API_URL}/get-all-deposits`, { params });
   return response;
 };
 
@@ -97,8 +102,8 @@ export const getAdminReactivationCapHistory = async () => {
   return response;
 };
 
-export const getWithdrawalEligibleUsers = async () => {
-  const response = Axios.get(`${API_URL}/high-wallet`);
+export const getWithdrawalEligibleUsers = async (params = {}) => {
+  const response = Axios.get(`${API_URL}/high-wallet`, { params });
   return response;
 };
 
@@ -155,5 +160,21 @@ export const adminRejectAllWithdrawals = async (userIds) => {
 
 export const loginAsUser = async (userId) => {
   const response = await Axios.post(`${API_URL}/admin/login-as-user/${userId}`);
+  return response;
+};
+
+// ================= KYC MANAGEMENT =================
+export const getAdminKycList = async () => {
+  const response = await Axios.get(`${API_URL}/kyc-list`);
+  return response;
+};
+
+export const approveAdminKyc = async (id) => {
+  const response = await Axios.post(`${API_URL}/kyc/${id}/approve`);
+  return response;
+};
+
+export const rejectAdminKyc = async (id, payload) => {
+  const response = await Axios.post(`${API_URL}/kyc/${id}/reject`, payload);
   return response;
 };

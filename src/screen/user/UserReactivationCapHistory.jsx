@@ -114,12 +114,7 @@ const UserReactivationCapHistory = () => {
                                         </p>
                                     </div>
                                     <ArrowRight size={12} className="text-blue-400" />
-                                    <div className="text-right">
-                                        <p className="text-gray-500">New Expiry</p>
-                                        <p className="text-gray-900 font-medium mt-0.5">
-                                            {item.newExpiry ? dateFormatter(item.newExpiry) : "—"}
-                                        </p>
-                                    </div>
+
                                 </div>
                             )}
 

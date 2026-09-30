@@ -1,356 +1,4 @@
-// import React, { useEffect, useState } from "react";
-// import {
-//   getWithdrawalHistory,
-//   approveWithdrawReq,
-//   rejectWithdrawReq,
-// } from "../../api/admin.api";
-// import DynamicTable from "../../components/ui/DynamicTable";
-// import { dateFormatter } from "../../utils/AdditionalFn";
-
-// const BankDetailsModal = ({ withdrawal, onClose }) => {
-//   if (!withdrawal) return null;
-
-//   return (
-//     <div
-//       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
-//       onClick={onClose}
-//     >
-//       <div
-//         onClick={(e) => e.stopPropagation()}
-//         className="w-full max-w-sm bg-white rounded-2xl p-5 shadow-xl"
-//       >
-//         <h3 className="text-base font-semibold text-gray-900 mb-1">
-//           Bank Details
-//         </h3>
-//         <p className="text-sm text-gray-500 mb-3">
-//           {withdrawal?.userId?.name || withdrawal?.userId?.username} — ₹
-//           {Number(withdrawal?.amount || 0).toFixed(2)}
-//         </p>
-
-//         <div className="space-y-2 text-sm">
-//           <div className="flex justify-between py-1.5 border-b border-gray-100">
-//             <span className="text-gray-500">Bank Name</span>
-//             <span className="text-gray-900 font-medium">
-//               {withdrawal?.bankName || "—"}
-//             </span>
-//           </div>
-//           <div className="flex justify-between py-1.5 border-b border-gray-100">
-//             <span className="text-gray-500">Account Number</span>
-//             <span className="text-gray-900 font-medium">
-//               {withdrawal?.accountNumber || "—"}
-//             </span>
-//           </div>
-//           <div className="flex justify-between py-1.5 border-b border-gray-100">
-//             <span className="text-gray-500">IFSC Code</span>
-//             <span className="text-gray-900 font-medium">
-//               {withdrawal?.ifscCode ? withdrawal.ifscCode.toUpperCase() : "—"}
-//             </span>
-//           </div>
-//           <div className="flex justify-between py-1.5 border-b border-gray-100">
-//             <span className="text-gray-500">UPI ID</span>
-//             <span className="text-gray-900 font-medium">
-//               {withdrawal?.upiId || "—"}
-//             </span>
-//           </div>
-//           <div className="flex justify-between py-1.5 border-b border-gray-100">
-//             <span className="text-gray-500">Requested Amount</span>
-//             <span className="text-gray-900 font-medium">
-//               ₹{Number(withdrawal?.amount || 0).toFixed(2)}
-//             </span>
-//           </div>
-//           <div className="flex justify-between py-1.5 border-b border-gray-100">
-//             <span className="text-gray-500">Fee (10%)</span>
-//             <span className="text-red-600 font-medium">
-//               ₹{Number(withdrawal?.feeAmount || 0).toFixed(2)}
-//             </span>
-//           </div>
-//           <div className="flex justify-between py-1.5">
-//             <span className="text-gray-500 font-semibold">Payable Amount</span>
-//             <span className="text-emerald-600 font-bold">
-//               ₹{Number(withdrawal?.netAmount || 0).toFixed(2)}
-//             </span>
-//           </div>
-//         </div>
-
-//         {withdrawal?.status === "rejected" && withdrawal?.rejectionReason && (
-//           <div className="mt-3 p-2.5 rounded-lg bg-red-50 border border-red-100">
-//             <p className="text-xs text-red-500 uppercase tracking-wide mb-1">
-//               Rejection Reason
-//             </p>
-//             <p className="text-sm text-red-600">{withdrawal.rejectionReason}</p>
-//           </div>
-//         )}
-
-//         <button
-//           onClick={onClose}
-//           className="w-full mt-4 py-2 rounded-lg border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50"
-//         >
-//           Close
-//         </button>
-//       </div>
-//     </div>
-//   );
-// };
-
-// const RejectReasonModal = ({ withdrawal, onClose, onConfirm, submitting }) => {
-//   const [reason, setReason] = useState("");
-
-//   if (!withdrawal) return null;
-
-//   const handleSubmit = () => {
-//     if (!reason.trim()) return;
-//     onConfirm(withdrawal._id, reason.trim());
-//   };
-
-//   return (
-//     <div
-//       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
-//       onClick={onClose}
-//     >
-//       <div
-//         onClick={(e) => e.stopPropagation()}
-//         className="w-full max-w-sm bg-white rounded-2xl p-5 shadow-xl"
-//       >
-//         <h3 className="text-base font-semibold text-gray-900 mb-1">
-//           Reject Withdrawal
-//         </h3>
-//         <p className="text-sm text-gray-500 mb-3">
-//           {withdrawal?.userId?.username} — ₹
-//           {Number(withdrawal?.amount || 0).toFixed(2)}
-//         </p>
-
-//         <label className="text-xs text-gray-500 uppercase tracking-wide">
-//           Rejection Reason
-//         </label>
-//         <textarea
-//           value={reason}
-//           onChange={(e) => setReason(e.target.value)}
-//           rows={3}
-//           placeholder="Enter reason for rejection..."
-//           className="w-full mt-1 p-2.5 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-200 resize-none"
-//         />
-
-//         <div className="flex gap-2 mt-4">
-//           <button
-//             onClick={onClose}
-//             className="flex-1 py-2 rounded-lg border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50"
-//           >
-//             Cancel
-//           </button>
-//           <button
-//             onClick={handleSubmit}
-//             disabled={!reason.trim() || submitting}
-//             className="flex-1 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-//           >
-//             {submitting ? "Rejecting..." : "Reject"}
-//           </button>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// const AdminWithdrawalRequests = () => {
-//   const [data, setData] = useState([]);
-//   const [loading, setLoading] = useState(false);
-//   const [actionId, setActionId] = useState(null); // id currently being approved
-//   const [rejectTarget, setRejectTarget] = useState(null); // withdrawal object being rejected
-//   const [viewTarget, setViewTarget] = useState(null); // withdrawal object being viewed
-//   const [submitting, setSubmitting] = useState(false);
-
-//   const fetchAllUser = async () => {
-//     try {
-//       setLoading(true);
-//       const res = await getWithdrawalHistory();
-//       if (res?.success) {
-//         setData(Array.isArray(res?.data) ? res.data : []);
-//       }
-//     } catch (error) {
-//       console.log(error);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   useEffect(() => {
-//     fetchAllUser();
-//   }, []);
-
-//   const handleApprove = async (row) => {
-//     const id = row?._id;
-//     if (!id) {
-//       console.error("Invalid withdrawal row, missing _id:", row);
-//       return;
-//     }
-
-//     try {
-//       setActionId(id);
-//       const res = await approveWithdrawReq(id);
-//       if (res?.success !== false) {
-//         setData((prev) =>
-//           prev.map((item) =>
-//             item._id === id
-//               ? {
-//                   ...item,
-//                   status: "approved",
-//                   approvedDate: new Date().toISOString(),
-//                 }
-//               : item,
-//           ),
-//         );
-//       }
-//     } catch (error) {
-//       console.log(error);
-//     } finally {
-//       setActionId(null);
-//     }
-//   };
-
-//   const handleRejectConfirm = async (id, reason) => {
-//     if (!id) {
-//       console.error("Invalid withdrawal id for reject");
-//       return;
-//     }
-
-//     try {
-//       setSubmitting(true);
-//       const res = await rejectWithdrawReq(id, { rejectionReason: reason });
-//       if (res?.success !== false) {
-//         setData((prev) =>
-//           prev.map((item) =>
-//             item._id === id
-//               ? { ...item, status: "rejected", rejectionReason: reason }
-//               : item,
-//           ),
-//         );
-//         setRejectTarget(null);
-//       }
-//     } catch (error) {
-//       console.log(error);
-//     } finally {
-//       setSubmitting(false);
-//     }
-//   };
-
-//   const columns = [
-//     { key: "sr", label: "#", isIndex: true },
-
-//     {
-//       key: "userId",
-//       label: "Username",
-//       render: (_, row) => (
-//         <div className="flex flex-col">
-//           <span className="font-medium uppercase">
-//             {row?.userId?.username || "—"}
-//           </span>
-//         </div>
-//       ),
-//     },
-
-//     {
-//       key: "userId",
-//       label: "Email",
-//       render: (_, row) => (
-//         <div className="flex flex-col">
-//           <span className="font-medium">{row?.userId?.email || "N/A"}</span>
-//         </div>
-//       ),
-//     },
-
-//     {
-//       key: "amount",
-//       label: "Requested",
-//       render: (val, row) =>
-//         `₹${Number(val || 0).toFixed(2)} ${row?.currency || "INR"}`,
-//     },
-
-//     {
-//       key: "feeAmount",
-//       label: "Fee (10%)",
-//       render: (val) => (
-//         <span className="text-red-600 font-medium">
-//           ₹{Number(val || 0).toFixed(2)}
-//         </span>
-//       ),
-//     },
-
-//     {
-//       key: "netAmount",
-//       label: "Payable",
-//       render: (val) => (
-//         <span className="text-emerald-600 font-semibold">
-//           ₹{Number(val || 0).toFixed(2)}
-//         </span>
-//       ),
-//     },
-
-//     {
-//       key: "status",
-//       label: "Status",
-//       isBadge: false,
-//       badgeColor: "emerald",
-//       render: (val, row) => (
-//         <span
-//           className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize w-fit
-//           ${row?.status === "pending" ? "bg-yellow-100 text-yellow-700" : ""}
-//           ${row?.status === "approved" || row?.status === "completed" ? "bg-green-100 text-green-700" : ""}
-//           ${row?.status === "rejected" || row?.status === "failed" ? "bg-red-100 text-red-700" : ""}
-//         `}
-//         >
-//           {row?.status}
-//         </span>
-//       ),
-//     },
-
-//     {
-//       key: "createdAt",
-//       label: "Created At",
-//       render: (val) => (val ? dateFormatter(val) : "—"),
-//     },
-
-//     {
-//       key: "view",
-//       label: "Bank Details",
-//       isBadge: true,
-//       render: (_, row) => (
-//         <button
-//           onClick={() => setViewTarget(row)}
-//           className="text-xs font-medium text-indigo-600 hover:underline"
-//         >
-//           View Details
-//         </button>
-//       ),
-//     },
-//   ];
-
-//   return (
-//     <div className="w-full overflow-auto p-5">
-//       <DynamicTable
-//         title="Withdrawal History"
-//         data={data}
-//         columns={columns}
-//         loading={loading}
-//         dataKey="_id"
-//       />
-
-//       <BankDetailsModal
-//         withdrawal={viewTarget}
-//         onClose={() => setViewTarget(null)}
-//       />
-
-//       <RejectReasonModal
-//         withdrawal={rejectTarget}
-//         onClose={() => setRejectTarget(null)}
-//         onConfirm={handleRejectConfirm}
-//         submitting={submitting}
-//       />
-//     </div>
-//   );
-// };
-
-// export default AdminWithdrawalRequests;
-
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   getWithdrawalHistory,
   approveWithdrawReq,
@@ -358,7 +6,16 @@ import {
 } from "../../api/admin.api";
 import DynamicTable from "../../components/ui/DynamicTable";
 import { dateFormatter } from "../../utils/AdditionalFn";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { DATE_PRESETS, getPresetRange } from "../../utils/dateRange";
+import {
+  Calendar,
+  CheckCircle2,
+  Clock,
+  Loader2,
+  RefreshCw,
+  Wallet,
+  XCircle,
+} from "lucide-react";
 import { toast } from "react-hot-toast";
 
 // ---------------------------------------------------------------------------
@@ -476,84 +133,51 @@ const BankDetailsModal = ({ withdrawal, onClose }) => {
   if (!withdrawal) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-sm bg-white rounded-2xl p-5 shadow-xl"
-      >
-        <h3 className="text-base font-semibold text-gray-900 mb-1">
-          Bank Details
-        </h3>
-        <p className="text-sm text-gray-500 mb-3">
-          {withdrawal?.userId?.name || withdrawal?.userId?.username} — ₹
-          {Number(withdrawal?.amount || 0).toFixed(2)}
-        </p>
+    <ModalShell onClose={onClose}>
+      <h3 className="mb-1 text-base font-semibold text-gray-900">Bank Details</h3>
+      <p className="mb-3 text-sm text-gray-500">
+        {withdrawal?.userId?.name || withdrawal?.userId?.username} — {formatINR(withdrawal?.amount)}
+      </p>
 
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between py-1.5 border-b border-gray-100">
-            <span className="text-gray-500">Bank Name</span>
-            <span className="text-gray-900 font-medium">
-              {withdrawal?.bankName || "—"}
-            </span>
-          </div>
-          <div className="flex justify-between py-1.5 border-b border-gray-100">
-            <span className="text-gray-500">Account Number</span>
-            <span className="text-gray-900 font-medium">
-              {withdrawal?.accountNumber || "—"}
-            </span>
-          </div>
-          <div className="flex justify-between py-1.5 border-b border-gray-100">
-            <span className="text-gray-500">IFSC Code</span>
-            <span className="text-gray-900 font-medium">
-              {withdrawal?.ifscCode ? withdrawal.ifscCode.toUpperCase() : "—"}
-            </span>
-          </div>
-          <div className="flex justify-between py-1.5 border-b border-gray-100">
-            <span className="text-gray-500">UPI ID</span>
-            <span className="text-gray-900 font-medium">
-              {withdrawal?.upiId || "—"}
-            </span>
-          </div>
-          <div className="flex justify-between py-1.5 border-b border-gray-100">
-            <span className="text-gray-500">Requested Amount</span>
-            <span className="text-gray-900 font-medium">
-              ₹{Number(withdrawal?.amount || 0).toFixed(2)}
-            </span>
-          </div>
-          <div className="flex justify-between py-1.5 border-b border-gray-100">
-            <span className="text-gray-500">Fee (10%)</span>
-            <span className="text-red-600 font-medium">
-              ₹{Number(withdrawal?.feeAmount || 0).toFixed(2)}
-            </span>
-          </div>
-          <div className="flex justify-between py-1.5">
-            <span className="text-gray-500 font-semibold">Payout Amount</span>
-            <span className="text-emerald-600 font-bold">
-              ₹{Number(withdrawal?.netAmount || 0).toFixed(2)}
-            </span>
-          </div>
-        </div>
-
-        {withdrawal?.status === "rejected" && withdrawal?.rejectionReason && (
-          <div className="mt-3 p-2.5 rounded-lg bg-red-50 border border-red-100">
-            <p className="text-xs text-red-500 uppercase tracking-wide mb-1">
-              Rejection Reason
-            </p>
-            <p className="text-sm text-red-600">{withdrawal.rejectionReason}</p>
-          </div>
-        )}
-
-        <button
-          onClick={onClose}
-          className="w-full mt-4 py-2 rounded-lg border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50"
-        >
-          Close
-        </button>
+      <div className="space-y-2 text-sm">
+        <DetailRow label="Bank Name" value={withdrawal?.bankName || "—"} />
+        <DetailRow label="Account Number" value={withdrawal?.accountNumber || "—"} />
+        <DetailRow label="IFSC Code" value={withdrawal?.ifscCode?.toUpperCase() || "—"} />
+        <DetailRow label="UPI ID" value={withdrawal?.upiId || "—"} />
+        <DetailRow label="Requested Amount" value={formatINR(withdrawal?.amount)} />
+        <DetailRow
+          label="Fee"
+          value={formatINR(withdrawal?.feeAmount)}
+          valueClass="text-red-600 font-medium"
+        />
+        <DetailRow
+          label="Payout Amount"
+          value={formatINR(withdrawal?.netAmount)}
+          valueClass="text-emerald-600 font-bold"
+          last
+        />
       </div>
-    </div>
+
+      {withdrawal?.processedBy && (
+        <p className="mt-3 text-xs text-gray-400">
+          Processed by {withdrawal.processedBy.name || withdrawal.processedBy.username}
+        </p>
+      )}
+
+      {withdrawal?.status === "rejected" && withdrawal?.rejectionReason && (
+        <div className="mt-3 rounded-lg border border-red-100 bg-red-50 p-2.5">
+          <p className="mb-1 text-xs uppercase tracking-wide text-red-500">Rejection Reason</p>
+          <p className="text-sm text-red-600">{withdrawal.rejectionReason}</p>
+        </div>
+      )}
+
+      <button
+        onClick={onClose}
+        className="mt-4 w-full rounded-lg border border-gray-200 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+      >
+        Close
+      </button>
+    </ModalShell>
   );
 };
 
@@ -563,312 +187,320 @@ const RejectReasonModal = ({ withdrawal, onClose, onConfirm, submitting }) => {
   if (!withdrawal) return null;
 
   const handleSubmit = () => {
-    if (!reason.trim()) return;
+    if (!reason.trim() || submitting) return;
     onConfirm(withdrawal._id, reason.trim());
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-sm bg-white rounded-2xl p-5 shadow-xl"
-      >
-        <h3 className="text-base font-semibold text-gray-900 mb-1">
-          Reject Withdrawal
-        </h3>
-        <p className="text-sm text-gray-500 mb-3">
-          {withdrawal?.userId?.username} — ₹
-          {Number(withdrawal?.amount || 0).toFixed(2)}
-        </p>
+    <ModalShell onClose={submitting ? undefined : onClose}>
+      <h3 className="mb-1 text-base font-semibold text-gray-900">Reject Withdrawal</h3>
+      <p className="mb-3 text-sm text-gray-500">
+        {withdrawal?.userId?.username} — {formatINR(withdrawal?.amount)}
+      </p>
 
-        <label className="text-xs text-gray-500 uppercase tracking-wide">
-          Rejection Reason
-        </label>
-        <textarea
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          rows={3}
-          placeholder="Enter reason for rejection..."
-          className="w-full mt-1 p-2.5 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-200 resize-none"
-        />
+      <label className="text-xs uppercase tracking-wide text-gray-500">Rejection Reason</label>
+      <textarea
+        value={reason}
+        onChange={(e) => setReason(e.target.value)}
+        rows={3}
+        maxLength={300}
+        placeholder="Enter reason for rejection..."
+        className="mt-1 w-full resize-none rounded-lg border border-gray-200 p-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-200"
+      />
 
-        <div className="flex gap-2 mt-4">
-          <button
-            onClick={onClose}
-            className="flex-1 py-2 rounded-lg border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={!reason.trim() || submitting}
-            className="flex-1 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {submitting ? "Rejecting..." : "Reject"}
-          </button>
-        </div>
+      <div className="mt-4 flex gap-2">
+        <button
+          onClick={onClose}
+          disabled={submitting}
+          className="flex-1 rounded-lg border border-gray-200 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleSubmit}
+          disabled={!reason.trim() || submitting}
+          className="flex-1 rounded-lg bg-red-600 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {submitting ? "Rejecting..." : "Reject"}
+        </button>
       </div>
-    </div>
+    </ModalShell>
   );
 };
 
-const ApproveConfirmModal = ({
-  withdrawal,
-  onClose,
-  onConfirm,
-  submitting,
-}) => {
+const ApproveConfirmModal = ({ withdrawal, onClose, onConfirm, submitting }) => {
   if (!withdrawal) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-sm bg-white rounded-2xl p-5 shadow-xl"
-      >
-        <h3 className="text-base font-semibold text-gray-900 mb-1">
-          Approve Withdrawal?
-        </h3>
-        <p className="text-sm text-gray-500 mb-3">
-          {withdrawal?.userId?.name || withdrawal?.userId?.username}
-        </p>
+    <ModalShell onClose={submitting ? undefined : onClose}>
+      <h3 className="mb-1 text-base font-semibold text-gray-900">Approve Withdrawal?</h3>
+      <p className="mb-3 text-sm text-gray-500">
+        {withdrawal?.userId?.name || withdrawal?.userId?.username}
+      </p>
 
-        <div className="space-y-2 text-sm mb-4">
-          <div className="flex justify-between py-1.5 border-b border-gray-100">
-            <span className="text-gray-500">Requested Amount</span>
-            <span className="text-gray-900 font-medium">
-              ₹{Number(withdrawal?.amount || 0).toFixed(2)}
-            </span>
-          </div>
-          <div className="flex justify-between py-1.5 border-b border-gray-100">
-            <span className="text-gray-500">Fee (10%)</span>
-            <span className="text-red-600 font-medium">
-              ₹{Number(withdrawal?.feeAmount || 0).toFixed(2)}
-            </span>
-          </div>
-          <div className="flex justify-between items-center py-2 rounded-lg bg-emerald-50 px-2.5 mt-1">
-            <span className="text-emerald-700 font-semibold">
-              Pay This Much
-            </span>
-            <span className="text-emerald-700 font-bold text-base">
-              ₹{Number(withdrawal?.netAmount || 0).toFixed(2)}
-            </span>
-          </div>
-        </div>
-
-        <p className="text-xs text-gray-400 mb-3">
-          Approve karne ke baad table mein "Payout Amount" column mein yehi
-          amount hamesha dikhega — bank/UPI details "View Details" se check
-          karke seedha isi amount ka payment karo.
-        </p>
-
-        <div className="flex gap-2">
-          <button
-            onClick={onClose}
-            disabled={submitting}
-            className="flex-1 py-2 rounded-lg border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={() => onConfirm(withdrawal)}
-            disabled={submitting}
-            className="flex-1 py-2 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 disabled:opacity-50"
-          >
-            {submitting ? "Approving..." : "Yes, Approve"}
-          </button>
+      <div className="mb-4 space-y-2 text-sm">
+        <DetailRow label="Requested Amount" value={formatINR(withdrawal?.amount)} />
+        <DetailRow
+          label="Fee"
+          value={formatINR(withdrawal?.feeAmount)}
+          valueClass="text-red-600 font-medium"
+        />
+        <div className="mt-1 flex items-center justify-between rounded-lg bg-emerald-50 px-2.5 py-2">
+          <span className="font-semibold text-emerald-700">Pay This Much</span>
+          <span className="text-base font-bold text-emerald-700">
+            {formatINR(withdrawal?.netAmount)}
+          </span>
         </div>
       </div>
-    </div>
+
+      <p className="mb-3 text-xs text-gray-400">
+        After approval, this amount stays in the "Payout Amount" column. Verify the bank/UPI
+        details via "View Details" and pay exactly this amount.
+      </p>
+
+      <div className="flex gap-2">
+        <button
+          onClick={onClose}
+          disabled={submitting}
+          className="flex-1 rounded-lg border border-gray-200 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={() => onConfirm(withdrawal)}
+          disabled={submitting}
+          className="flex-1 rounded-lg bg-emerald-600 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+        >
+          {submitting ? "Approving..." : "Yes, Approve"}
+        </button>
+      </div>
+    </ModalShell>
   );
 };
 
+// ---------------------------------------------------------------------------
+// Page
+// ---------------------------------------------------------------------------
+
 const AdminWithdrawalRequests = () => {
+  // Data
   const [data, setData] = useState([]);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [stats, setStats] = useState(INITIAL_STATS);
   const [loading, setLoading] = useState(false);
-  const [actionId, setActionId] = useState(null); // id currently being approved
-  const [approveTarget, setApproveTarget] = useState(null); // withdrawal object being approved
-  const [rejectTarget, setRejectTarget] = useState(null); // withdrawal object being rejected
-  const [viewTarget, setViewTarget] = useState(null); // withdrawal object being viewed
+  const [lastUpdated, setLastUpdated] = useState(null);
+
+  // Single source of truth for the API query
+  const [filters, setFilters] = useState(INITIAL_FILTERS);
+
+  // UI-only state
+  const [datePreset, setDatePreset] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Modal / action state
+  const [approveTarget, setApproveTarget] = useState(null);
+  const [rejectTarget, setRejectTarget] = useState(null);
+  const [viewTarget, setViewTarget] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const fetchAllUser = async () => {
+  // Ignore responses from outdated requests
+  const requestIdRef = useRef(0);
+
+  // -------------------------------------------------------------------------
+  // Fetch
+  // -------------------------------------------------------------------------
+
+  const fetchWithdrawals = useCallback(async (currentFilters) => {
+    const requestId = ++requestIdRef.current;
+    setLoading(true);
+
     try {
-      setLoading(true);
-      const res = await getWithdrawalHistory();
+      const params = { page: currentFilters.page, limit: currentFilters.limit };
+      if (currentFilters.status) params.status = currentFilters.status;
+      if (currentFilters.startDate) params.startDate = currentFilters.startDate;
+      if (currentFilters.endDate) params.endDate = currentFilters.endDate;
+      if (currentFilters.search) params.search = currentFilters.search;
+
+      const res = await getWithdrawalHistory(params);
+      if (requestId !== requestIdRef.current) return;
+
       if (res?.success) {
-        setData(Array.isArray(res?.data) ? res.data : []);
+        setData(Array.isArray(res.data) ? res.data : []);
+        setTotalRecords(res?.pagination?.total ?? 0);
+        setStats(res?.stats ?? INITIAL_STATS);
+        setLastUpdated(new Date());
+      } else {
+        setData([]);
+        setTotalRecords(0);
+        setStats(INITIAL_STATS);
+        toast.error(res?.message || "Failed to fetch withdrawals");
       }
     } catch (error) {
-      console.log(error);
+      if (requestId !== requestIdRef.current) return;
+      console.error("Fetch withdrawals error:", error);
+      setData([]);
+      setTotalRecords(0);
+      setStats(INITIAL_STATS);
+      toast.error(error?.response?.data?.message || "Failed to fetch withdrawals");
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchAllUser();
   }, []);
 
-  const handleApproveClick = (row) => {
-    setApproveTarget(row);
+  useEffect(() => {
+    fetchWithdrawals(filters);
+  }, [filters, fetchWithdrawals]);
+
+  // Re-fetch current view (used after approve / reject so stats stay accurate)
+  const refresh = () => fetchWithdrawals(filters);
+
+  // -------------------------------------------------------------------------
+  // Filter handlers (all reset to page 1)
+  // -------------------------------------------------------------------------
+
+  const handleStatusChange = (status) => {
+    setFilters((prev) => (prev.status === status ? prev : { ...prev, status, page: 1 }));
   };
+
+  const handlePresetChange = (e) => {
+    const preset = e.target.value;
+    setDatePreset(preset);
+    if (preset === "custom") return;
+    setFilters((prev) => ({ ...prev, ...getPresetRange(preset), page: 1 }));
+  };
+
+  const handleCustomDateChange = (field) => (e) => {
+    const value = e.target.value;
+    setFilters((prev) => {
+      const next = { ...prev, [field]: value, page: 1 };
+      if (next.startDate && next.endDate && next.startDate > next.endDate) {
+        toast.error("Start date cannot be after end date");
+        return prev;
+      }
+      return next;
+    });
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    const search = searchTerm.trim();
+    setFilters((prev) =>
+      prev.search === search && prev.page === 1 ? prev : { ...prev, search, page: 1 },
+    );
+  };
+
+  const handleResetFilters = () => {
+    setDatePreset("all");
+    setSearchTerm("");
+    setFilters((prev) => ({ ...INITIAL_FILTERS, limit: prev.limit }));
+  };
+
+  const handlePageChange = (page) => setFilters((prev) => ({ ...prev, page }));
+
+  const handleRowsChange = (limit) => setFilters((prev) => ({ ...prev, limit, page: 1 }));
+
+  // -------------------------------------------------------------------------
+  // Approve / Reject
+  // -------------------------------------------------------------------------
 
   const confirmApprove = async (row) => {
     const id = row?._id;
-    if (!id) {
-      console.error("Invalid withdrawal row, missing _id:", row);
-      return;
-    }
+    if (!id || submitting) return;
 
     try {
       setSubmitting(true);
-      setActionId(id);
       const res = await approveWithdrawReq(id);
+
       if (res?.success !== false) {
-        setData((prev) =>
-          prev.map((item) =>
-            item._id === id
-              ? {
-                  ...item,
-                  status: "approved",
-                  approvedDate: new Date().toISOString(),
-                }
-              : item,
-          ),
-        );
-        toast.success(
-          `Approved! Pay ₹${Number(row?.netAmount || 0).toFixed(2)} to this user.`,
-        );
+        toast.success(`Approved! Pay ${formatINR(row?.netAmount)} to this user.`);
         setApproveTarget(null);
+        refresh();
       } else {
-        toast.error(res?.message || "Approval failed.");
+        toast.error(res?.message || "Approval failed");
       }
     } catch (error) {
-      console.log(error);
-      toast.error(error?.response?.data?.message || "Approval failed.");
+      console.error("Approve error:", error);
+      toast.error(error?.response?.data?.message || "Approval failed");
     } finally {
       setSubmitting(false);
-      setActionId(null);
     }
-  };
-
-  const handleRejectClick = (row) => {
-    setRejectTarget(row);
   };
 
   const handleRejectConfirm = async (id, reason) => {
-    if (!id) {
-      console.error("Invalid withdrawal id for reject");
-      return;
-    }
+    if (!id || submitting) return;
 
     try {
       setSubmitting(true);
       const res = await rejectWithdrawReq(id, { rejectionReason: reason });
+
       if (res?.success !== false) {
-        setData((prev) =>
-          prev.map((item) =>
-            item._id === id
-              ? { ...item, status: "rejected", rejectionReason: reason }
-              : item,
-          ),
-        );
+        toast.success(res?.message || "Withdrawal rejected");
         setRejectTarget(null);
+        refresh();
+      } else {
+        toast.error(res?.message || "Rejection failed");
       }
     } catch (error) {
-      console.log(error);
+      console.error("Reject error:", error);
+      toast.error(error?.response?.data?.message || "Rejection failed");
     } finally {
       setSubmitting(false);
     }
   };
 
+  // -------------------------------------------------------------------------
+  // Table columns
+  // -------------------------------------------------------------------------
+
   const columns = [
     { key: "sr", label: "#", isIndex: true },
-
     {
-      key: "userId",
+      key: "username",
       label: "Username",
       render: (_, row) => (
-        <div className="flex flex-col">
-          <span className="font-medium uppercase">
-            {row?.userId?.username || "—"}
-          </span>
-        </div>
+        <span className="font-medium uppercase">{row?.userId?.username || "—"}</span>
       ),
     },
-
     {
-      key: "userId",
+      key: "email",
       label: "Email",
-      render: (_, row) => (
-        <div className="flex flex-col">
-          <span className="font-medium">{row?.userId?.email || "N/A"}</span>
-        </div>
-      ),
+      render: (_, row) => <span className="font-medium">{row?.userId?.email || "N/A"}</span>,
     },
-
     {
       key: "amount",
       label: "Requested",
-      render: (val, row) =>
-        `₹${Number(val || 0).toFixed(2)} ${row?.currency || "INR"}`,
+      render: (val) => formatINR(val),
     },
-
     {
       key: "feeAmount",
-      label: "Fee (10%)",
-      render: (val) => (
-        <span className="text-red-600 font-medium">
-          ₹{Number(val || 0).toFixed(2)}
-        </span>
-      ),
+      label: "Fee",
+      render: (val) => <span className="font-medium text-red-600">{formatINR(val)}</span>,
     },
-
     {
       key: "netAmount",
       label: "Payout Amount",
-      render: (val) => (
-        <span className="text-emerald-600 font-bold">
-          ₹{Number(val || 0).toFixed(2)}
-        </span>
-      ),
+      render: (val) => <span className="font-bold text-emerald-600">{formatINR(val)}</span>,
     },
-
     {
       key: "status",
       label: "Status",
-      isBadge: false,
-      badgeColor: "emerald",
-      render: (val, row) => (
+      render: (val) => (
         <span
-          className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize w-fit
-          ${row?.status === "pending" ? "bg-yellow-100 text-yellow-700" : ""}
-          ${row?.status === "approved" || row?.status === "completed" ? "bg-green-100 text-green-700" : ""}
-          ${row?.status === "rejected" || row?.status === "failed" ? "bg-red-100 text-red-700" : ""}
-        `}
+          className={`w-fit rounded-full px-2 py-0.5 text-xs font-medium capitalize ${STATUS_BADGE[val] || "bg-gray-100 text-gray-600"
+            }`}
         >
-          {row?.status}
+          {val || "—"}
         </span>
       ),
     },
-
     {
       key: "createdAt",
       label: "Created At",
       render: (val) => (val ? dateFormatter(val) : "—"),
     },
-
     {
       key: "view",
       label: "Bank Details",
-      isBadge: true,
       render: (_, row) => (
         <button
           onClick={() => setViewTarget(row)}
@@ -878,7 +510,6 @@ const AdminWithdrawalRequests = () => {
         </button>
       ),
     },
-
     {
       key: "actions",
       label: "Actions",
@@ -886,44 +517,204 @@ const AdminWithdrawalRequests = () => {
         row.status === "pending" ? (
           <div className="flex items-center gap-2">
             <button
-              onClick={() => handleApproveClick(row)}
-              disabled={actionId === row._id}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-green-50 text-green-600 text-xs font-semibold hover:bg-green-100 transition disabled:opacity-50"
+              onClick={() => setApproveTarget(row)}
+              disabled={submitting}
+              className="flex items-center gap-1 rounded-lg bg-green-50 px-2.5 py-1.5 text-xs font-semibold text-green-600 transition hover:bg-green-100 disabled:opacity-50"
             >
               <CheckCircle2 size={14} />
               Approve
             </button>
             <button
-              onClick={() => handleRejectClick(row)}
-              disabled={actionId === row._id}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-50 text-red-600 text-xs font-semibold hover:bg-red-100 transition disabled:opacity-50"
+              onClick={() => setRejectTarget(row)}
+              disabled={submitting}
+              className="flex items-center gap-1 rounded-lg bg-red-50 px-2.5 py-1.5 text-xs font-semibold text-red-600 transition hover:bg-red-100 disabled:opacity-50"
             >
               <XCircle size={14} />
               Reject
             </button>
           </div>
         ) : (
-          <span className="text-xs text-gray-400 capitalize">
-            {row?.status}
-          </span>
+          <span className="text-xs capitalize text-gray-400">{row?.status}</span>
         ),
     },
   ];
 
+  // Clicking a card toggles the matching status tab
+  const statCards = [
+    {
+      status: "",
+      title: "Total Requests",
+      icon: Wallet,
+      gradient: "from-indigo-500 to-purple-600",
+      bucket: stats.all,
+      lines: [
+        { label: "Requested", key: "amount" },
+        { label: "Payout value", key: "net" },
+      ],
+    },
+    {
+      status: "pending",
+      title: "Pending",
+      icon: Clock,
+      gradient: "from-amber-400 to-orange-500",
+      bucket: stats.pending,
+      lines: [
+        { label: "Requested", key: "amount" },
+        { label: "To be paid", key: "net", className: "text-amber-600" },
+      ],
+    },
+    {
+      status: "approved",
+      title: "Approved",
+      icon: CheckCircle2,
+      gradient: "from-emerald-500 to-teal-600",
+      bucket: stats.approved,
+      lines: [
+        { label: "Requested", key: "amount" },
+        { label: "Paid out", key: "net", className: "text-emerald-600" },
+        { label: "Fee earned", key: "fee", className: "text-indigo-600" },
+      ],
+    },
+    {
+      status: "rejected",
+      title: "Rejected",
+      icon: XCircle,
+      gradient: "from-rose-500 to-pink-600",
+      bucket: stats.rejected,
+      lines: [{ label: "Requested", key: "amount", className: "text-rose-600" }],
+    },
+  ];
+
+  // -------------------------------------------------------------------------
+  // Render
+  // -------------------------------------------------------------------------
+
   return (
     <div className="w-full overflow-auto p-5">
+      {/* Stat cards (respect date + search filters, ignore status tab) */}
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {statCards.map((card) => (
+          <StatCard
+            key={card.title}
+            {...card}
+            loading={loading}
+            active={filters.status === card.status}
+            onClick={() => handleStatusChange(card.status)}
+          />
+        ))}
+      </div>
+
+      {/* Status tabs */}
+      <div className="mb-3 flex flex-wrap gap-2">
+        {STATUS_TABS.map((tab) => (
+          <button
+            key={tab.value || "all"}
+            type="button"
+            onClick={() => handleStatusChange(tab.value)}
+            className={`rounded-full px-3 py-1 text-xs font-semibold transition ${filters.status === tab.value
+              ? "bg-indigo-600 text-white"
+              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Filters */}
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        {/* <div className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2 py-1.5">
+          <Calendar className="h-4 w-4 text-slate-400" />
+          <select
+            value={datePreset}
+            onChange={handlePresetChange}
+            className="bg-transparent text-sm text-slate-700 outline-none"
+          >
+            {DATE_PRESETS.map((p) => (
+              <option key={p.value} value={p.value}>
+                {p.label}
+              </option>
+            ))}
+          </select>
+        </div> */}
+
+        {datePreset === "custom" && (
+          <div className="flex items-center gap-1.5">
+            <input
+              type="date"
+              value={filters.startDate}
+              max={filters.endDate || undefined}
+              onChange={handleCustomDateChange("startDate")}
+              className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm"
+            />
+            <span className="text-sm text-slate-500">to</span>
+            <input
+              type="date"
+              value={filters.endDate}
+              min={filters.startDate || undefined}
+              onChange={handleCustomDateChange("endDate")}
+              className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm"
+            />
+          </div>
+        )}
+
+        <form onSubmit={handleSearchSubmit} className="flex items-center gap-1.5">
+          <input
+            type="text"
+            placeholder="Search username, email, UPI, account..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-64 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm"
+          />
+          <button
+            type="submit"
+            className="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700"
+          >
+            Search
+          </button>
+        </form>
+
+        <button
+          type="button"
+          onClick={handleResetFilters}
+          className="rounded-lg bg-slate-200 px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-300"
+        >
+          Reset
+        </button>
+
+        <button
+          type="button"
+          onClick={refresh}
+          disabled={loading}
+          className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+        >
+          {loading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <RefreshCw className="h-4 w-4" />
+          )}
+          Refresh
+        </button>
+      </div>
+
       <DynamicTable
         title="Withdrawal History"
         data={data}
         columns={columns}
         loading={loading}
         dataKey="_id"
+        totalRecords={totalRecords}
+        rows={filters.limit}
+        page={filters.page}
+        onPageChange={handlePageChange}
+        onRowsChange={handleRowsChange}
       />
 
-      <BankDetailsModal
-        withdrawal={viewTarget}
-        onClose={() => setViewTarget(null)}
-      />
+      <p className="mt-3 text-right text-xs text-slate-400">
+        Last sync: {lastUpdated?.toLocaleString() || "Never"}
+      </p>
+
+      <BankDetailsModal withdrawal={viewTarget} onClose={() => setViewTarget(null)} />
 
       <ApproveConfirmModal
         withdrawal={approveTarget}
@@ -932,7 +723,9 @@ const AdminWithdrawalRequests = () => {
         submitting={submitting}
       />
 
+      {/* key resets the textarea when a different withdrawal is opened */}
       <RejectReasonModal
+        key={rejectTarget?._id || "none"}
         withdrawal={rejectTarget}
         onClose={() => setRejectTarget(null)}
         onConfirm={handleRejectConfirm}

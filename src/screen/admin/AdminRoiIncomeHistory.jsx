@@ -23,55 +23,48 @@ const formatINR = (value) => {
 const AdminRoiIncomeHistory = () => {
   const [roiHistory, setRoiHistory] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [page, setPage] = useState(1);
+  const [rows, setRows] = useState(100);
   const [lastUpdated, setLastUpdated] = useState(null);
 
-  // const fetchRoiHistory = useCallback(async () => {
-  //   try {
-  //     setLoading(true);
-
-  //     const response = await getRoiIncomeHistory();
-
-  //     // Backend success flag false hone par bhi valid data render hoga
-  //     if (Array.isArray(response?.data)) {
-  //       setRoiHistory(response.data);
-  //       setLastUpdated(new Date());
-  //     } else {
-  //       setRoiHistory([]);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error while fetching ROI income history:", error);
-  //     setRoiHistory([]);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }, []);
-
-  const fetchRoiHistory = useCallback(async () => {
+  const fetchRoiHistory = useCallback(async (pageNum = 1, limitNum = 100) => {
     try {
       setLoading(true);
 
-      const response = await getRoiIncomeHistory();
+      const response = await getRoiIncomeHistory({ page: pageNum, limit: limitNum });
 
-      // Backend success flag false hone par bhi valid data render hoga
       if (Array.isArray(response?.data)) {
         const sortedData = [...response.data].sort(
-          (a, b) => new Date(b.creditedOn) - new Date(a.creditedOn),
+          (a, b) => new Date(b.creditedOn || b.createdAt || 0) - new Date(a.creditedOn || a.createdAt || 0),
         );
         setRoiHistory(sortedData);
+        setTotalRecords(response.totalRecords || response.data.length);
+        setPage(pageNum);
+        setRows(limitNum);
         setLastUpdated(new Date());
       } else {
         setRoiHistory([]);
+        setTotalRecords(0);
       }
     } catch (error) {
       console.error("Error while fetching ROI income history:", error);
       setRoiHistory([]);
+      setTotalRecords(0);
     } finally {
       setLoading(false);
     }
   }, []);
+
   useEffect(() => {
-    fetchRoiHistory();
+    fetchRoiHistory(1, 100);
   }, [fetchRoiHistory]);
+
+  const handlePageChange = (event) => {
+    const newPage = (event.page !== undefined ? event.page : Math.floor(event.first / event.rows)) + 1;
+    const newRows = event.rows || 100;
+    fetchRoiHistory(newPage, newRows);
+  };
 
   const totalInvestment = roiHistory.reduce(
     (total, item) => total + Number(item?.investmentAmount || 0),
@@ -190,6 +183,11 @@ const AdminRoiIncomeHistory = () => {
               data={roiHistory}
               columns={columns}
               loading={loading}
+              lazy={true}
+              totalRecords={totalRecords}
+              defaultRows={100}
+              rowsPerPageOptions={[25, 50, 100, 200]}
+              onPageChange={handlePageChange}
             />
           </div>
         </div>

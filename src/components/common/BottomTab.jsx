@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, Users, History, User, Wallet, Landmark } from "lucide-react";
+import { Home, Users, History, User, ShieldCheck } from "lucide-react";
 
 const BottomTab = () => {
   const location = useLocation();
@@ -9,8 +9,7 @@ const BottomTab = () => {
     { label: "Home", path: "/user/home", icon: Home },
     { label: "Team", path: "/user/team", icon: Users },
     { label: "History", path: "/user/history", icon: History },
-    { label: "Wallet", path: "/user/wallet", icon: Wallet },
-    { label: "Accounts", path: "/user/bank-account", icon: Landmark },
+    { label: "KYC & Bank", path: "/user/bank-account", icon: ShieldCheck },
     { label: "Profile", path: "/user/profile", icon: User },
   ];
 

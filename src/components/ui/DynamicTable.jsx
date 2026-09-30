@@ -342,7 +342,8 @@ const DynamicTable = ({
   className = "",
   loading = false,
   dataKey = "id",
-  rowsPerPageOptions = [10, 25, 50],
+  defaultRows = 100,
+  rowsPerPageOptions = [25, 50, 100, 200],
   lazy = false,
   totalRecords,
   onPageChange,
@@ -354,7 +355,7 @@ const DynamicTable = ({
     multiSortMeta: [],
   });
   const [first, setFirst] = useState(0);
-  const [rows, setRows] = useState(10);
+  const [rows, setRows] = useState(defaultRows);
 
   const debouncedGlobalFilter = useMemo(
     () =>

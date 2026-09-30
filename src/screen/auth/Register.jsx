@@ -235,6 +235,8 @@ const Register = () => {
 
   const [successOpen, setSuccessOpen] = useState(false);
   const [regSummary, setRegSummary] = useState(null);
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [termsModalOpen, setTermsModalOpen] = useState(false);
 
   const [payload, setPayload] = useState({
     name: "",
@@ -279,6 +281,11 @@ const Register = () => {
       return;
     }
 
+    if (!agreeTerms) {
+      toast.error("Please accept the Terms & Conditions before completing registration.");
+      return;
+    }
+
     const selectedCountry = options.find((opt) => opt.value === countryCode);
 
     const fullPayload = {
@@ -291,6 +298,7 @@ const Register = () => {
       ...(email.trim() && { email: email.trim().toLowerCase() }),
       password: password.trim(),
       referredBy: referredBy.trim(),
+      termsAccepted: true,
     };
 
     try {
@@ -628,6 +636,34 @@ const Register = () => {
             </div>
           </div>
 
+                    {/* TERMS & CONDITIONS */}
+          <div className="flex items-start gap-2.5 pt-1 pb-1">
+            <input
+              type="checkbox"
+              id="terms-checkbox"
+              checked={agreeTerms}
+              onChange={(e) => setAgreeTerms(e.target.checked)}
+              className="w-4 h-4 mt-0.5 accent-blue-600 rounded cursor-pointer shrink-0"
+            />
+            <label
+              htmlFor="terms-checkbox"
+              className="text-xs text-gray-600 cursor-pointer select-none leading-relaxed"
+            >
+              I agree to the{" "}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setTermsModalOpen(true);
+                }}
+                className="text-blue-600 font-semibold hover:underline cursor-pointer"
+              >
+                Terms & Conditions
+              </button>{" "}
+              and Privacy Policy.
+            </label>
+          </div>
+
           {/* SUBMIT */}
           <Button
             fullWidth
@@ -735,6 +771,129 @@ const Register = () => {
           >
             Continue to Login
           </Button>
+        </DialogContent>
+      </Dialog>
+      {/* TERMS & CONDITIONS MODAL */}
+      <Dialog
+        open={termsModalOpen}
+        onClose={() => setTermsModalOpen(false)}
+        PaperProps={{
+          sx: {
+            borderRadius: "20px",
+            maxWidth: "480px",
+            width: "100%",
+            boxShadow: "0 8px 24px rgba(15,23,42,0.12)",
+          },
+        }}
+      >
+        <DialogContent className="px-6 py-6 text-gray-800">
+          <div className="flex justify-between items-center mb-4 pb-2 border-b border-gray-100">
+            <h3 className="text-lg font-extrabold text-gray-900">
+              Terms & Conditions
+            </h3>
+            <button
+              type="button"
+              onClick={() => setTermsModalOpen(false)}
+              className="text-gray-400 hover:text-gray-600 text-xl font-bold px-2 py-0.5 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="text-xs text-gray-600 space-y-3.5 max-h-[360px] overflow-y-auto pr-1 leading-relaxed">
+            <p className="font-medium text-gray-700">
+              Welcome to the platform. By creating an account and participating in our community, you agree to comply with and be bound by the following terms:
+            </p>
+
+            <div>
+              <h4 className="font-bold text-gray-800 text-[13px] mb-1">
+                1. Eligibility & Verification
+              </h4>
+              <p>
+                You must be at least 18 years old to register. All members must provide accurate personal, contact, and banking information. KYC verification is mandatory for withdrawals and member benefits.
+              </p>
+            </div>
+
+            <div>
+              <h4 className="font-bold text-gray-800 text-[13px] mb-1">
+                2. Account Security
+              </h4>
+              <p>
+                You are solely responsible for maintaining the confidentiality of your login credentials and transaction security. Any activity occurring under your account is your responsibility.
+              </p>
+            </div>
+
+            <div>
+              <h4 className="font-bold text-gray-800 text-[13px] mb-1">
+                3. Referral & Platform Integrity
+              </h4>
+              <p>
+                Creating fake, bot, or duplicate accounts to exploit referral programs or incentives is strictly prohibited. Any violation may result in account termination and forfeiture of balances.
+              </p>
+            </div>
+
+            <div>
+              <h4 className="font-bold text-gray-800 text-[13px] mb-1">
+                4. Withdrawals & Policies
+              </h4>
+              <p>
+                Withdrawals are subject to verification, minimum thresholds, and applicable system policies. Approved and rejected requests are governed by the platform payout guidelines.
+              </p>
+            </div>
+
+            <div>
+              <h4 className="font-bold text-gray-800 text-[13px] mb-1">
+                5. Compliance & Amendments
+              </h4>
+              <p>
+                The platform reserves the right to amend these terms at any time with notification. Continued use of the platform after modifications constitutes acceptance of the revised terms.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6 pt-3 border-t border-gray-100 flex gap-3">
+            <Button
+              fullWidth
+              variant="outlined"
+              onClick={() => setTermsModalOpen(false)}
+              sx={{
+                borderRadius: "12px",
+                textTransform: "none",
+                fontWeight: 600,
+                py: 1,
+                borderColor: "#e2e8f0",
+                color: "#64748b",
+                "&:hover": {
+                  borderColor: "#cbd5e1",
+                  background: "#f8fafc",
+                },
+              }}
+            >
+              Close
+            </Button>
+            <Button
+              fullWidth
+              variant="contained"
+              onClick={() => {
+                setAgreeTerms(true);
+                setTermsModalOpen(false);
+              }}
+              sx={{
+                background: "#2867ef",
+                borderRadius: "12px",
+                textTransform: "none",
+                fontWeight: 700,
+                py: 1,
+                boxShadow: "none",
+                "&:hover": {
+                  background: "#1550d3",
+                  boxShadow: "none",
+                },
+              }}
+            >
+              I Accept
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

@@ -109,31 +109,45 @@ const formatINR = (value) => {
 const AdminReferralIncomeHistory = () => {
   const [referralHistory, setReferralHistory] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [page, setPage] = useState(1);
+  const [rows, setRows] = useState(100);
   const [lastUpdated, setLastUpdated] = useState(null);
 
-  const fetchReferralHistory = useCallback(async () => {
+  const fetchReferralHistory = useCallback(async (pageNum = 1, limitNum = 100) => {
     try {
       setLoading(true);
 
-      const response = await getReferralIncomeHistory();
+      const response = await getReferralIncomeHistory({ page: pageNum, limit: limitNum });
 
       if (response?.success) {
         setReferralHistory(Array.isArray(response?.data) ? response.data : []);
+        setTotalRecords(response?.totalRecords || response?.data?.length || 0);
+        setPage(pageNum);
+        setRows(limitNum);
         setLastUpdated(new Date());
       } else {
         setReferralHistory([]);
+        setTotalRecords(0);
       }
     } catch (error) {
       console.error("Error while fetching referral income history:", error);
       setReferralHistory([]);
+      setTotalRecords(0);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchReferralHistory();
+    fetchReferralHistory(1, 100);
   }, [fetchReferralHistory]);
+
+  const handlePageChange = (event) => {
+    const newPage = (event.page !== undefined ? event.page : Math.floor(event.first / event.rows)) + 1;
+    const newRows = event.rows || 100;
+    fetchReferralHistory(newPage, newRows);
+  };
 
   const totalBonus = referralHistory.reduce(
     (total, item) => total + Number(item?.amount || 0),
@@ -259,6 +273,11 @@ const AdminReferralIncomeHistory = () => {
               data={referralHistory}
               columns={columns}
               loading={loading}
+              lazy={true}
+              totalRecords={totalRecords}
+              defaultRows={100}
+              rowsPerPageOptions={[25, 50, 100, 200]}
+              onPageChange={handlePageChange}
             />
           </div>
         </div>

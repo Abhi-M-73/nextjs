@@ -214,31 +214,45 @@ const formatINR = (value) => {
 const AdminLevelIncomeHistory = () => {
   const [levelHistory, setLevelHistory] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [page, setPage] = useState(1);
+  const [rows, setRows] = useState(100);
   const [lastUpdated, setLastUpdated] = useState(null);
 
-  const fetchLevelHistory = useCallback(async () => {
+  const fetchLevelHistory = useCallback(async (pageNum = 1, limitNum = 100) => {
     try {
       setLoading(true);
 
-      const response = await getLevelIncomeHistory();
+      const response = await getLevelIncomeHistory({ page: pageNum, limit: limitNum });
 
       if (response?.success) {
         setLevelHistory(Array.isArray(response?.data) ? response.data : []);
+        setTotalRecords(response?.totalRecords || response?.data?.length || 0);
+        setPage(pageNum);
+        setRows(limitNum);
         setLastUpdated(new Date());
       } else {
         setLevelHistory([]);
+        setTotalRecords(0);
       }
     } catch (error) {
       console.error("Error while fetching level income history:", error);
       setLevelHistory([]);
+      setTotalRecords(0);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchLevelHistory();
+    fetchLevelHistory(1, 100);
   }, [fetchLevelHistory]);
+
+  const handlePageChange = (event) => {
+    const newPage = (event.page !== undefined ? event.page : Math.floor(event.first / event.rows)) + 1;
+    const newRows = event.rows || 100;
+    fetchLevelHistory(newPage, newRows);
+  };
 
   // Level ascending (L1, L2, L3...), same level ke andar latest pehle
   const sortedHistory = useMemo(() => {
@@ -365,6 +379,11 @@ const AdminLevelIncomeHistory = () => {
               data={sortedHistory}
               columns={columns}
               loading={loading}
+              lazy={true}
+              totalRecords={totalRecords}
+              defaultRows={100}
+              rowsPerPageOptions={[25, 50, 100, 200]}
+              onPageChange={handlePageChange}
             />
           </div>
         </div>

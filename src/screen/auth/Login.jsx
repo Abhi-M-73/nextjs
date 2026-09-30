@@ -40,7 +40,7 @@ const Login = () => {
     let isValid = true;
 
     if (!loginPayload.email.trim()) {
-      formErrors.email = "Email / Username is required";
+      formErrors.email = "userId is required";
       isValid = false;
     }
     if (!loginPayload.password) {
@@ -78,8 +78,8 @@ const Login = () => {
       console.log("Login error:", error?.response?.data || error.message);
       toast.error(
         error?.response?.data?.message ||
-          error.message ||
-          "Login failed. Please try again.",
+        error.message ||
+        "Login failed. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -127,16 +127,15 @@ const Login = () => {
           <div className="space-y-5">
             <div>
               <label className="text-gray-600 mb-1.5 text-xs font-semibold tracking-wide flex gap-1">
-                USERNAME <span className="text-red-500">*</span>
+                UserID <span className="text-red-500">*</span>
               </label>
               <div
-                className={`flex items-center gap-2.5 rounded-xl border transition-colors duration-200 bg-gray-50 px-3.5 ${
-                  errors.email
-                    ? "border-red-400"
-                    : focusedField === "email"
-                      ? "border-blue-500 bg-white"
-                      : "border-gray-200"
-                }`}
+                className={`flex items-center gap-2.5 rounded-xl border transition-colors duration-200 bg-gray-50 px-3.5 ${errors.email
+                  ? "border-red-400"
+                  : focusedField === "email"
+                    ? "border-blue-500 bg-white"
+                    : "border-gray-200"
+                  }`}
               >
                 <HiOutlineMail
                   size={18}
@@ -152,7 +151,7 @@ const Login = () => {
                   onFocus={() => setFocusedField("email")}
                   onBlur={() => setFocusedField(null)}
                   value={loginPayload.email}
-                  placeholder="Enter your username"
+                  placeholder="Enter your UserID"
                   disabled={loading}
                   className="w-full py-3 bg-transparent outline-none border-none text-[15px] text-gray-900 placeholder-gray-400"
                   onKeyDown={(e) => e.key === "Enter" && handleLoginSubmit()}
@@ -168,13 +167,12 @@ const Login = () => {
                 PASSWORD <span className="text-red-500">*</span>
               </label>
               <div
-                className={`flex items-center gap-2.5 rounded-xl border transition-colors duration-200 bg-gray-50 px-3.5 ${
-                  errors.password
-                    ? "border-red-400"
-                    : focusedField === "password"
-                      ? "border-blue-500 bg-white"
-                      : "border-gray-200"
-                }`}
+                className={`flex items-center gap-2.5 rounded-xl border transition-colors duration-200 bg-gray-50 px-3.5 ${errors.password
+                  ? "border-red-400"
+                  : focusedField === "password"
+                    ? "border-blue-500 bg-white"
+                    : "border-gray-200"
+                  }`}
               >
                 <RiLockPasswordLine
                   size={18}
