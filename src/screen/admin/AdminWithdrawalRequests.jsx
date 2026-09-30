@@ -361,6 +361,117 @@ import { dateFormatter } from "../../utils/AdditionalFn";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "react-hot-toast";
 
+// ---------------------------------------------------------------------------
+// Constants & helpers
+// ---------------------------------------------------------------------------
+
+const DEFAULT_LIMIT = 50;
+
+const INITIAL_FILTERS = {
+  page: 1,
+  limit: DEFAULT_LIMIT,
+  status: "",
+  startDate: "",
+  endDate: "",
+  search: "",
+};
+
+const EMPTY_BUCKET = { count: 0, amount: 0, fee: 0, net: 0 };
+
+const INITIAL_STATS = {
+  all: EMPTY_BUCKET,
+  pending: EMPTY_BUCKET,
+  approved: EMPTY_BUCKET,
+  rejected: EMPTY_BUCKET,
+};
+
+const STATUS_TABS = [
+  { value: "", label: "All" },
+  { value: "pending", label: "Pending" },
+  { value: "approved", label: "Approved" },
+  { value: "rejected", label: "Rejected" },
+];
+
+const inrFormatter = new Intl.NumberFormat("en-IN", {
+  style: "currency",
+  currency: "INR",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+const formatINR = (value) => inrFormatter.format(Number(value || 0));
+
+const STATUS_BADGE = {
+  pending: "bg-yellow-100 text-yellow-700",
+  approved: "bg-green-100 text-green-700",
+  completed: "bg-green-100 text-green-700",
+  rejected: "bg-red-100 text-red-700",
+  failed: "bg-red-100 text-red-700",
+};
+
+// ---------------------------------------------------------------------------
+// Small presentational pieces
+// ---------------------------------------------------------------------------
+
+const DetailRow = ({ label, value, valueClass = "text-gray-900 font-medium", last }) => (
+  <div className={`flex justify-between py-1.5 ${last ? "" : "border-b border-gray-100"}`}>
+    <span className="text-gray-500">{label}</span>
+    <span className={valueClass}>{value}</span>
+  </div>
+);
+
+const ModalShell = ({ onClose, children }) => (
+  <div
+    className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+    onClick={onClose}
+  >
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl"
+    >
+      {children}
+    </div>
+  </div>
+);
+
+const StatCard = ({ title, icon: Icon, gradient, bucket, lines, active, loading, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`group relative overflow-hidden rounded-2xl border bg-white p-5 text-left shadow-sm transition-all duration-300 hover:shadow-lg ${active ? "border-indigo-300 ring-2 ring-indigo-100" : "border-slate-100"
+      }`}
+  >
+    <div className={`absolute left-0 right-0 top-0 h-1 bg-gradient-to-r ${gradient}`} />
+
+    <div className="mb-3 flex items-center justify-between">
+      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{title}</p>
+      <div className={`rounded-xl bg-gradient-to-br ${gradient} p-2 text-white shadow`}>
+        <Icon className="h-4 w-4" />
+      </div>
+    </div>
+
+    <h3 className="text-2xl font-bold tracking-tight text-slate-900">
+      {loading ? "—" : bucket.count}
+      <span className="ml-1 text-xs font-medium text-slate-400">requests</span>
+    </h3>
+
+    <div className="mt-3 space-y-1 text-xs">
+      {lines.map(({ label, key, className }) => (
+        <div key={label} className="flex justify-between">
+          <span className="text-slate-500">{label}</span>
+          <span className={`font-semibold ${className || "text-slate-700"}`}>
+            {loading ? "—" : formatINR(bucket[key])}
+          </span>
+        </div>
+      ))}
+    </div>
+  </button>
+);
+
+// ---------------------------------------------------------------------------
+// Modals
+// ---------------------------------------------------------------------------
+
 const BankDetailsModal = ({ withdrawal, onClose }) => {
   if (!withdrawal) return null;
 
