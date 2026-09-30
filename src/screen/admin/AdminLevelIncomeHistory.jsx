@@ -188,23 +188,240 @@
 
 // export default AdminLevelIncomeHistory;
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  ArrowUpRight,
-  Banknote,
-  Calendar,
-  Layers,
-  RefreshCw,
-  TrendingUp,
-  Users,
-} from "lucide-react";
+// import { useCallback, useEffect, useMemo, useState } from "react";
+// import {
+//   ArrowUpRight,
+//   Banknote,
+//   Calendar,
+//   Layers,
+//   RefreshCw,
+//   TrendingUp,
+//   Users,
+// } from "lucide-react";
+// import { getLevelIncomeHistory } from "../../api/admin.api";
+// import DynamicTable from "../../components/ui/DynamicTable";
+// import { dateFormatter } from "../../utils/AdditionalFn";
+
+// const formatINR = (value) => {
+//   const amount = Number(value || 0);
+
+//   return `₹${amount.toLocaleString("en-IN", {
+//     minimumFractionDigits: 2,
+//     maximumFractionDigits: 2,
+//   })}`;
+// };
+
+// const AdminLevelIncomeHistory = () => {
+//   const [levelHistory, setLevelHistory] = useState([]);
+//   const [loading, setLoading] = useState(false);
+//   const [totalRecords, setTotalRecords] = useState(0);
+//   const [page, setPage] = useState(1);
+//   const [rows, setRows] = useState(100);
+//   const [lastUpdated, setLastUpdated] = useState(null);
+
+//   const fetchLevelHistory = useCallback(async (pageNum = 1, limitNum = 100) => {
+//     try {
+//       setLoading(true);
+
+//       const response = await getLevelIncomeHistory({ page: pageNum, limit: limitNum });
+
+//       if (response?.success) {
+//         setLevelHistory(Array.isArray(response?.data) ? response.data : []);
+//         setTotalRecords(response?.totalRecords || response?.data?.length || 0);
+//         setPage(pageNum);
+//         setRows(limitNum);
+//         setLastUpdated(new Date());
+//       } else {
+//         setLevelHistory([]);
+//         setTotalRecords(0);
+//       }
+//     } catch (error) {
+//       console.error("Error while fetching level income history:", error);
+//       setLevelHistory([]);
+//       setTotalRecords(0);
+//     } finally {
+//       setLoading(false);
+//     }
+//   }, []);
+
+//   useEffect(() => {
+//     fetchLevelHistory(1, 100);
+//   }, [fetchLevelHistory]);
+
+//   const handlePageChange = (event) => {
+//     const newPage = (event.page !== undefined ? event.page : Math.floor(event.first / event.rows)) + 1;
+//     const newRows = event.rows || 100;
+//     fetchLevelHistory(newPage, newRows);
+//   };
+
+//   // Level ascending (L1, L2, L3...), same level ke andar latest pehle
+//   const sortedHistory = useMemo(() => {
+//     return [...levelHistory].sort((a, b) => {
+//       const levelA = Number(a?.level ?? Infinity);
+//       const levelB = Number(b?.level ?? Infinity);
+
+//       if (levelA !== levelB) return levelA - levelB;
+
+//       return new Date(b?.createdAt || 0) - new Date(a?.createdAt || 0);
+//     });
+//   }, [levelHistory]);
+
+//   const totalIncome = levelHistory.reduce(
+//     (total, item) => total + Number(item?.amount || 0),
+//     0,
+//   );
+
+//   const totalPackageAmount = levelHistory.reduce(
+//     (total, item) => total + Number(item?.investmentAmount || 0),
+//     0,
+//   );
+
+//   const uniqueEarners = new Set(
+//     levelHistory.map((item) => item?.userId?._id).filter(Boolean),
+//   ).size;
+
+//   const columns = [
+//     {
+//       key: "sr",
+//       label: "#",
+//       isIndex: true,
+//     },
+//     {
+//       key: "username",
+//       label: "Earned By",
+//       render: (_, row) => (
+//         <span className="font-semibold text-slate-700">
+//           {row?.userId?.username?.toUpperCase() || "—"}
+//         </span>
+//       ),
+//     },
+//     {
+//       key: "name",
+//       label: "Earned By Name",
+//       render: (_, row) => (
+//         <span className="font-semibold text-slate-700">
+//           {row?.userId?.name?.toUpperCase() || "—"}
+//         </span>
+//       ),
+//     },
+//     {
+//       key: "fromUsername",
+//       label: "From Downline",
+//       render: (_, row) => (
+//         <span className="text-slate-600">
+//           {row?.fromUserId?.username?.toUpperCase() || "—"}
+//         </span>
+//       ),
+//     },
+//     {
+//       key: "fromName",
+//       label: "From Downline Name",
+//       render: (_, row) => (
+//         <span className="text-slate-600">
+//           {row?.fromUserId?.name?.toUpperCase() || "—"}
+//         </span>
+//       ),
+//     },
+//     {
+//       key: "level",
+//       label: "Level",
+//       render: (value) => (
+//         <span className="rounded-lg bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-600">
+//           {value !== undefined && value !== null ? `L${value}` : "—"}
+//         </span>
+//       ),
+//     },
+//     {
+//       key: "investmentAmount",
+//       label: "Package",
+//       render: formatINR,
+//     },
+//     {
+//       key: "amount",
+//       label: "Income Credited",
+//       render: formatINR,
+//     },
+//     {
+//       key: "dayCount",
+//       label: "Day",
+//       render: (value) => value ?? "—",
+//     },
+//     {
+//       key: "createdAt",
+//       label: "Credited On",
+//       render: (value) => (value ? dateFormatter(value) : "—"),
+//     },
+//   ];
+
+//   return (
+//     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+//       {/* Main Content */}
+//       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+//         {/* Section Header */}
+//         <div className="mb-4 flex items-center gap-2">
+//           <div className="rounded-lg bg-slate-100 p-1.5 text-slate-600">
+//             <TrendingUp className="h-4 w-4" />
+//           </div>
+
+//           <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-700">
+//             Level Income Transactions
+//           </h2>
+
+//           <div className="ml-3 h-px flex-1 bg-slate-200" />
+//         </div>
+
+//         {/* Table */}
+//         <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white p-4 shadow-sm md:p-6">
+//           <div className="w-full overflow-x-auto">
+//             <DynamicTable
+//               dataKey="_id"
+//               title="Level Income History"
+//               data={sortedHistory}
+//               columns={columns}
+//               loading={loading}
+//               lazy={true}
+//               totalRecords={totalRecords}
+//               defaultRows={100}
+//               rowsPerPageOptions={[25, 50, 100, 200]}
+//               onPageChange={handlePageChange}
+//             />
+//           </div>
+//         </div>
+
+//         {/* Footer */}
+//         <div className="mt-8 border-t border-slate-200 pt-6">
+//           <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-slate-500">
+//             <div className="flex items-center gap-2">
+//               <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+//               <span>System operational</span>
+//             </div>
+
+//             <span>
+//               Total records: {levelHistory.length} · Last sync:{" "}
+//               {lastUpdated?.toLocaleString() || "Never"}
+//             </span>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default AdminLevelIncomeHistory;
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { RefreshCw, TrendingUp } from "lucide-react";
 import { getLevelIncomeHistory } from "../../api/admin.api";
 import DynamicTable from "../../components/ui/DynamicTable";
 import { dateFormatter } from "../../utils/AdditionalFn";
 
+// Fixed package amount shown in the UI (DB values are ignored for display)
+const FIXED_PACKAGE_AMOUNT = 1199;
+
+const DEFAULT_ROWS = 100;
+
 const formatINR = (value) => {
   const amount = Number(value || 0);
-
   return `₹${amount.toLocaleString("en-IN", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -216,69 +433,73 @@ const AdminLevelIncomeHistory = () => {
   const [loading, setLoading] = useState(false);
   const [totalRecords, setTotalRecords] = useState(0);
   const [page, setPage] = useState(1);
-  const [rows, setRows] = useState(100);
+  const [rows, setRows] = useState(DEFAULT_ROWS);
   const [lastUpdated, setLastUpdated] = useState(null);
 
-  const fetchLevelHistory = useCallback(async (pageNum = 1, limitNum = 100) => {
-    try {
-      setLoading(true);
+  // Ref keeps the latest page size without re-creating the fetch function
+  const rowsRef = useRef(DEFAULT_ROWS);
 
-      const response = await getLevelIncomeHistory({ page: pageNum, limit: limitNum });
+  const fetchLevelHistory = useCallback(
+    async (pageNum = 1, limitNum = rowsRef.current) => {
+      try {
+        setLoading(true);
 
-      if (response?.success) {
-        setLevelHistory(Array.isArray(response?.data) ? response.data : []);
-        setTotalRecords(response?.totalRecords || response?.data?.length || 0);
-        setPage(pageNum);
-        setRows(limitNum);
-        setLastUpdated(new Date());
-      } else {
+        const response = await getLevelIncomeHistory({
+          page: pageNum,
+          limit: limitNum,
+        });
+
+        if (response?.success) {
+          const list = Array.isArray(response?.data) ? response.data : [];
+          setLevelHistory(list);
+          // Supports both { pagination: { total } } and { totalRecords } response shapes
+          setTotalRecords(
+            response?.pagination?.total ??
+              response?.totalRecords ??
+              list.length,
+          );
+          setPage(pageNum);
+          setRows(limitNum);
+          rowsRef.current = limitNum;
+          setLastUpdated(new Date());
+        } else {
+          setLevelHistory([]);
+          setTotalRecords(0);
+        }
+      } catch (error) {
+        console.error("Error while fetching level income history:", error);
         setLevelHistory([]);
         setTotalRecords(0);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error while fetching level income history:", error);
-      setLevelHistory([]);
-      setTotalRecords(0);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [],
+  );
 
   useEffect(() => {
-    fetchLevelHistory(1, 100);
+    fetchLevelHistory(1, DEFAULT_ROWS);
   }, [fetchLevelHistory]);
 
+  // DynamicTable sends { page, first, rows }; page is 0-based
   const handlePageChange = (event) => {
-    const newPage = (event.page !== undefined ? event.page : Math.floor(event.first / event.rows)) + 1;
-    const newRows = event.rows || 100;
+    const newRows = event?.rows || rowsRef.current;
+    const newPage =
+      (event?.page !== undefined
+        ? event.page
+        : Math.floor((event?.first || 0) / newRows)) + 1;
     fetchLevelHistory(newPage, newRows);
   };
 
-  // Level ascending (L1, L2, L3...), same level ke andar latest pehle
+  // Level ascending (L1, L2, L3...), newest first within the same level (current page only)
   const sortedHistory = useMemo(() => {
     return [...levelHistory].sort((a, b) => {
       const levelA = Number(a?.level ?? Infinity);
       const levelB = Number(b?.level ?? Infinity);
-
       if (levelA !== levelB) return levelA - levelB;
-
       return new Date(b?.createdAt || 0) - new Date(a?.createdAt || 0);
     });
   }, [levelHistory]);
-
-  const totalIncome = levelHistory.reduce(
-    (total, item) => total + Number(item?.amount || 0),
-    0,
-  );
-
-  const totalPackageAmount = levelHistory.reduce(
-    (total, item) => total + Number(item?.investmentAmount || 0),
-    0,
-  );
-
-  const uniqueEarners = new Set(
-    levelHistory.map((item) => item?.userId?._id).filter(Boolean),
-  ).size;
 
   const columns = [
     {
@@ -334,12 +555,12 @@ const AdminLevelIncomeHistory = () => {
     {
       key: "investmentAmount",
       label: "Package",
-      render: formatINR,
+      render: () => formatINR(FIXED_PACKAGE_AMOUNT),
     },
     {
       key: "amount",
       label: "Income Credited",
-      render: formatINR,
+      render: (value) => formatINR(value),
     },
     {
       key: "dayCount",
@@ -355,19 +576,27 @@ const AdminLevelIncomeHistory = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
-      {/* Main Content */}
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Section Header */}
+        {/* Section header with refresh */}
         <div className="mb-4 flex items-center gap-2">
           <div className="rounded-lg bg-slate-100 p-1.5 text-slate-600">
             <TrendingUp className="h-4 w-4" />
           </div>
-
           <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-700">
             Level Income Transactions
           </h2>
-
           <div className="ml-3 h-px flex-1 bg-slate-200" />
+          <button
+            type="button"
+            onClick={() => fetchLevelHistory(page, rows)}
+            disabled={loading}
+            title="Refresh level income history"
+            className="rounded-lg p-2 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <RefreshCw
+              className={`h-4 w-4 text-slate-600 ${loading ? "animate-spin" : ""}`}
+            />
+          </button>
         </div>
 
         {/* Table */}
@@ -381,7 +610,7 @@ const AdminLevelIncomeHistory = () => {
               loading={loading}
               lazy={true}
               totalRecords={totalRecords}
-              defaultRows={100}
+              defaultRows={DEFAULT_ROWS}
               rowsPerPageOptions={[25, 50, 100, 200]}
               onPageChange={handlePageChange}
             />
@@ -393,12 +622,13 @@ const AdminLevelIncomeHistory = () => {
           <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-slate-500">
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
-              <span>System operational</span>
+              <span>
+                Page {page} of {Math.max(1, Math.ceil(totalRecords / rows))}
+              </span>
             </div>
-
             <span>
-              Total records: {levelHistory.length} · Last sync:{" "}
-              {lastUpdated?.toLocaleString() || "Never"}
+              Total records: {totalRecords} · Last sync:{" "}
+              {lastUpdated?.toLocaleString("en-IN") || "Never"}
             </span>
           </div>
         </div>

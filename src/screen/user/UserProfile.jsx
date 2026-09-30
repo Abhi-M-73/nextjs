@@ -63,8 +63,9 @@ const UserProfile = () => {
     window.location.replace("/admin/dashboard");
   };
 
-  const formatUSD = (val) =>
-    `$${(val || 0).toLocaleString("en-US", {
+  // Formats a number as Indian Rupees, e.g. ₹1,23,456.00
+  const formatINR = (val) =>
+    `₹${Number(val || 0).toLocaleString("en-IN", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`;
@@ -72,13 +73,13 @@ const UserProfile = () => {
   const stats = [
     {
       label: "Available Balance",
-      value: formatUSD(user?.mainWallet),
+      value: formatINR(user?.mainWallet),
       icon: Wallet,
       gradient: "from-indigo-500 to-blue-600",
     },
     {
       label: "Total Payouts",
-      value: formatUSD(user?.totalPayouts),
+      value: formatINR(user?.totalPayouts),
       icon: Banknote,
       gradient: "from-amber-500 to-orange-500",
     },
@@ -223,7 +224,7 @@ const UserProfile = () => {
                   {item.label}
                 </div>
                 <span className="text-gray-900 font-extrabold">
-                  {formatUSD(item.value)}
+                  {formatINR(item.value)}
                 </span>
               </div>
             );

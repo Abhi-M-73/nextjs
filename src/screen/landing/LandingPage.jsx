@@ -1,21 +1,25 @@
-import BackgroundEffects from "../../components/ui/BackgroundEffects";
-import Navbar from "../../components/common/Navbar";
+import "./landing.css";
+import Navbar from "./Navbar";
 import HeroSection from "./HeroSection";
-import StatsSection from "./StatsSection";
-import Footer from "../../components/common/Footer";
-import AboutSection from "./AboutSection";
-import HowItsWork from "./HowItsWork";
-import EcosystemSection from "./EcosystemSection";
-import TokenBridge from "./TokenBridge";
-import LLDChart from "./LLDChart";
+import Marquee from "./Marquee";
+import PlanSection from "./PlanSection";
+import BuildTeamSection from "./BuildTeamSection";
+import PolicySection from "./PolicySection";
+import GetStartedSection from "./GetStartedSection";
+import Footer from "./Footer";
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
+    <div className="landing-root grain min-h-screen overflow-x-hidden antialiased">
       <Navbar />
-      <HeroSection />
-      <HowItsWork />
-      <StatsSection />
+      <main>
+        <HeroSection />
+        <Marquee />
+        <PlanSection />
+        <BuildTeamSection />
+        <PolicySection />
+        <GetStartedSection />
+      </main>
       <Footer />
     </div>
   );

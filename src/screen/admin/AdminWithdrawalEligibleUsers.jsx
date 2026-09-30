@@ -1,4 +1,10 @@
-import React, { useEffect, useState, useMemo, useRef } from "react";
+import React, {
+  useEffect,
+  useState,
+  useMemo,
+  useRef,
+  useCallback,
+} from "react";
 import DynamicTable from "../../components/ui/DynamicTable";
 import {
   getWithdrawalEligibleUsers,
@@ -18,29 +24,72 @@ import {
 } from "@mui/material";
 import { toast } from "react-toastify";
 import {
-  Calendar,
   Download,
   FileText,
   FileSpreadsheet,
-  Printer,
-  TrendingUp,
-  Users,
+  FileDown,
   Banknote,
   Search,
   RefreshCw,
-  CheckCircle2,
-  XCircle,
-  Clock3,
-  Filter,
-  ArrowUpRight,
   ChevronDown,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import { dateFormatter } from "../../utils/AdditionalFn";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 
 // Fee percentage used for display only (not deducted from the approved amount)
 const PAYOUT_CUT_PERCENT = 10;
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+// Formats a Date as YYYY-MM-DD in the browser's local timezone (not UTC)
+const toLocalDateStr = (date) => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+};
+
+// Returns Monday of the week for the given date
+const getMonday = (date) => {
+  const d = new Date(date);
+  const day = d.getDay();
+  d.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+
+const formatINR = (val) =>
+  `₹${Math.abs(Number(val) || 0).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+
+// Default jsPDF fonts cannot render the ₹ symbol, so "Rs." is used in PDFs
+const formatPdfAmount = (val) =>
+  `Rs. ${Number(val || 0).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+
+// Display-only helper: wallet balance after the fee is deducted
+const getPayableAmount = (mainWallet) =>
+  (Number(mainWallet) || 0) * (1 - PAYOUT_CUT_PERCENT / 100);
+
+// Escapes text before inserting it into the Word report HTML
+const escapeHtml = (value) =>
+  String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+
+// ---------------------------------------------------------------------------
+// Page
+// ---------------------------------------------------------------------------
 
 const AdminWithdrawalEligibleUsers = () => {
   const [data, setData] = useState([]);
@@ -48,10 +97,12 @@ const AdminWithdrawalEligibleUsers = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [search, setSearch] = useState("");
 
-  // Date Filters
-  const [datePreset, setDatePreset] = useState("all"); // 'all' | 'this_week' | 'last_week' | 'this_month' | 'custom'
+  // Date filters
+  const [datePreset, setDatePreset] = useState("all");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+
+  // Export dropdown
   const [showExportMenu, setShowExportMenu] = useState(false);
   const exportMenuRef = useRef(null);
 
@@ -64,7 +115,6 @@ const AdminWithdrawalEligibleUsers = () => {
     type: null,
     user: null,
   });
-
   const [approveAmount, setApproveAmount] = useState("");
 
   // Close export dropdown when clicking outside
@@ -78,7 +128,11 @@ const AdminWithdrawalEligibleUsers = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const fetchWithdrawalEligibleUsers = async () => {
+  // -------------------------------------------------------------------------
+  // Fetch
+  // -------------------------------------------------------------------------
+
+  const fetchWithdrawalEligibleUsers = useCallback(async () => {
     try {
       setLoading(true);
       const params = {};
@@ -87,120 +141,80 @@ const AdminWithdrawalEligibleUsers = () => {
 
       const res = await getWithdrawalEligibleUsers(params);
       if (res?.success) {
-        setData(res?.data || []);
+        setData(Array.isArray(res?.data) ? res.data : []);
+      } else {
+        setData([]);
+        toast.error(res?.message || "Failed to load eligible users");
       }
     } catch (error) {
-      console.log(error);
+      console.error("Fetch eligible users error:", error);
+      toast.error(
+        error?.response?.data?.message || "Failed to load eligible users",
+      );
     } finally {
       setLoading(false);
     }
-  };
+  }, [startDate, endDate]);
 
   useEffect(() => {
     fetchWithdrawalEligibleUsers();
-  }, [startDate, endDate]);
+  }, [fetchWithdrawalEligibleUsers]);
 
-  const formatINR = (val) =>
-    `₹${Math.abs(val || 0).toLocaleString("en-IN", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })}`;
+  // -------------------------------------------------------------------------
+  // Date presets (kept for when the preset UI is enabled)
+  // -------------------------------------------------------------------------
 
-  // Display-only helper: wallet balance after the fee is deducted
-  const getPayableAmount = (mainWallet) =>
-    (mainWallet || 0) * (1 - PAYOUT_CUT_PERCENT / 100);
-
-  // Handle Preset Date Filter
   const handleDatePresetChange = (preset) => {
     setDatePreset(preset);
-    const now = new Date();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
     if (preset === "all") {
       setStartDate("");
       setEndDate("");
     } else if (preset === "this_week") {
-      // Current week (starting Monday)
-      const day = now.getDay();
-      const diffToMonday = now.getDate() - day + (day === 0 ? -6 : 1);
-      const monday = new Date(now.setDate(diffToMonday));
-      monday.setHours(0, 0, 0, 0);
-
-      const today = new Date();
-      setStartDate(monday.toISOString().slice(0, 10));
-      setEndDate(today.toISOString().slice(0, 10));
+      setStartDate(toLocalDateStr(getMonday(today)));
+      setEndDate(toLocalDateStr(today));
     } else if (preset === "last_week") {
-      // Last week Monday to Sunday
-      const day = now.getDay();
-      const diffToLastMonday = now.getDate() - day - 6 + (day === 0 ? -6 : 1);
-      const lastMonday = new Date(now.setDate(diffToLastMonday));
-      lastMonday.setHours(0, 0, 0, 0);
-
-      const lastSunday = new Date(lastMonday);
-      lastSunday.setDate(lastMonday.getDate() + 6);
-      lastSunday.setHours(23, 59, 59, 999);
-
-      setStartDate(lastMonday.toISOString().slice(0, 10));
-      setEndDate(lastSunday.toISOString().slice(0, 10));
+      const thisMonday = getMonday(today);
+      const lastMonday = new Date(thisMonday);
+      lastMonday.setDate(thisMonday.getDate() - 7);
+      const lastSunday = new Date(thisMonday);
+      lastSunday.setDate(thisMonday.getDate() - 1);
+      setStartDate(toLocalDateStr(lastMonday));
+      setEndDate(toLocalDateStr(lastSunday));
     } else if (preset === "this_month") {
-      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-      const today = new Date();
-      setStartDate(firstDay.toISOString().slice(0, 10));
-      setEndDate(today.toISOString().slice(0, 10));
+      setStartDate(
+        toLocalDateStr(new Date(today.getFullYear(), today.getMonth(), 1)),
+      );
+      setEndDate(toLocalDateStr(today));
     }
   };
 
-  // Filter Data Client-Side
+  // -------------------------------------------------------------------------
+  // Client-side search (date filtering is already done by the backend)
+  // -------------------------------------------------------------------------
+
   const filteredData = useMemo(() => {
-    return data.filter((row) => {
-      // Search filter
-      if (search.trim()) {
-        const q = search.toLowerCase();
-        const matchesName = (row?.name || "").toLowerCase().includes(q);
-        const matchesUsername = (row?.username || "").toLowerCase().includes(q);
-        const matchesBank = (row?.bankDetails?.bankName || "")
+    const q = search.trim().toLowerCase();
+    if (!q) return data;
+
+    return data.filter((row) =>
+      [
+        row?.name,
+        row?.username,
+        row?.bankDetails?.bankName,
+        row?.bankDetails?.accountNumber,
+        row?.bankDetails?.upiId,
+      ].some((field) =>
+        String(field || "")
           .toLowerCase()
-          .includes(q);
-        const matchesAcc = (row?.bankDetails?.accountNumber || "")
-          .toLowerCase()
-          .includes(q);
-        const matchesUpi = (row?.bankDetails?.upiId || "")
-          .toLowerCase()
-          .includes(q);
+          .includes(q),
+      ),
+    );
+  }, [data, search]);
 
-        if (
-          !matchesName &&
-          !matchesUsername &&
-          !matchesBank &&
-          !matchesAcc &&
-          !matchesUpi
-        ) {
-          return false;
-        }
-      }
-
-      // Date filter on client if items have timestamps
-      if (startDate || endDate) {
-        const itemDate = row?.updatedAt || row?.createdAt;
-        if (itemDate) {
-          const d = new Date(itemDate);
-          if (startDate) {
-            const start = new Date(startDate);
-            start.setHours(0, 0, 0, 0);
-            if (d < start) return false;
-          }
-          if (endDate) {
-            const end = new Date(endDate);
-            end.setHours(23, 59, 59, 999);
-            if (d > end) return false;
-          }
-        }
-      }
-
-      return true;
-    });
-  }, [data, search, startDate, endDate]);
-
-  // Weekly & Overall KPI Stats
+  // KPI stats
   const weeklyStats = useMemo(() => {
     const totalUsers = filteredData.length;
     const totalWallet = filteredData.reduce(
@@ -212,25 +226,113 @@ const AdminWithdrawalEligibleUsers = () => {
       0,
     );
     const avgPayable = totalUsers > 0 ? totalPayable / totalUsers : 0;
-
-    return {
-      totalUsers,
-      totalWallet,
-      totalPayable,
-      avgPayable,
-    };
+    return { totalUsers, totalWallet, totalPayable, avgPayable };
   }, [filteredData]);
 
-  // Report Summary Descriptor
   const getPeriodLabel = () => {
-    if (startDate && endDate) return `${startDate} to ${endDate}`;
-    if (datePreset === "this_week") return "This Week (Current)";
+    if (datePreset === "this_week") return "This Week";
     if (datePreset === "last_week") return "Last Week";
     if (datePreset === "this_month") return "This Month";
+    if (startDate || endDate)
+      return `${startDate || "..."} to ${endDate || "..."}`;
     return "All Time";
   };
 
-  // 1. Download Word (.doc) Report
+  // -------------------------------------------------------------------------
+  // Export: PDF (Name, Username, Amount only, all users across pages)
+  // -------------------------------------------------------------------------
+
+  const handleDownloadPdf = () => {
+    if (!filteredData.length) {
+      toast.error("No eligible records to export!");
+      return;
+    }
+
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "pt",
+      format: "a4",
+    });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+
+    // Amount = payable after fee (same as the "Payable Balance" column)
+    const rows = filteredData.map((u, i) => [
+      i + 1,
+      u?.name || "-",
+      (u?.username || "-").toUpperCase(),
+      formatPdfAmount(getPayableAmount(u?.mainWallet)),
+    ]);
+
+    // Title block on the first page
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("Withdrawal Eligible Members", 40, 45);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(100);
+    doc.text(
+      `Generated: ${new Date().toLocaleString("en-IN")}  |  Period: ${getPeriodLabel()}  |  Members: ${filteredData.length}`,
+      40,
+      62,
+    );
+    doc.setTextColor(0);
+
+    autoTable(doc, {
+      startY: 78,
+      head: [["#", "Name", "Username", "Amount"]],
+      body: rows,
+      foot: [["", "", "Total", formatPdfAmount(weeklyStats.totalPayable)]],
+      showHead: "everyPage",
+      showFoot: "lastPage",
+      theme: "grid",
+      styles: {
+        font: "helvetica",
+        fontSize: 9,
+        cellPadding: 5,
+        overflow: "linebreak",
+      },
+      headStyles: {
+        fillColor: [37, 99, 235],
+        textColor: 255,
+        fontStyle: "bold",
+      },
+      footStyles: {
+        fillColor: [241, 245, 249],
+        textColor: 20,
+        fontStyle: "bold",
+      },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+      columnStyles: {
+        0: { cellWidth: 40, halign: "center" },
+        1: { cellWidth: "auto" },
+        2: { cellWidth: 110 },
+        3: { cellWidth: 110, halign: "right" },
+      },
+      margin: { top: 40, left: 40, right: 40, bottom: 40 },
+    });
+
+    // Page numbers are added after the table so the total page count is known
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let p = 1; p <= totalPages; p += 1) {
+      doc.setPage(p);
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      doc.text(`Page ${p} of ${totalPages}`, pageWidth - 40, pageHeight - 20, {
+        align: "right",
+      });
+    }
+
+    doc.save(`Withdrawal_Eligible_${toLocalDateStr(new Date())}.pdf`);
+    setShowExportMenu(false);
+    toast.success(`PDF downloaded with ${filteredData.length} members`);
+  };
+
+  // -------------------------------------------------------------------------
+  // Export: Word (.doc)
+  // -------------------------------------------------------------------------
+
   const handleDownloadWord = () => {
     if (!filteredData.length) {
       toast.error("No eligible records to export!");
@@ -242,7 +344,7 @@ const AdminWithdrawalEligibleUsers = () => {
       <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
       <head>
         <meta charset='utf-8'>
-        <title>Weekly Withdrawal Eligible Report</title>
+        <title>Withdrawal Eligible Report</title>
         <style>
           body { font-family: 'Segoe UI', Calibri, Arial, sans-serif; font-size: 11pt; color: #1e293b; margin: 30px; }
           .header { border-bottom: 2px solid #2563eb; padding-bottom: 12px; margin-bottom: 20px; }
@@ -250,12 +352,12 @@ const AdminWithdrawalEligibleUsers = () => {
           .sub { color: #64748b; font-size: 10pt; margin: 0; }
           .kpi-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
           .kpi-table td { padding: 12px; border: 1px solid #cbd5e1; background-color: #f8fafc; }
-          .kpi-title { font-size: 9pt; text-transform: uppercase; color: #64748b; font-weight: bold; letter-spacing: 0.5px; }
+          .kpi-title { font-size: 9pt; text-transform: uppercase; color: #64748b; font-weight: bold; }
           .kpi-value { font-size: 16pt; font-weight: bold; color: #0f172a; margin-top: 4px; }
           h2 { color: #0f172a; font-size: 13pt; margin: 20px 0 10px 0; }
           .data-table { width: 100%; border-collapse: collapse; font-size: 10pt; }
           .data-table th { background-color: #2563eb; color: white; padding: 10px 8px; text-align: left; font-size: 9pt; border: 1px solid #2563eb; }
-          .data-table td { padding: 8px 8px; border: 1px solid #e2e8f0; }
+          .data-table td { padding: 8px; border: 1px solid #e2e8f0; }
           .data-table tr:nth-child(even) { background-color: #f8fafc; }
           .amount { font-family: 'Consolas', monospace; font-weight: bold; color: #15803d; }
           .footer { margin-top: 30px; font-size: 9pt; color: #94a3b8; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 10px; }
@@ -263,8 +365,8 @@ const AdminWithdrawalEligibleUsers = () => {
       </head>
       <body>
         <div class="header">
-          <h1>BINEXT - WEEKLY WITHDRAWAL ELIGIBLE REPORT</h1>
-          <p class="sub">Generated on: ${new Date().toLocaleString("en-IN")} | Period: <strong>${period}</strong></p>
+          <h1>BINEXT - WITHDRAWAL ELIGIBLE REPORT</h1>
+          <p class="sub">Generated on: ${new Date().toLocaleString("en-IN")} | Period: <strong>${escapeHtml(period)}</strong></p>
         </div>
 
         <table class="kpi-table">
@@ -275,11 +377,11 @@ const AdminWithdrawalEligibleUsers = () => {
             </td>
             <td>
               <div class="kpi-title">Gross Wallet Volume</div>
-              <div class="kpi-value">₹${weeklyStats.totalWallet.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</div>
+              <div class="kpi-value">${formatINR(weeklyStats.totalWallet)}</div>
             </td>
             <td>
-              <div class="kpi-title">Net Payable (After 10% Fee)</div>
-              <div class="kpi-value" style="color: #16a34a;">₹${weeklyStats.totalPayable.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</div>
+              <div class="kpi-title">Net Payable (After ${PAYOUT_CUT_PERCENT}% Fee)</div>
+              <div class="kpi-value" style="color: #16a34a;">${formatINR(weeklyStats.totalPayable)}</div>
             </td>
           </tr>
         </table>
@@ -292,7 +394,7 @@ const AdminWithdrawalEligibleUsers = () => {
               <th>Member Name</th>
               <th>User ID</th>
               <th>Wallet Balance</th>
-              <th>Payable (90%)</th>
+              <th>Payable (${100 - PAYOUT_CUT_PERCENT}%)</th>
               <th>Bank Name</th>
               <th>Account Number</th>
               <th>IFSC Code</th>
@@ -301,22 +403,21 @@ const AdminWithdrawalEligibleUsers = () => {
           </thead>
           <tbody>
             ${filteredData
-        .map(
-          (u, i) => `
+              .map(
+                (u, i) => `
               <tr>
                 <td>${i + 1}</td>
-                <td><strong>${u.name || "—"}</strong></td>
-                <td>@${(u.username || "—").toUpperCase()}</td>
-                <td class="amount">₹${Number(u.mainWallet || 0).toFixed(2)}</td>
-                <td class="amount">₹${getPayableAmount(u.mainWallet).toFixed(2)}</td>
-                <td>${u.bankDetails?.bankName || "—"}</td>
-                <td>${u.bankDetails?.accountNumber || "—"}</td>
-                <td>${(u.bankDetails?.ifscCode || "—").toUpperCase()}</td>
-                <td>${u.bankDetails?.upiId || "—"}</td>
-              </tr>
-            `,
-        )
-        .join("")}
+                <td><strong>${escapeHtml(u.name || "—")}</strong></td>
+                <td>@${escapeHtml((u.username || "—").toUpperCase())}</td>
+                <td class="amount">${formatINR(u.mainWallet)}</td>
+                <td class="amount">${formatINR(getPayableAmount(u.mainWallet))}</td>
+                <td>${escapeHtml(u.bankDetails?.bankName || "—")}</td>
+                <td>${escapeHtml(u.bankDetails?.accountNumber || "—")}</td>
+                <td>${escapeHtml((u.bankDetails?.ifscCode || "—").toUpperCase())}</td>
+                <td>${escapeHtml(u.bankDetails?.upiId || "—")}</td>
+              </tr>`,
+              )
+              .join("")}
           </tbody>
         </table>
 
@@ -330,22 +431,22 @@ const AdminWithdrawalEligibleUsers = () => {
     const blob = new Blob(["\ufeff" + docContent], {
       type: "application/msword;charset=utf-8",
     });
-    saveAs(
-      blob,
-      `Weekly_Withdrawal_Eligible_${new Date().toISOString().slice(0, 10)}.doc`,
-    );
+    saveAs(blob, `Withdrawal_Eligible_${toLocalDateStr(new Date())}.doc`);
     setShowExportMenu(false);
     toast.success("Word report downloaded successfully!");
   };
 
-  // 2. Download Excel (.xlsx) Report
+  // -------------------------------------------------------------------------
+  // Export: Excel (.xlsx)
+  // -------------------------------------------------------------------------
+
   const handleDownloadExcel = () => {
     if (!filteredData.length) {
       toast.error("No eligible records to export!");
       return;
     }
 
-    const rows = filteredData.map((u, i) => ({
+    const exportRows = filteredData.map((u, i) => ({
       "#": i + 1,
       Name: u.name || "—",
       Username: (u.username || "—").toUpperCase(),
@@ -358,7 +459,7 @@ const AdminWithdrawalEligibleUsers = () => {
       "Direct Referrals": u.directActiveReferrals || 0,
     }));
 
-    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const worksheet = XLSX.utils.json_to_sheet(exportRows);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Eligible Withdrawals");
     const excelBuffer = XLSX.write(workbook, {
@@ -368,21 +469,15 @@ const AdminWithdrawalEligibleUsers = () => {
     const blob = new Blob([excelBuffer], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
     });
-    saveAs(
-      blob,
-      `Weekly_Withdrawal_Eligible_${new Date().toISOString().slice(0, 10)}.xlsx`,
-    );
+    saveAs(blob, `Withdrawal_Eligible_${toLocalDateStr(new Date())}.xlsx`);
     setShowExportMenu(false);
     toast.success("Excel report exported successfully!");
   };
 
-  // 3. Print / PDF Report
-  const handlePrintPdf = () => {
-    setShowExportMenu(false);
-    window.print();
-  };
+  // -------------------------------------------------------------------------
+  // Approve / Reject
+  // -------------------------------------------------------------------------
 
-  // Approval Handlers
   const openConfirm = (type, user = null) => {
     setConfirmDialog({ open: true, type, user });
     setApproveAmount(type === "approve" ? String(user?.mainWallet ?? "") : "");
@@ -395,7 +490,7 @@ const AdminWithdrawalEligibleUsers = () => {
   };
 
   const numApproveAmount = Number(approveAmount);
-  const maxApproveAmount = confirmDialog.user?.mainWallet || 0;
+  const maxApproveAmount = Number(confirmDialog.user?.mainWallet) || 0;
 
   const isApproveAmountValid =
     confirmDialog.type !== "approve" ||
@@ -425,7 +520,7 @@ const AdminWithdrawalEligibleUsers = () => {
     const { type, user } = confirmDialog;
 
     if (type === "approve" && !isApproveAmountValid) {
-      toast?.error?.("Please enter a valid amount");
+      toast.error("Please enter a valid amount");
       return;
     }
 
@@ -434,36 +529,42 @@ const AdminWithdrawalEligibleUsers = () => {
 
       if (type === "approve") {
         await adminApproveWithdrawal(user._id, numApproveAmount);
-        toast?.success?.(
+        toast.success(
           `Approved! Pay ${formatINR(numApproveAmount)} to ${user?.name || user?.username}.`,
         );
         addToPayoutPending([buildPayoutEntry(user, numApproveAmount)]);
       } else if (type === "reject") {
         await adminRejectWithdrawal(user._id);
-        toast?.info?.("Withdrawal rejected");
+        toast.info("Withdrawal rejected");
       } else if (type === "approveAll") {
         const userIds = filteredData.map((u) => u._id);
         const res = await adminApproveAllWithdrawals(userIds);
-        toast?.success?.(`${res?.data?.length || 0} withdrawals approved`);
-
+        toast.success(
+          `${res?.data?.length || userIds.length} withdrawals approved`,
+        );
         addToPayoutPending(
           filteredData.map((u) => buildPayoutEntry(u, u?.mainWallet || 0)),
         );
       } else if (type === "rejectAll") {
         const userIds = filteredData.map((u) => u._id);
         await adminRejectAllWithdrawals(userIds);
-        toast?.info?.("All withdrawals rejected");
+        toast.info("All withdrawals rejected");
       }
 
+      setConfirmDialog({ open: false, type: null, user: null });
+      setApproveAmount("");
       await fetchWithdrawalEligibleUsers();
-      closeConfirm();
     } catch (error) {
-      console.log(error);
-      toast?.error?.(error?.response?.data?.message || "Something went wrong");
+      console.error("Withdrawal action error:", error);
+      toast.error(error?.response?.data?.message || "Something went wrong");
     } finally {
       setActionLoading(false);
     }
   };
+
+  // -------------------------------------------------------------------------
+  // Table columns
+  // -------------------------------------------------------------------------
 
   const columns = [
     { key: "sr", label: "#", isIndex: true },
@@ -477,14 +578,14 @@ const AdminWithdrawalEligibleUsers = () => {
       key: "mainWallet",
       label: "Wallet Balance",
       render: (val) => (
-        <span className="text-emerald-600 font-semibold">{formatINR(val)}</span>
+        <span className="font-semibold text-emerald-600">{formatINR(val)}</span>
       ),
     },
     {
       key: "payableBalance",
       label: `Payable Balance (after ${PAYOUT_CUT_PERCENT}% fee)`,
       render: (_, row) => (
-        <span className="text-emerald-700 font-bold">
+        <span className="font-bold text-emerald-700">
           {formatINR(getPayableAmount(row?.mainWallet))}
         </span>
       ),
@@ -516,13 +617,13 @@ const AdminWithdrawalEligibleUsers = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => openConfirm("approve", row)}
-            className="px-3 py-1.5 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100 transition-colors"
+            className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-600 transition-colors hover:bg-emerald-100"
           >
             Approve
           </button>
           <button
             onClick={() => openConfirm("reject", row)}
-            className="px-3 py-1.5 text-xs font-semibold rounded-full bg-rose-50 text-rose-500 border border-rose-200 hover:bg-rose-100 transition-colors"
+            className="rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-500 transition-colors hover:bg-rose-100"
           >
             Reject
           </button>
@@ -543,7 +644,7 @@ const AdminWithdrawalEligibleUsers = () => {
       key: "payoutAmount",
       label: "Payout Amount",
       render: (val) => (
-        <span className="text-emerald-600 font-bold">{formatINR(val)}</span>
+        <span className="font-bold text-emerald-600">{formatINR(val)}</span>
       ),
     },
     { key: "bankName", label: "Bank Name", render: (val) => val || "—" },
@@ -564,7 +665,7 @@ const AdminWithdrawalEligibleUsers = () => {
       render: (_, row) => (
         <button
           onClick={() => removeFromPayoutPending(row._id)}
-          className="px-3 py-1.5 text-xs font-semibold rounded-full bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 transition-colors"
+          className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-200"
         >
           Mark as Paid
         </button>
@@ -585,80 +686,85 @@ const AdminWithdrawalEligibleUsers = () => {
     return "";
   };
 
-  return (
-    <div className="w-full overflow-auto p-4 md:p-8 space-y-6 max-w-7xl mx-auto">
-      {/* Print Specific Header */}
-      <div className="hidden print:block mb-6">
-        <h1 className="text-2xl font-black text-slate-900">
-          BINEXT - WEEKLY WITHDRAWAL ELIGIBLE REPORT
-        </h1>
-        <p className="text-xs text-slate-500 mt-1">
-          Generated on: {new Date().toLocaleString("en-IN")} | Period: {getPeriodLabel()}
-        </p>
-      </div>
+  // -------------------------------------------------------------------------
+  // Render
+  // -------------------------------------------------------------------------
 
-      {/* Main Header (Hidden in Print) */}
-      <div className="print:hidden flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-600/20">
-              <Banknote size={22} />
-            </div>
-            <div>
-              <h1 className="text-2xl font-black tracking-tight text-slate-900">
-                Withdrawal Eligible & Tracking
-              </h1>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Weekly sales, withdrawal eligibility tracking, and payout processing
-              </p>
-            </div>
+  return (
+    <div className="mx-auto w-full max-w-7xl space-y-6 overflow-auto p-4 md:p-8">
+      {/* Header */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-600/20">
+            <Banknote size={22} />
+          </div>
+          <div>
+            <h1 className="text-2xl font-black tracking-tight text-slate-900">
+              Withdrawal Eligible & Tracking
+            </h1>
+            <p className="mt-0.5 text-xs text-slate-500">
+              Weekly withdrawal eligibility tracking and payout processing
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 self-start md:self-auto flex-wrap">
-          {/* Download Report Dropdown */}
+        <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
+          {/* Download dropdown */}
           <div className="relative" ref={exportMenuRef}>
             <button
-              onClick={() => setShowExportMenu(!showExportMenu)}
-              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-600/20 flex items-center gap-2 transition-all"
+              onClick={() => setShowExportMenu((prev) => !prev)}
+              className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-md shadow-blue-600/20 transition-all hover:bg-blue-700"
             >
               <Download size={14} />
               <span>Download Report</span>
-              <ChevronDown size={13} className={showExportMenu ? "rotate-180 transition-transform" : ""} />
+              <ChevronDown
+                size={13}
+                className={`transition-transform ${showExportMenu ? "rotate-180" : ""}`}
+              />
             </button>
 
             {showExportMenu && (
-              <div className="absolute right-0 mt-2 w-52 bg-white rounded-2xl shadow-xl border border-slate-100 py-1.5 z-50">
+              <div className="absolute right-0 z-50 mt-2 w-56 rounded-2xl border border-slate-100 bg-white py-1.5 shadow-xl">
                 <button
-                  onClick={handlePrintPdf}
-                  className="w-full px-4 py-2.5 text-left text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition-colors font-medium"
+                  onClick={handleDownloadPdf}
+                  className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50"
                 >
-                  <Printer size={15} className="text-rose-500" />
+                  <FileDown size={15} className="text-rose-500" />
                   <div>
-                    <p className="font-bold text-slate-800">Print / PDF Report</p>
-                    <p className="text-[10px] text-slate-400">Save as PDF document</p>
+                    <p className="font-bold text-slate-800">Download PDF</p>
+                    <p className="text-[10px] text-slate-400">
+                      Name, username & amount only
+                    </p>
                   </div>
                 </button>
 
                 <button
                   onClick={handleDownloadWord}
-                  className="w-full px-4 py-2.5 text-left text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition-colors font-medium border-t border-slate-100"
+                  className="flex w-full items-center gap-2.5 border-t border-slate-100 px-4 py-2.5 text-left text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50"
                 >
                   <FileText size={15} className="text-blue-500" />
                   <div>
-                    <p className="font-bold text-slate-800">Word Document (.doc)</p>
-                    <p className="text-[10px] text-slate-400">Editable Word report</p>
+                    <p className="font-bold text-slate-800">
+                      Word Document (.doc)
+                    </p>
+                    <p className="text-[10px] text-slate-400">
+                      Full report with bank details
+                    </p>
                   </div>
                 </button>
 
                 <button
                   onClick={handleDownloadExcel}
-                  className="w-full px-4 py-2.5 text-left text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition-colors font-medium border-t border-slate-100"
+                  className="flex w-full items-center gap-2.5 border-t border-slate-100 px-4 py-2.5 text-left text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50"
                 >
                   <FileSpreadsheet size={15} className="text-emerald-500" />
                   <div>
-                    <p className="font-bold text-slate-800">Excel Sheet (.xlsx)</p>
-                    <p className="text-[10px] text-slate-400">Structured data spreadsheet</p>
+                    <p className="font-bold text-slate-800">
+                      Excel Sheet (.xlsx)
+                    </p>
+                    <p className="text-[10px] text-slate-400">
+                      Structured data spreadsheet
+                    </p>
                   </div>
                 </button>
               </div>
@@ -668,7 +774,7 @@ const AdminWithdrawalEligibleUsers = () => {
           <button
             onClick={() => openConfirm("approveAll")}
             disabled={!filteredData.length}
-            className="px-4 py-2 text-xs font-bold rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 shadow-md shadow-emerald-600/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            className="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-md shadow-emerald-600/20 transition-all hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Approve All
           </button>
@@ -676,7 +782,7 @@ const AdminWithdrawalEligibleUsers = () => {
           <button
             onClick={() => openConfirm("rejectAll")}
             disabled={!filteredData.length}
-            className="px-4 py-2 text-xs font-bold rounded-xl bg-rose-600 text-white hover:bg-rose-700 shadow-md shadow-rose-600/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            className="rounded-xl bg-rose-600 px-4 py-2 text-xs font-bold text-white shadow-md shadow-rose-600/20 transition-all hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Reject All
           </button>
@@ -684,147 +790,91 @@ const AdminWithdrawalEligibleUsers = () => {
           <button
             onClick={fetchWithdrawalEligibleUsers}
             disabled={loading}
-            className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-50 shadow-sm flex items-center gap-1.5 transition-all disabled:opacity-50"
+            title="Refresh"
+            className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 disabled:opacity-50"
           >
             <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
           </button>
         </div>
       </div>
 
-      {/* Weekly Sales / Withdrawal Tracking Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
-        <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
+      {/* KPI cards */}
+      <div className="grid grid-cols-2 gap-3.5 md:grid-cols-4">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm">
           <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
             Eligible Members
           </p>
-          <p className="text-2xl font-black text-slate-900 mt-1">
+          <p className="mt-1 text-2xl font-black text-slate-900">
             {weeklyStats.totalUsers}
           </p>
-          <span className="text-[10px] text-slate-400 mt-0.5 block">
-            ≥ ₹700 & 2 direct active
+          <span className="mt-0.5 block text-[10px] text-slate-400">
+            ≥ ₹700, 2 direct active & KYC approved
           </span>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white border border-blue-200/80 shadow-sm relative overflow-hidden">
-          <div className="absolute right-0 top-0 w-2 h-full bg-blue-500" />
+        <div className="relative overflow-hidden rounded-2xl border border-blue-200/80 bg-white p-4 shadow-sm">
+          <div className="absolute right-0 top-0 h-full w-2 bg-blue-500" />
           <p className="text-[10px] font-bold uppercase tracking-wider text-blue-600">
             Gross Wallet Volume
           </p>
-          <p className="text-2xl font-black text-blue-700 mt-1">
+          <p className="mt-1 text-2xl font-black text-blue-700">
             {formatINR(weeklyStats.totalWallet)}
           </p>
-          <span className="text-[10px] text-blue-600/80 mt-0.5 block">
-            Selected date range
+          <span className="mt-0.5 block text-[10px] text-blue-600/80">
+            {getPeriodLabel()}
           </span>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white border border-emerald-200/80 shadow-sm relative overflow-hidden">
-          <div className="absolute right-0 top-0 w-2 h-full bg-emerald-500" />
+        <div className="relative overflow-hidden rounded-2xl border border-emerald-200/80 bg-white p-4 shadow-sm">
+          <div className="absolute right-0 top-0 h-full w-2 bg-emerald-500" />
           <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">
-            Net Payable (90%)
+            Net Payable ({100 - PAYOUT_CUT_PERCENT}%)
           </p>
-          <p className="text-2xl font-black text-emerald-700 mt-1">
+          <p className="mt-1 text-2xl font-black text-emerald-700">
             {formatINR(weeklyStats.totalPayable)}
           </p>
-          <span className="text-[10px] text-emerald-600/80 mt-0.5 block">
-            After 10% processing fee
+          <span className="mt-0.5 block text-[10px] text-emerald-600/80">
+            After {PAYOUT_CUT_PERCENT}% processing fee
           </span>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white border border-indigo-200/80 shadow-sm relative overflow-hidden">
-          <div className="absolute right-0 top-0 w-2 h-full bg-indigo-500" />
+        <div className="relative overflow-hidden rounded-2xl border border-indigo-200/80 bg-white p-4 shadow-sm">
+          <div className="absolute right-0 top-0 h-full w-2 bg-indigo-500" />
           <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-600">
             Average Payout
           </p>
-          <p className="text-2xl font-black text-indigo-700 mt-1">
+          <p className="mt-1 text-2xl font-black text-indigo-700">
             {formatINR(weeklyStats.avgPayable)}
           </p>
-          <span className="text-[10px] text-indigo-600/80 mt-0.5 block">
+          <span className="mt-0.5 block text-[10px] text-indigo-600/80">
             Per qualified member
           </span>
         </div>
       </div>
 
-      {/* Date Filter & Search Controls (Hidden in Print) */}
-      <div className="print:hidden flex flex-col md:flex-row items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm">
-        {/* Preset Date Filter Tabs */}
-        {/* <div className="flex items-center gap-1.5 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
-          {[
-            { key: "all", label: "All Time" },
-            { key: "this_week", label: "This Week" },
-            { key: "last_week", label: "Last Week" },
-            { key: "this_month", label: "This Month" },
-          ].map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => handleDatePresetChange(tab.key)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 ${
-                datePreset === tab.key
-                  ? "bg-blue-600 text-white shadow-sm shadow-blue-600/20"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div> */}
-
-        {/* Custom Date Range & Search Input */}
-        <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
-          {/* <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1 text-xs w-full sm:w-auto">
-            <Calendar size={13} className="text-slate-400 shrink-0" />
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => {
-                setDatePreset("custom");
-                setStartDate(e.target.value);
-              }}
-              className="bg-transparent text-slate-700 text-xs focus:outline-none"
-              title="Start Date"
-            />
-            <span className="text-slate-400">to</span>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => {
-                setDatePreset("custom");
-                setEndDate(e.target.value);
-              }}
-              className="bg-transparent text-slate-700 text-xs focus:outline-none"
-              title="End Date"
-            />
-            {(startDate || endDate) && (
-              <button
-                onClick={() => {
-                  setDatePreset("all");
-                  setStartDate("");
-                  setEndDate("");
-                }}
-                className="text-[10px] text-rose-500 font-bold ml-1 hover:underline"
-              >
-                Clear
-              </button>
-            )}
-          </div> */}
-
-          <div className="relative w-full sm:w-60">
-            <Search
-              size={15}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-            />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search member, bank, acc..."
-              className="w-full h-9 pl-9 pr-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
-            />
-          </div>
+      {/* Search */}
+      <div className="flex flex-col items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white p-3 shadow-sm md:flex-row">
+        <div className="relative w-full sm:w-72">
+          <Search
+            size={15}
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+          />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search member, bank, account, UPI..."
+            className="h-9 w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-3 text-xs text-slate-800 transition-all placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none"
+          />
         </div>
+        {search && (
+          <p className="text-xs text-slate-500">
+            Showing {filteredData.length} of {data.length} members
+          </p>
+        )}
       </div>
 
-      {/* Main Table */}
+      {/* Main table */}
       <DynamicTable
         dataKey="_id"
         title={`Withdrawal Eligible Members (${filteredData.length})`}
@@ -833,18 +883,17 @@ const AdminWithdrawalEligibleUsers = () => {
         loading={loading}
       />
 
-      {/* Payout Pending Section */}
+      {/* Payout pending section */}
       {payoutPending.length > 0 && (
-        <div className="mt-8 print:hidden">
-          <div className="flex items-center justify-between mb-2">
-            <div>
-              <h2 className="font-bold text-lg text-slate-900">
-                Payout Pending ({payoutPending.length})
-              </h2>
-              <p className="text-xs text-slate-500">
-                These users have been approved for payout and are waiting to be marked as paid.
-              </p>
-            </div>
+        <div className="mt-8">
+          <div className="mb-2">
+            <h2 className="text-lg font-bold text-slate-900">
+              Payout Pending ({payoutPending.length})
+            </h2>
+            <p className="text-xs text-slate-500">
+              These users have been approved for payout and are waiting to be
+              marked as paid.
+            </p>
           </div>
           <DynamicTable
             dataKey="_id"
@@ -856,20 +905,20 @@ const AdminWithdrawalEligibleUsers = () => {
         </div>
       )}
 
-      {/* Confirm Dialog */}
+      {/* Confirm dialog */}
       <Dialog
         open={confirmDialog.open}
         onClose={closeConfirm}
         maxWidth="xs"
         fullWidth
       >
-        <DialogTitle className="font-bold">
+        <DialogTitle sx={{ fontWeight: 700 }}>
           {confirmDialog.type === "approve"
             ? "Approve Withdrawal"
             : "Confirm Action"}
         </DialogTitle>
         <DialogContent>
-          <p className="text-sm text-gray-600 mb-3">{getDialogText()}</p>
+          <p className="mb-3 text-sm text-gray-600">{getDialogText()}</p>
 
           {confirmDialog.type === "approve" && (
             <TextField
@@ -879,6 +928,7 @@ const AdminWithdrawalEligibleUsers = () => {
               size="small"
               value={approveAmount}
               onChange={(e) => setApproveAmount(e.target.value)}
+              inputProps={{ min: 1, max: maxApproveAmount, step: "0.01" }}
               error={approveAmount !== "" && !isApproveAmountValid}
               helperText={
                 approveAmount !== "" && !isApproveAmountValid
@@ -897,7 +947,7 @@ const AdminWithdrawalEligibleUsers = () => {
             variant="contained"
             color={
               confirmDialog.type === "reject" ||
-                confirmDialog.type === "rejectAll"
+              confirmDialog.type === "rejectAll"
                 ? "error"
                 : "success"
             }

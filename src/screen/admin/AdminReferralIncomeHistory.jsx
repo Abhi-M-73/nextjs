@@ -83,23 +83,240 @@
 // };
 
 // export default AdminReferralIncomeHistory;
-import { useCallback, useEffect, useState } from "react";
-import {
-  ArrowUpRight,
-  Banknote,
-  Calendar,
-  Gift,
-  RefreshCw,
-  TrendingUp,
-  Users,
-} from "lucide-react";
+
+// import { useCallback, useEffect, useState } from "react";
+// import {
+//   ArrowUpRight,
+//   Banknote,
+//   Calendar,
+//   Gift,
+//   RefreshCw,
+//   TrendingUp,
+//   Users,
+// } from "lucide-react";
+// import { getReferralIncomeHistory } from "../../api/admin.api";
+// import DynamicTable from "../../components/ui/DynamicTable";
+// import { dateFormatter } from "../../utils/AdditionalFn";
+
+// const formatINR = (value) => {
+//   const amount = Number(value || 0);
+
+//   return `₹${amount.toLocaleString("en-IN", {
+//     minimumFractionDigits: 2,
+//     maximumFractionDigits: 2,
+//   })}`;
+// };
+
+// const AdminReferralIncomeHistory = () => {
+//   const [referralHistory, setReferralHistory] = useState([]);
+//   const [loading, setLoading] = useState(false);
+//   const [totalRecords, setTotalRecords] = useState(0);
+//   const [page, setPage] = useState(1);
+//   const [rows, setRows] = useState(100);
+//   const [lastUpdated, setLastUpdated] = useState(null);
+
+//   const fetchReferralHistory = useCallback(async (pageNum = 1, limitNum = 100) => {
+//     try {
+//       setLoading(true);
+
+//       const response = await getReferralIncomeHistory({ page: pageNum, limit: limitNum });
+
+//       if (response?.success) {
+//         setReferralHistory(Array.isArray(response?.data) ? response.data : []);
+//         setTotalRecords(response?.totalRecords || response?.data?.length || 0);
+//         setPage(pageNum);
+//         setRows(limitNum);
+//         setLastUpdated(new Date());
+//       } else {
+//         setReferralHistory([]);
+//         setTotalRecords(0);
+//       }
+//     } catch (error) {
+//       console.error("Error while fetching referral income history:", error);
+//       setReferralHistory([]);
+//       setTotalRecords(0);
+//     } finally {
+//       setLoading(false);
+//     }
+//   }, []);
+
+//   useEffect(() => {
+//     fetchReferralHistory(1, 100);
+//   }, [fetchReferralHistory]);
+
+//   const handlePageChange = (event) => {
+//     const newPage = (event.page !== undefined ? event.page : Math.floor(event.first / event.rows)) + 1;
+//     const newRows = event.rows || 100;
+//     fetchReferralHistory(newPage, newRows);
+//   };
+
+//   const totalBonus = referralHistory.reduce(
+//     (total, item) => total + Number(item?.amount || 0),
+//     0,
+//   );
+
+//   const totalPackageAmount = referralHistory.reduce(
+//     (total, item) => total + Number(item?.baseAmount || 0),
+//     0,
+//   );
+
+//   const uniqueEarners = new Set(
+//     referralHistory.map((item) => item?.userId?._id).filter(Boolean),
+//   ).size;
+
+//   const columns = [
+//     {
+//       key: "sr",
+//       label: "#",
+//       isIndex: true,
+//     },
+//     {
+//       key: "username",
+//       label: "Earned By",
+//       render: (_, row) => (
+//         <span className="font-semibold text-slate-700">
+//           {row?.userId?.username?.toUpperCase() || "—"}
+//         </span>
+//       ),
+//     },
+//     {
+//       key: "fromUser",
+//       label: "From Referral",
+//       render: (_, row) => (
+//         <span className="text-slate-600">
+//           {row?.fromUser?.username?.toUpperCase() || "—"}
+//         </span>
+//       ),
+//     },
+//     {
+//       key: "baseAmount",
+//       label: "Package",
+//       render: formatINR,
+//     },
+//     {
+//       key: "amount",
+//       label: "Bonus Credited",
+//       render: formatINR,
+//     },
+//     {
+//       key: "investmentId",
+//       label: "Investment Status",
+//       isBadge: true,
+//       render: (value) => value?.status || "N/A",
+//     },
+//     {
+//       key: "createdAt",
+//       label: "Credited On",
+//       render: (value) => (value ? dateFormatter(value) : "—"),
+//     },
+//   ];
+
+//   return (
+//     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+//       {/* Top Navigation Bar */}
+//       <div className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur-md">
+//         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+//           <div>
+//             <h1 className="bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-xl font-bold text-transparent">
+//               Referral Income History
+//             </h1>
+//             <p className="text-xs text-slate-500">
+//               Track referral bonuses credited to platform users
+//             </p>
+//           </div>
+
+//           <div className="flex items-center gap-3">
+//             {lastUpdated && (
+//               <div className="hidden items-center gap-1.5 text-xs text-slate-500 sm:flex">
+//                 <Calendar className="h-3.5 w-3.5" />
+//                 <span>Updated: {lastUpdated.toLocaleTimeString()}</span>
+//               </div>
+//             )}
+
+//             <button
+//               type="button"
+//               onClick={fetchReferralHistory}
+//               disabled={loading}
+//               title="Refresh referral history"
+//               className="rounded-lg p-2 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+//             >
+//               <RefreshCw
+//                 className={`h-4 w-4 text-slate-600 ${
+//                   loading ? "animate-spin" : ""
+//                 }`}
+//               />
+//             </button>
+//           </div>
+//         </div>
+//       </div>
+
+//       {/* Main Content */}
+//       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+//         {/* Section Header */}
+//         <div className="mb-4 flex items-center gap-2">
+//           <div className="rounded-lg bg-slate-100 p-1.5 text-slate-600">
+//             <TrendingUp className="h-4 w-4" />
+//           </div>
+
+//           <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-700">
+//             Referral Transactions
+//           </h2>
+
+//           <div className="ml-3 h-px flex-1 bg-slate-200" />
+//         </div>
+
+//         {/* Table */}
+//         <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white p-4 shadow-sm md:p-6">
+//           <div className="w-full overflow-x-auto">
+//             <DynamicTable
+//               dataKey="_id"
+//               title="Referral Income History"
+//               data={referralHistory}
+//               columns={columns}
+//               loading={loading}
+//               lazy={true}
+//               totalRecords={totalRecords}
+//               defaultRows={100}
+//               rowsPerPageOptions={[25, 50, 100, 200]}
+//               onPageChange={handlePageChange}
+//             />
+//           </div>
+//         </div>
+
+//         {/* Footer */}
+//         <div className="mt-8 border-t border-slate-200 pt-6">
+//           <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-slate-500">
+//             <div className="flex items-center gap-2">
+//               <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+//               <span>System operational</span>
+//             </div>
+
+//             <span>
+//               Total records: {referralHistory.length} · Last sync:{" "}
+//               {lastUpdated?.toLocaleString() || "Never"}
+//             </span>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default AdminReferralIncomeHistory;
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Calendar, RefreshCw, TrendingUp } from "lucide-react";
 import { getReferralIncomeHistory } from "../../api/admin.api";
 import DynamicTable from "../../components/ui/DynamicTable";
 import { dateFormatter } from "../../utils/AdditionalFn";
 
+// Fixed package amount shown in the UI (DB values are ignored for display)
+const FIXED_PACKAGE_AMOUNT = 1199;
+
+const DEFAULT_ROWS = 100;
+
 const formatINR = (value) => {
   const amount = Number(value || 0);
-
   return `₹${amount.toLocaleString("en-IN", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -111,57 +328,63 @@ const AdminReferralIncomeHistory = () => {
   const [loading, setLoading] = useState(false);
   const [totalRecords, setTotalRecords] = useState(0);
   const [page, setPage] = useState(1);
-  const [rows, setRows] = useState(100);
+  const [rows, setRows] = useState(DEFAULT_ROWS);
   const [lastUpdated, setLastUpdated] = useState(null);
 
-  const fetchReferralHistory = useCallback(async (pageNum = 1, limitNum = 100) => {
-    try {
-      setLoading(true);
+  // Ref keeps the latest page size without re-creating the fetch function
+  const rowsRef = useRef(DEFAULT_ROWS);
 
-      const response = await getReferralIncomeHistory({ page: pageNum, limit: limitNum });
+  const fetchReferralHistory = useCallback(
+    async (pageNum = 1, limitNum = rowsRef.current) => {
+      try {
+        setLoading(true);
 
-      if (response?.success) {
-        setReferralHistory(Array.isArray(response?.data) ? response.data : []);
-        setTotalRecords(response?.totalRecords || response?.data?.length || 0);
-        setPage(pageNum);
-        setRows(limitNum);
-        setLastUpdated(new Date());
-      } else {
+        const response = await getReferralIncomeHistory({
+          page: pageNum,
+          limit: limitNum,
+        });
+
+        if (response?.success) {
+          const list = Array.isArray(response?.data) ? response.data : [];
+          setReferralHistory(list);
+          // Supports both { pagination: { total } } and { totalRecords } response shapes
+          setTotalRecords(
+            response?.pagination?.total ??
+              response?.totalRecords ??
+              list.length,
+          );
+          setPage(pageNum);
+          setRows(limitNum);
+          rowsRef.current = limitNum;
+          setLastUpdated(new Date());
+        } else {
+          setReferralHistory([]);
+          setTotalRecords(0);
+        }
+      } catch (error) {
+        console.error("Error while fetching referral income history:", error);
         setReferralHistory([]);
         setTotalRecords(0);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error while fetching referral income history:", error);
-      setReferralHistory([]);
-      setTotalRecords(0);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [],
+  );
 
   useEffect(() => {
-    fetchReferralHistory(1, 100);
+    fetchReferralHistory(1, DEFAULT_ROWS);
   }, [fetchReferralHistory]);
 
+  // DynamicTable sends { page, first, rows }; page is 0-based
   const handlePageChange = (event) => {
-    const newPage = (event.page !== undefined ? event.page : Math.floor(event.first / event.rows)) + 1;
-    const newRows = event.rows || 100;
+    const newRows = event?.rows || rowsRef.current;
+    const newPage =
+      (event?.page !== undefined
+        ? event.page
+        : Math.floor((event?.first || 0) / newRows)) + 1;
     fetchReferralHistory(newPage, newRows);
   };
-
-  const totalBonus = referralHistory.reduce(
-    (total, item) => total + Number(item?.amount || 0),
-    0,
-  );
-
-  const totalPackageAmount = referralHistory.reduce(
-    (total, item) => total + Number(item?.baseAmount || 0),
-    0,
-  );
-
-  const uniqueEarners = new Set(
-    referralHistory.map((item) => item?.userId?._id).filter(Boolean),
-  ).size;
 
   const columns = [
     {
@@ -190,12 +413,12 @@ const AdminReferralIncomeHistory = () => {
     {
       key: "baseAmount",
       label: "Package",
-      render: formatINR,
+      render: () => formatINR(FIXED_PACKAGE_AMOUNT),
     },
     {
       key: "amount",
       label: "Bonus Credited",
-      render: formatINR,
+      render: (value) => formatINR(value),
     },
     {
       key: "investmentId",
@@ -212,7 +435,7 @@ const AdminReferralIncomeHistory = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
-      {/* Top Navigation Bar */}
+      {/* Top navigation bar */}
       <div className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div>
@@ -228,43 +451,38 @@ const AdminReferralIncomeHistory = () => {
             {lastUpdated && (
               <div className="hidden items-center gap-1.5 text-xs text-slate-500 sm:flex">
                 <Calendar className="h-3.5 w-3.5" />
-                <span>Updated: {lastUpdated.toLocaleTimeString()}</span>
+                <span>Updated: {lastUpdated.toLocaleTimeString("en-IN")}</span>
               </div>
             )}
 
             <button
               type="button"
-              onClick={fetchReferralHistory}
+              // Refresh the current page instead of passing the click event as page number
+              onClick={() => fetchReferralHistory(page, rows)}
               disabled={loading}
               title="Refresh referral history"
               className="rounded-lg p-2 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <RefreshCw
-                className={`h-4 w-4 text-slate-600 ${
-                  loading ? "animate-spin" : ""
-                }`}
+                className={`h-4 w-4 text-slate-600 ${loading ? "animate-spin" : ""}`}
               />
             </button>
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
+      {/* Main content */}
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Section Header */}
         <div className="mb-4 flex items-center gap-2">
           <div className="rounded-lg bg-slate-100 p-1.5 text-slate-600">
             <TrendingUp className="h-4 w-4" />
           </div>
-
           <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-700">
             Referral Transactions
           </h2>
-
           <div className="ml-3 h-px flex-1 bg-slate-200" />
         </div>
 
-        {/* Table */}
         <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white p-4 shadow-sm md:p-6">
           <div className="w-full overflow-x-auto">
             <DynamicTable
@@ -275,7 +493,7 @@ const AdminReferralIncomeHistory = () => {
               loading={loading}
               lazy={true}
               totalRecords={totalRecords}
-              defaultRows={100}
+              defaultRows={DEFAULT_ROWS}
               rowsPerPageOptions={[25, 50, 100, 200]}
               onPageChange={handlePageChange}
             />
@@ -287,12 +505,13 @@ const AdminReferralIncomeHistory = () => {
           <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-slate-500">
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
-              <span>System operational</span>
+              <span>
+                Page {page} of {Math.max(1, Math.ceil(totalRecords / rows))}
+              </span>
             </div>
-
             <span>
-              Total records: {referralHistory.length} · Last sync:{" "}
-              {lastUpdated?.toLocaleString() || "Never"}
+              Total records: {totalRecords} · Last sync:{" "}
+              {lastUpdated?.toLocaleString("en-IN") || "Never"}
             </span>
           </div>
         </div>

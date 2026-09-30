@@ -1,0 +1,127 @@
+// Single source of truth for all landing page copy, numbers and links.
+// Update values here — components only read from this file.
+
+export const brand = {
+  name: "BINEXT",
+  domain: "BINEXT.IN",
+};
+// Support contact shown in the footer
+export const contact = {
+  phoneDisplay: "+91 91019 23319",
+  phoneHref: "tel:+919101923319",
+  whatsappHref: "https://wa.me/919101923319",
+};
+
+export const links = {
+  register: "/auth/register",
+  login: "/auth/login",
+  terms: "/terms-and-conditions",
+  privacy: "/privacy-policy",
+  businessPlan: "/business-plan.pdf",
+};
+
+export const navItems = [
+  { id: "plan", label: "Plan" },
+  { id: "team", label: "Build Team" },
+  { id: "policy", label: "Policy" },
+  { id: "get-started", label: "Get Started" },
+];
+
+export const hero = {
+  eyebrow: "Official joining package · ₹1,199",
+  titleTop: "Build your team.",
+  titleAccent: "Grow together.",
+  subtitle:
+    "A fixed & structured referral business plan — one joining package, clear cashback rules and a transparent renewal system.",
+};
+
+export const packageHighlights = [
+  {
+    title: "Up to ₹1,000 cashback",
+    note: "2 direct members · claim within 20 days",
+  },
+  { title: "₹999 income renewal", note: "At every ₹9,000 earnings" },
+  { title: "₹199 ID renewal", note: "Every 70 days from activation" },
+  { title: "24-hour refund window", note: "From the date of ID activation" },
+];
+
+export const marqueeItems = [
+  "Joining ₹1,199",
+  "Cashback up to ₹1,000",
+  "2 direct members",
+  "20-day claim period",
+  "₹999 renewal every ₹9,000",
+  "₹199 ID renewal / 70 days",
+  "24h refund window",
+  "Official payments only",
+];
+
+export const teamSteps = [
+  {
+    title: "Register",
+    desc: "Create your account through the official BINEXT.IN platform.",
+    tag: "New Registration",
+  },
+  {
+    title: "Activate your ID",
+    desc: "Activate with the ₹1,199 joining package using official payment channels only.",
+    tag: "₹1,199 one-time",
+  },
+  {
+    title: "Add 2 direct members",
+    desc: "Activate 2 direct members to become eligible for the cashback benefit.",
+    tag: "Eligibility",
+  },
+  {
+    title: "Claim your cashback",
+    desc: "Claim up to ₹1,000 cashback within 20 days from your activation date.",
+    tag: "20-day window",
+  },
+  {
+    title: "Renew & keep growing",
+    desc: "₹999 income renewal at every ₹9,000 earnings, and ₹199 ID renewal every 70 days.",
+    tag: "Structured renewals",
+  },
+];
+
+export const policyFacts = [
+  { value: "24h", label: "Refund claim window" },
+  { value: "No salary", label: "Performance-based earnings" },
+  { value: "₹1,199", label: "Official package amount" },
+];
+
+export const policies = [
+  {
+    id: "business-policy",
+    title: "Our business policy",
+    body: [
+      "BINEXT.IN is a referral-based business platform that provides a 24-hour refund claim period from the date of ID activation.",
+      "Refund claims must be submitted within 24 hours of activation. After this period, BINEXT.IN will not be responsible for refund requests, as per our business policy.",
+    ],
+  },
+  {
+    id: "no-job",
+    title: "No job or fixed salary",
+    body: [
+      "BINEXT.IN does not provide employment, jobs, or fixed salaries.",
+      "All earnings and commissions are performance-based and depend on individual sales, referrals, and business activity. Earnings are not guaranteed and may vary based on individual performance.",
+    ],
+  },
+  {
+    id: "before-registration",
+    title: "Before registration & activation",
+    body: [
+      "We strongly recommend that every member carefully read and understand the Terms & Conditions and Business Policy before registering or activating an ID.",
+      "Once an ID has been activated, members are expected to follow the applicable terms and conditions. Please make sure you fully understand the business model before making any payment or activation.",
+    ],
+  },
+];
+
+export const paymentNotice = {
+  title: "Important payment notice",
+  body: [
+    "Make payments only through the official BINEXT.IN platform or authorized payment channels.",
+    "Do not pay more than the official amount to any individual based on false information, unauthorized promises, or misleading commitments.",
+    "BINEXT.IN is not responsible for payments made to unauthorized individuals or through unofficial channels.",
+  ],
+};

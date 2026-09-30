@@ -6,7 +6,6 @@ import {
 } from "../../api/admin.api";
 import DynamicTable from "../../components/ui/DynamicTable";
 import { dateFormatter } from "../../utils/AdditionalFn";
-import { DATE_PRESETS, getPresetRange } from "../../utils/dateRange";
 import {
   Calendar,
   CheckCircle2,
@@ -49,6 +48,72 @@ const STATUS_TABS = [
   { value: "rejected", label: "Rejected" },
 ];
 
+const DATE_PRESETS = [
+  { value: "all", label: "All Time" },
+  { value: "today", label: "Today" },
+  { value: "yesterday", label: "Yesterday" },
+  { value: "this_week", label: "This Week" },
+  { value: "last_week", label: "Last Week" },
+  { value: "this_month", label: "This Month" },
+  { value: "last_month", label: "Last Month" },
+  { value: "custom", label: "Custom Range" },
+];
+
+// Formats a Date as YYYY-MM-DD in the browser's local timezone (not UTC)
+const toLocalDateStr = (date) => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+};
+
+// Returns Monday of the week for the given date
+const getMonday = (date) => {
+  const d = new Date(date);
+  const day = d.getDay();
+  d.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+
+// Converts a preset into { startDate, endDate } strings
+const getPresetRange = (preset) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  switch (preset) {
+    case "today":
+      return { startDate: toLocalDateStr(today), endDate: toLocalDateStr(today) };
+    case "yesterday": {
+      const y = new Date(today);
+      y.setDate(today.getDate() - 1);
+      return { startDate: toLocalDateStr(y), endDate: toLocalDateStr(y) };
+    }
+    case "this_week":
+      return { startDate: toLocalDateStr(getMonday(today)), endDate: toLocalDateStr(today) };
+    case "last_week": {
+      const thisMonday = getMonday(today);
+      const lastMonday = new Date(thisMonday);
+      lastMonday.setDate(thisMonday.getDate() - 7);
+      const lastSunday = new Date(thisMonday);
+      lastSunday.setDate(thisMonday.getDate() - 1);
+      return { startDate: toLocalDateStr(lastMonday), endDate: toLocalDateStr(lastSunday) };
+    }
+    case "this_month":
+      return {
+        startDate: toLocalDateStr(new Date(today.getFullYear(), today.getMonth(), 1)),
+        endDate: toLocalDateStr(today),
+      };
+    case "last_month":
+      return {
+        startDate: toLocalDateStr(new Date(today.getFullYear(), today.getMonth() - 1, 1)),
+        endDate: toLocalDateStr(new Date(today.getFullYear(), today.getMonth(), 0)),
+      };
+    default:
+      return { startDate: "", endDate: "" };
+  }
+};
+
 const inrFormatter = new Intl.NumberFormat("en-IN", {
   style: "currency",
   currency: "INR",
@@ -65,6 +130,14 @@ const STATUS_BADGE = {
   rejected: "bg-red-100 text-red-700",
   failed: "bg-red-100 text-red-700",
 };
+
+// Merges API stats with defaults so a missing bucket never crashes the cards
+const normalizeStats = (stats) => ({
+  all: { ...EMPTY_BUCKET, ...(stats?.all || {}) },
+  pending: { ...EMPTY_BUCKET, ...(stats?.pending || {}) },
+  approved: { ...EMPTY_BUCKET, ...(stats?.approved || {}) },
+  rejected: { ...EMPTY_BUCKET, ...(stats?.rejected || {}) },
+});
 
 // ---------------------------------------------------------------------------
 // Small presentational pieces
@@ -315,7 +388,10 @@ const AdminWithdrawalRequests = () => {
     setLoading(true);
 
     try {
-      const params = { page: currentFilters.page, limit: currentFilters.limit };
+      const params = {
+        page: Number(currentFilters.page) || 1,
+        limit: Number(currentFilters.limit) || DEFAULT_LIMIT,
+      };
       if (currentFilters.status) params.status = currentFilters.status;
       if (currentFilters.startDate) params.startDate = currentFilters.startDate;
       if (currentFilters.endDate) params.endDate = currentFilters.endDate;
@@ -327,7 +403,7 @@ const AdminWithdrawalRequests = () => {
       if (res?.success) {
         setData(Array.isArray(res.data) ? res.data : []);
         setTotalRecords(res?.pagination?.total ?? 0);
-        setStats(res?.stats ?? INITIAL_STATS);
+        setStats(normalizeStats(res?.stats));
         setLastUpdated(new Date());
       } else {
         setData([]);
@@ -348,8 +424,10 @@ const AdminWithdrawalRequests = () => {
   }, []);
 
   useEffect(() => {
+    // Wait for at least one date before fetching a custom range
+    if (datePreset === "custom" && !filters.startDate && !filters.endDate) return;
     fetchWithdrawals(filters);
-  }, [filters, fetchWithdrawals]);
+  }, [filters, datePreset, fetchWithdrawals]);
 
   // Re-fetch current view (used after approve / reject so stats stay accurate)
   const refresh = () => fetchWithdrawals(filters);
@@ -365,7 +443,7 @@ const AdminWithdrawalRequests = () => {
   const handlePresetChange = (e) => {
     const preset = e.target.value;
     setDatePreset(preset);
-    if (preset === "custom") return;
+    // Custom starts empty; the user picks both dates
     setFilters((prev) => ({ ...prev, ...getPresetRange(preset), page: 1 }));
   };
 
@@ -395,9 +473,24 @@ const AdminWithdrawalRequests = () => {
     setFilters((prev) => ({ ...INITIAL_FILTERS, limit: prev.limit }));
   };
 
-  const handlePageChange = (page) => setFilters((prev) => ({ ...prev, page }));
+  // DynamicTable sends a PrimeReact-style event ({ page, first, rows }); page is 0-based
+  const handleTablePageChange = (event) => {
+    if (typeof event === "number") {
+      setFilters((prev) => ({ ...prev, page: event }));
+      return;
+    }
 
-  const handleRowsChange = (limit) => setFilters((prev) => ({ ...prev, limit, page: 1 }));
+    const rows = Number(event?.rows) || DEFAULT_LIMIT;
+    const page =
+      (event?.page !== undefined ? Number(event.page) : Math.floor((event?.first || 0) / rows)) + 1;
+
+    setFilters((prev) => {
+      // Changing rows per page always restarts from page 1
+      if (rows !== prev.limit) return { ...prev, limit: rows, page: 1 };
+      if (page === prev.page) return prev;
+      return { ...prev, page };
+    });
+  };
 
   // -------------------------------------------------------------------------
   // Approve / Reject
@@ -484,14 +577,17 @@ const AdminWithdrawalRequests = () => {
     {
       key: "status",
       label: "Status",
-      render: (val) => (
-        <span
-          className={`w-fit rounded-full px-2 py-0.5 text-xs font-medium capitalize ${STATUS_BADGE[val] || "bg-gray-100 text-gray-600"
-            }`}
-        >
-          {val || "—"}
-        </span>
-      ),
+      render: (val) => {
+        const key = String(val || "").toLowerCase();
+        return (
+          <span
+            className={`w-fit rounded-full px-2 py-0.5 text-xs font-medium capitalize ${STATUS_BADGE[key] || "bg-gray-100 text-gray-600"
+              }`}
+          >
+            {val || "—"}
+          </span>
+        );
+      },
     },
     {
       key: "createdAt",
@@ -514,7 +610,7 @@ const AdminWithdrawalRequests = () => {
       key: "actions",
       label: "Actions",
       render: (_, row) =>
-        row.status === "pending" ? (
+        String(row?.status || "").toLowerCase() === "pending" ? (
           <div className="flex items-center gap-2">
             <button
               onClick={() => setApproveTarget(row)}
@@ -585,6 +681,9 @@ const AdminWithdrawalRequests = () => {
     },
   ];
 
+  const hasActiveFilters =
+    filters.status || filters.search || filters.startDate || filters.endDate || datePreset !== "all";
+
   // -------------------------------------------------------------------------
   // Render
   // -------------------------------------------------------------------------
@@ -623,7 +722,7 @@ const AdminWithdrawalRequests = () => {
 
       {/* Filters */}
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        {/* <div className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2 py-1.5">
+        <div className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2 py-1.5">
           <Calendar className="h-4 w-4 text-slate-400" />
           <select
             value={datePreset}
@@ -636,7 +735,7 @@ const AdminWithdrawalRequests = () => {
               </option>
             ))}
           </select>
-        </div> */}
+        </div>
 
         {datePreset === "custom" && (
           <div className="flex items-center gap-1.5">
@@ -674,13 +773,15 @@ const AdminWithdrawalRequests = () => {
           </button>
         </form>
 
-        <button
-          type="button"
-          onClick={handleResetFilters}
-          className="rounded-lg bg-slate-200 px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-300"
-        >
-          Reset
-        </button>
+        {hasActiveFilters && (
+          <button
+            type="button"
+            onClick={handleResetFilters}
+            className="rounded-lg bg-slate-200 px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-300"
+          >
+            Reset
+          </button>
+        )}
 
         <button
           type="button"
@@ -697,40 +798,32 @@ const AdminWithdrawalRequests = () => {
         </button>
       </div>
 
+      {/* Same DynamicTable API as the deposit page: lazy mode = server-side pagination */}
       <DynamicTable
         title="Withdrawal History"
         data={data}
         columns={columns}
         loading={loading}
         dataKey="_id"
+        lazy={true}
         totalRecords={totalRecords}
-        rows={filters.limit}
-        page={filters.page}
-        onPageChange={handlePageChange}
-        onRowsChange={handleRowsChange}
+        defaultRows={DEFAULT_LIMIT}
+        rowsPerPageOptions={[25, 50, 100, 200]}
+        onPageChange={handleTablePageChange}
       />
 
-      <p className="mt-3 text-right text-xs text-slate-400">
-        Last sync: {lastUpdated?.toLocaleString() || "Never"}
-      </p>
+      <div className="mt-3 flex flex-wrap items-center justify-between text-xs text-slate-400">
+        <span>
+          Page {filters.page} of {Math.max(1, Math.ceil(totalRecords / filters.limit))} · {totalRecords}{" "}
+          records
+        </span>
+        <span>Last sync: {lastUpdated?.toLocaleString("en-IN") || "Never"}</span>
+      </div>
 
       <BankDetailsModal withdrawal={viewTarget} onClose={() => setViewTarget(null)} />
 
-      <ApproveConfirmModal
-        withdrawal={approveTarget}
-        onClose={() => setApproveTarget(null)}
-        onConfirm={confirmApprove}
-        submitting={submitting}
-      />
 
-      {/* key resets the textarea when a different withdrawal is opened */}
-      <RejectReasonModal
-        key={rejectTarget?._id || "none"}
-        withdrawal={rejectTarget}
-        onClose={() => setRejectTarget(null)}
-        onConfirm={handleRejectConfirm}
-        submitting={submitting}
-      />
+
     </div>
   );
 };

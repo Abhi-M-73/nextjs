@@ -2,25 +2,76 @@ import {
   Banknote,
   CreditCard,
   Users,
+  UserPlus,
+  UserCheck,
   TrendingUp,
   Layers,
   Award,
   Gift,
-  ArrowUpRight,
-  ArrowDownRight,
   RefreshCw,
   Calendar,
   Wallet,
+  Activity,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getDashbboardData } from "../../api/admin.api";
+
+// Drops decimals without rounding
+const formatNumber = (num) => {
+  const value = Number(num);
+  if (!Number.isFinite(value)) return "0";
+  return Math.trunc(value).toLocaleString("en-IN");
+};
+
+// Section header component
+const SectionHeader = ({ title, icon }) => (
+  <div className="mb-4 flex items-center gap-2">
+    <div className="rounded-lg bg-slate-100 p-1.5 text-slate-600">{icon}</div>
+    <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-700">
+      {title}
+    </h2>
+    <div className="ml-3 h-px flex-1 bg-slate-200" />
+  </div>
+);
+
+// Metric card; `note` shows a small line under the value
+const MetricCard = ({ title, value, unit, icon, gradient, note, loading }) => (
+  <div className="group relative overflow-hidden rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-xl">
+    <div
+      className={`absolute left-0 right-0 top-0 h-1 bg-gradient-to-r ${gradient}`}
+    />
+    <div className="flex items-start justify-between">
+      <div className="flex-1">
+        <p className="mb-1 text-xs font-medium uppercase tracking-wide text-slate-500">
+          {title}
+        </p>
+        <div className="flex items-baseline gap-1">
+          {unit && (
+            <span className="text-lg font-semibold text-slate-400">{unit}</span>
+          )}
+          <h3 className="text-3xl font-bold tracking-tight text-slate-900">
+            {loading ? "—" : formatNumber(value)}
+          </h3>
+        </div>
+        {note && !loading && (
+          <p className="mt-1 text-xs text-slate-400">{note}</p>
+        )}
+      </div>
+      <div
+        className={`rounded-xl bg-gradient-to-br ${gradient} p-3 text-white shadow-lg transition-transform duration-300 group-hover:scale-110`}
+      >
+        {icon}
+      </div>
+    </div>
+  </div>
+);
 
 const AdminDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState({});
   const [lastUpdated, setLastUpdated] = useState(null);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
       const res = await getDashbboardData();
@@ -29,177 +80,153 @@ const AdminDashboard = () => {
         setLastUpdated(new Date());
       }
     } catch (error) {
-      console.log(error);
+      console.error("Dashboard fetch error:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchDashboardData();
-  }, []);
-
-  const formatNumber = (num) => {
-    if (num === null || num === undefined) return "0";
-    return Number(num).toLocaleString("en-IN");
-  };
-
-  // Metric card component with modern design
-  const MetricCard = ({ title, value, unit, icon, gradient, subtitle }) => (
-    <div className="group relative bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 overflow-hidden">
-      {/* Gradient accent bar */}
-      <div
-        className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${gradient}`}
-      />
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
-            {title}
-          </p>
-          <div className="flex items-baseline gap-1">
-            {unit && (
-              <span className="text-lg font-semibold text-slate-400">
-                {unit}
-              </span>
-            )}
-            <h3 className="text-3xl font-bold text-slate-900 tracking-tight">
-              {loading ? "—" : formatNumber(value)}
-            </h3>
-          </div>
-          {/* {subtitle && (
-            <p className="text-xs text-slate-400 mt-1">{subtitle}</p>
-          )} */}
-        </div>
-
-        <div
-          className={`p-3 rounded-xl bg-gradient-to-br ${gradient} text-white shadow-lg group-hover:scale-110 transition-transform duration-300`}
-        >
-          {icon}
-        </div>
-      </div>
-      {/* Trend indicator
-      {trend && (
-        <div className="flex items-center gap-1 mt-4">
-          {trend === "up" ? (
-            <ArrowUpRight className="w-4 h-4 text-emerald-500" />
-          ) : (
-            <ArrowDownRight className="w-4 h-4 text-rose-500" />
-          )}
-          <span
-            className={`text-xs font-medium ${trend === "up" ? "text-emerald-600" : "text-rose-600"}`}
-          >
-            {trend === "up" ? "Increasing" : "Decreasing"}
-          </span>
-        </div>
-      )} */}
-    </div>
-  );
-
-  // Section header component
-  const SectionHeader = ({ title, icon }) => (
-    <div className="flex items-center gap-2 mb-4">
-      <div className="p-1.5 rounded-lg bg-slate-100 text-slate-600">{icon}</div>
-      <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">
-        {title}
-      </h2>
-      <div className="flex-1 h-px bg-slate-200 ml-3" />
-    </div>
-  );
+  }, [fetchDashboardData]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Banner */}
-        <div className="mb-8 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-2xl p-6 text-white shadow-xl">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        {/* Welcome banner */}
+        <div className="mb-8 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-6 text-white shadow-xl">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold mb-1">Welcome back!</h2>
-              <p className="text-indigo-100 text-sm">
+              <h2 className="mb-1 text-2xl font-bold">Welcome back!</h2>
+              <p className="text-sm text-indigo-100">
                 Here's what's happening with your platform today
               </p>
             </div>
-            <div className="hidden md:block">
-              <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4">
-                <Users className="w-8 h-8 text-white" />
-              </div>
-            </div>
+            <button
+              type="button"
+              onClick={fetchDashboardData}
+              disabled={loading}
+              title="Refresh dashboard"
+              className="rounded-xl bg-white/20 p-4 backdrop-blur-sm transition hover:bg-white/30 disabled:opacity-60"
+            >
+              <RefreshCw
+                className={`h-6 w-6 text-white ${loading ? "animate-spin" : ""}`}
+              />
+            </button>
           </div>
         </div>
 
-        {/* Key Metrics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Today's overview: registrations, activations, deposits */}
+        <div className="mb-8">
+          <SectionHeader
+            title="Today's Overview"
+            icon={<Activity className="h-4 w-4" />}
+          />
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <MetricCard
+              loading={loading}
+              title="Today Registrations"
+              value={data.todayRegisteredUsers || 0}
+              icon={<UserPlus className="h-5 w-5" />}
+              gradient="from-sky-500 to-indigo-600"
+              note="New users joined today"
+            />
+            <MetricCard
+              loading={loading}
+              title="Today Activations"
+              value={data.todayActivatedUsers || 0}
+              icon={<UserCheck className="h-5 w-5" />}
+              gradient="from-emerald-500 to-teal-600"
+              note="Packages activated today"
+            />
+            <MetricCard
+              loading={loading}
+              title="Today Deposit"
+              value={data.todayDepositAmount || 0}
+              unit="₹"
+              icon={<CreditCard className="h-5 w-5" />}
+              gradient="from-orange-500 to-amber-600"
+              note={`${data.todayDepositCount || 0} approved · ${data.todayDepositRequests || 0} requests (${data.todayDepositPending || 0} pending)`}
+            />
+            <MetricCard
+              loading={loading}
+              title="Active Users"
+              value={data.totalActiveUsers || 0}
+              icon={<Users className="h-5 w-5" />}
+              gradient="from-fuchsia-500 to-purple-600"
+              note={`Out of ${formatNumber(data.totalUsers || 0)} total users`}
+            />
+          </div>
+        </div>
+
+        {/* Key metrics */}
+        <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
           <MetricCard
+            loading={loading}
             title="Total Users"
             value={data.totalUsers || 0}
-            icon={<Users className="w-5 h-5" />}
+            icon={<Users className="h-5 w-5" />}
             gradient="from-indigo-500 to-purple-600"
-            subtitle="Active platform users"
           />
           <MetricCard
+            loading={loading}
             title="Total Client Balance"
             value={data.totalClientBalance || 0}
             unit="₹"
-            icon={<Wallet className="w-5 h-5" />}
+            icon={<Wallet className="h-5 w-5" />}
             gradient="from-cyan-500 to-blue-600"
-            trend="up"
-            subtitle="Sum of all wallet balances"
           />
           <MetricCard
+            loading={loading}
             title="Total Investment"
             value={data.totalInvestment || 0}
             unit="₹"
-            icon={<CreditCard className="w-5 h-5" />}
+            icon={<CreditCard className="h-5 w-5" />}
             gradient="from-amber-500 to-orange-600"
-            trend="up"
-            subtitle="Cumulative investments"
           />
           <MetricCard
+            loading={loading}
             title="Today's Investment"
             value={data.todayInvestment || 0}
             unit="₹"
-            icon={<CreditCard className="w-5 h-5" />}
+            icon={<CreditCard className="h-5 w-5" />}
             gradient="from-orange-500 to-amber-600"
-            trend={data.todayInvestment > 0 ? "up" : "down"}
-            subtitle="Daily investment flow"
           />
         </div>
 
-        {/* Income Breakdown */}
+        {/* Income breakdown */}
         <div className="mb-8">
           <SectionHeader
             title="Income Breakdown"
-            icon={<TrendingUp className="w-4 h-4" />}
+            icon={<TrendingUp className="h-4 w-4" />}
           />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
             <MetricCard
+              loading={loading}
               title="CASHBACK Income"
               value={data.totalRoi || 0}
               unit="₹"
-              icon={<Banknote className="w-5 h-5" />}
+              icon={<Banknote className="h-5 w-5" />}
               gradient="from-blue-500 to-cyan-600"
-              trend="up"
-              subtitle="Total cashback earned"
             />
             <MetricCard
+              loading={loading}
               title="Level Income"
               value={data.totalLevelIncome || 0}
               unit="₹"
-              icon={<Layers className="w-5 h-5" />}
+              icon={<Layers className="h-5 w-5" />}
               gradient="from-violet-500 to-purple-600"
-              trend="up"
-              subtitle="Level-wise earnings"
             />
             <MetricCard
+              loading={loading}
               title="Referral Income"
               value={data.totalReferral || 0}
               unit="₹"
-              icon={<Gift className="w-5 h-5" />}
+              icon={<Gift className="h-5 w-5" />}
               gradient="from-pink-500 to-rose-600"
-              trend="up"
-              subtitle="Referral bonuses"
             />
             <MetricCard
+              loading={loading}
               title="Total Income"
               value={
                 (data.totalRoi || 0) +
@@ -207,46 +234,45 @@ const AdminDashboard = () => {
                 (data.totalReferral || 0)
               }
               unit="₹"
-              icon={<Award className="w-5 h-5" />}
+              icon={<Award className="h-5 w-5" />}
               gradient="from-amber-500 to-yellow-600"
-              trend="up"
-              subtitle="All income combined"
             />
           </div>
         </div>
 
-        {/* Daily Activity */}
+        {/* Today's income */}
         <div className="mb-8">
           <SectionHeader
             title="Today's Activity"
-            icon={<Calendar className="w-4 h-4" />}
+            icon={<Calendar className="h-4 w-4" />}
           />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
             <MetricCard
+              loading={loading}
               title="Today cashback Paid"
               value={data.todayRoi || 0}
               unit="₹"
-              icon={<Banknote className="w-5 h-5" />}
+              icon={<Banknote className="h-5 w-5" />}
               gradient="from-blue-500 to-cyan-600"
-              trend={data.todayRoi > 0 ? "up" : "down"}
             />
             <MetricCard
+              loading={loading}
               title="Today Level"
               value={data.todayLevelIncome || 0}
               unit="₹"
-              icon={<Layers className="w-5 h-5" />}
+              icon={<Layers className="h-5 w-5" />}
               gradient="from-indigo-500 to-violet-600"
-              trend={data.todayLevelIncome > 0 ? "up" : "down"}
             />
             <MetricCard
+              loading={loading}
               title="Today Referral"
               value={data.todayReferral || 0}
               unit="₹"
-              icon={<Gift className="w-5 h-5" />}
+              icon={<Gift className="h-5 w-5" />}
               gradient="from-teal-500 to-emerald-600"
-              trend={data.todayReferral > 0 ? "up" : "down"}
             />
             <MetricCard
+              loading={loading}
               title="Today Total Income"
               value={
                 (data.todayRoi || 0) +
@@ -254,9 +280,8 @@ const AdminDashboard = () => {
                 (data.todayReferral || 0)
               }
               unit="₹"
-              icon={<Award className="w-5 h-5" />}
+              icon={<Award className="h-5 w-5" />}
               gradient="from-amber-500 to-orange-600"
-              trend="up"
             />
           </div>
         </div>
@@ -265,40 +290,37 @@ const AdminDashboard = () => {
         <div>
           <SectionHeader
             title="Withdrawals"
-            icon={<Banknote className="w-4 h-4" />}
+            icon={<Banknote className="h-4 w-4" />}
           />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <MetricCard
+              loading={loading}
               title="Total Withdrawn"
               value={data.totalWithdrawal || 0}
               unit="₹"
-              icon={<Banknote className="w-5 h-5" />}
+              icon={<Banknote className="h-5 w-5" />}
               gradient="from-rose-500 to-pink-600"
-              trend="down"
-              subtitle="Cumulative withdrawals"
             />
             <MetricCard
+              loading={loading}
               title="Today Withdrawn"
               value={data.todayWithdrawal || 0}
               unit="₹"
-              icon={<Banknote className="w-5 h-5" />}
+              icon={<Banknote className="h-5 w-5" />}
               gradient="from-pink-500 to-rose-600"
-              trend={data.todayWithdrawal > 0 ? "up" : "down"}
-              subtitle="Daily withdrawal amount"
             />
           </div>
         </div>
 
-        {/* Footer Stats */}
-        <div className="mt-8 pt-6 border-t border-slate-200">
+        {/* Footer */}
+        <div className="mt-8 border-t border-slate-200 pt-6">
           <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-slate-500">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
               <span>System operational</span>
             </div>
             <span>
-              Data refreshes automatically • Last sync:{" "}
-              {lastUpdated?.toLocaleString() || "Never"}
+              Last sync: {lastUpdated?.toLocaleString("en-IN") || "Never"}
             </span>
           </div>
         </div>

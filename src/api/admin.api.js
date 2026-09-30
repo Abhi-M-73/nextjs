@@ -39,8 +39,8 @@ export const getLevelIncomeHistory = async (params = {}) => {
   return response;
 };
 
-export const getWithdrawalHistory = async () => {
-  const response = Axios.get(`${API_URL}/withdrawals`);
+export const getWithdrawalHistory = async (params = {}) => {
+  const response = Axios.get(`${API_URL}/withdrawals`, { params });
   return response;
 };
 

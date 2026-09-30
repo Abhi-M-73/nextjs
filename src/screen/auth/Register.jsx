@@ -323,12 +323,11 @@ const Register = () => {
   };
 
   const fieldClass = (field, hasError) =>
-    `flex items-center gap-2.5 rounded-xl border transition-colors duration-200 bg-gray-50 px-3.5 ${
-      hasError
-        ? "border-red-400"
-        : focusedField === field
-          ? "border-blue-500 bg-white"
-          : "border-gray-200"
+    `flex items-center gap-2.5 rounded-xl border transition-colors duration-200 bg-gray-50 px-3.5 ${hasError
+      ? "border-red-400"
+      : focusedField === field
+        ? "border-blue-500 bg-white"
+        : "border-gray-200"
     }`;
 
   return (
@@ -519,11 +518,10 @@ const Register = () => {
                             setOpen(false);
                             setSearchQuery("");
                           }}
-                          className={`flex items-center justify-between p-3 border-b border-gray-50 last:border-b-0 cursor-pointer hover:bg-blue-50 transition-colors ${
-                            payload.countryCode === option.value
+                          className={`flex items-center justify-between p-3 border-b border-gray-50 last:border-b-0 cursor-pointer hover:bg-blue-50 transition-colors ${payload.countryCode === option.value
                               ? "text-blue-600 bg-blue-50/60"
                               : ""
-                          }`}
+                            }`}
                         >
                           <div className="flex items-center gap-2">
                             <Flag
@@ -535,11 +533,10 @@ const Register = () => {
                             </span>
                           </div>
                           <span
-                            className={`w-4 h-4 rounded-full border-2 shrink-0 ${
-                              payload.countryCode === option.value
+                            className={`w-4 h-4 rounded-full border-2 shrink-0 ${payload.countryCode === option.value
                                 ? "border-blue-600 bg-blue-600"
                                 : "border-gray-300"
-                            }`}
+                              }`}
                           />
                         </div>
                       ))}
@@ -604,9 +601,8 @@ const Register = () => {
               REFERRAL CODE
             </label>
             <div
-              className={`${fieldClass("referredBy", false)} ${
-                payload.referredByFromParam ? "opacity-60" : ""
-              }`}
+              className={`${fieldClass("referredBy", false)} ${payload.referredByFromParam ? "opacity-60" : ""
+                }`}
             >
               <RiGiftLine
                 size={18}
@@ -636,7 +632,7 @@ const Register = () => {
             </div>
           </div>
 
-                    {/* TERMS & CONDITIONS */}
+          {/* TERMS & CONDITIONS */}
           <div className="flex items-start gap-2.5 pt-1 pb-1">
             <input
               type="checkbox"
@@ -729,7 +725,7 @@ const Register = () => {
             Registration Successful!
           </h3>
           <p className="text-sm text-gray-500 mb-6">
-            Aapka account safaltapoorvak ban gaya hai.
+            Your account has been created successfully.
           </p>
 
           <div className="text-left space-y-3 bg-gray-50 rounded-xl p-4">
@@ -740,10 +736,10 @@ const Register = () => {
               value={
                 regSummary?.doj
                   ? new Date(regSummary.doj).toLocaleDateString("en-IN", {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                    })
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  })
                   : "-"
               }
             />

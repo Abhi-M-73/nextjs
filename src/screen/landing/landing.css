@@ -1,0 +1,143 @@
+/* Fonts: Inter Tight (UI), Instrument Serif (accent headlines), JetBrains Mono (labels) */
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap");
+
+/* Root theme scoped to the landing page only */
+.landing-root {
+    font-family: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+    background: #070707;
+    color: #ededed;
+}
+
+.landing-root ::selection {
+    background: #d4af6a;
+    color: #120d04;
+}
+
+.landing-root .font-serif-display {
+    font-family: "Instrument Serif", ui-serif, Georgia, serif;
+}
+
+.landing-root .font-mono {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+}
+
+/* Animated champagne-gold text */
+.gold-text {
+    background: linear-gradient(100deg, #f7e4b5 0%, #d4af6a 35%, #a87b35 60%, #f2d48f 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: gold-shift 6s linear infinite;
+}
+
+@keyframes gold-shift {
+    to {
+        background-position: 200% center;
+    }
+}
+
+/* Solid gold surface (logo, featured card) */
+.gold-surface {
+    background: linear-gradient(135deg, #f5dfa8 0%, #d4af6a 45%, #a87b35 100%);
+}
+
+/* Primary gold button */
+.gold-btn {
+    background: linear-gradient(135deg, #f5dfa8 0%, #d4af6a 45%, #b08340 100%);
+    color: #140f05;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 10px 30px -10px rgba(212, 175, 106, 0.65);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.gold-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 14px 40px -8px rgba(212, 175, 106, 0.85);
+}
+
+/* Subtle film grain over the whole page */
+.grain::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Hero grid lines, faded from the top */
+.grid-bg {
+    background-image: linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+    background-size: 64px 64px;
+    -webkit-mask-image: radial-gradient(ellipse at 50% 0%, #000 25%, transparent 72%);
+    mask-image: radial-gradient(ellipse at 50% 0%, #000 25%, transparent 72%);
+}
+
+/* Cursor-following spotlight on cards (coordinates set from JS) */
+.spotlight-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    background: radial-gradient(420px circle at var(--x, 50%) var(--y, 50%), rgba(212, 175, 106, 0.13), transparent 45%);
+}
+
+.spotlight-card:hover::before {
+    opacity: 1;
+}
+
+/* Rotating gold beam around the hero package card */
+@property --angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+}
+
+.conic-border {
+    position: relative;
+}
+
+.conic-border::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    padding: 1px;
+    border-radius: inherit;
+    background: conic-gradient(from var(--angle), transparent 0%, #d4af6a 8%, #f5dfa8 12%, transparent 22%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: spin-border 6s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes spin-border {
+    to {
+        --angle: 360deg;
+    }
+}
+
+/* Infinite marquee (content is duplicated, so -50% loops seamlessly) */
+.marquee-track {
+    animation: marquee 32s linear infinite;
+}
+
+@keyframes marquee {
+    to {
+        transform: translateX(-50%);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .gold-text,
+    .marquee-track,
+    .conic-border::before {
+        animation: none;
+    }
+}
