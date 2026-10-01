@@ -73,7 +73,7 @@ export const userRoutes = [
   },
   {
     path: "/wallet",
-    element: UserBankAccount,
+    element: UserWallet,
   },
   {
     path: "/bank-account",
