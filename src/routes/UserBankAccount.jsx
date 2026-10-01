@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { addBankAccount, getBankAccount } from "../api/user.api";
 import toast from "react-hot-toast";
 import {
@@ -46,7 +46,9 @@ const DocumentPreviewModal = ({ doc, onClose }) => {
             </div>
             <div>
               <h3 className="text-sm font-bold text-slate-800">{doc.title}</h3>
-              <p className="text-[11px] text-slate-400">KYC Verification Document</p>
+              <p className="text-[11px] text-slate-400">
+                KYC Verification Document
+              </p>
             </div>
           </div>
           <button
@@ -194,9 +196,12 @@ const DocumentUploadBox = ({
             <UploadCloud size={20} />
           </div>
           <p className="text-xs font-semibold text-slate-700">
-            Click to upload <span className="text-slate-400 font-normal">or drag & drop</span>
+            Click to upload{" "}
+            <span className="text-slate-400 font-normal">or drag & drop</span>
           </p>
-          <p className="text-[10px] text-slate-400 mt-0.5">{subtitle || "PNG, JPG up to 10MB"}</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">
+            {subtitle || "PNG, JPG up to 10MB"}
+          </p>
         </div>
       )}
     </div>
@@ -479,7 +484,10 @@ const UserBankAccount = () => {
                       </p>
                     </div>
                   </div>
-                  <BadgeCheck size={32} className="text-emerald-200 shrink-0 opacity-80" />
+                  <BadgeCheck
+                    size={32}
+                    className="text-emerald-200 shrink-0 opacity-80"
+                  />
                 </div>
               </div>
 
@@ -617,9 +625,13 @@ const UserBankAccount = () => {
                 </div>
 
                 <div className="mt-4 p-3 rounded-xl bg-emerald-50/70 border border-emerald-100 flex items-center gap-2.5 text-emerald-800 text-xs font-medium">
-                  <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                  <CheckCircle2
+                    size={16}
+                    className="text-emerald-600 shrink-0"
+                  />
                   <span>
-                    Payouts and withdrawals are enabled directly to this verified account.
+                    Payouts and withdrawals are enabled directly to this
+                    verified account.
                   </span>
                 </div>
               </div>
@@ -639,7 +651,10 @@ const UserBankAccount = () => {
               <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 p-5 text-white shadow-lg shadow-amber-500/20">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/25 shadow-inner">
-                    <Clock3 size={26} className="text-white animate-spin-slow" />
+                    <Clock3
+                      size={26}
+                      className="text-white animate-spin-slow"
+                    />
                   </div>
                   <div>
                     <h2 className="text-lg font-black tracking-wide">
@@ -660,7 +675,9 @@ const UserBankAccount = () => {
                       ✓
                     </div>
                     <div>
-                      <p className="font-bold text-slate-800">Documents Submitted</p>
+                      <p className="font-bold text-slate-800">
+                        Documents Submitted
+                      </p>
                       <p className="text-[11px] text-slate-400 mt-0.5">
                         Aadhaar front, back & passbook uploaded successfully
                       </p>
@@ -672,9 +689,12 @@ const UserBankAccount = () => {
                       2
                     </div>
                     <div>
-                      <p className="font-bold text-amber-700">Under Admin Verification</p>
+                      <p className="font-bold text-amber-700">
+                        Under Admin Verification
+                      </p>
                       <p className="text-[11px] text-slate-500 mt-0.5">
-                        Verification typically takes between 24 to 48 business hours.
+                        Verification typically takes between 24 to 48 business
+                        hours.
                       </p>
                     </div>
                   </div>
@@ -740,7 +760,10 @@ const UserBankAccount = () => {
                     <button
                       type="button"
                       onClick={() =>
-                        handleOpenDocModal(bankData.aadhaarFront, "Aadhaar Front")
+                        handleOpenDocModal(
+                          bankData.aadhaarFront,
+                          "Aadhaar Front",
+                        )
                       }
                       className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold flex items-center justify-center gap-1 transition-colors"
                     >
@@ -793,7 +816,8 @@ const UserBankAccount = () => {
                     KYC Verification Rejected
                   </h2>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Your KYC could not be approved. Please review the reason below and re-submit.
+                    Your KYC could not be approved. Please review the reason
+                    below and re-submit.
                   </p>
                 </div>
               </div>
@@ -837,10 +861,13 @@ const UserBankAccount = () => {
                 </div>
                 <div>
                   <h3 className="text-xs font-bold text-slate-800">
-                    {isEditing ? "Re-submit Your Verification" : "Members KYC Verification"}
+                    {isEditing
+                      ? "Re-submit Your Verification"
+                      : "Members KYC Verification"}
                   </h3>
                   <p className="text-[11px] text-slate-500 mt-0.5 leading-4">
-                    Please provide your bank details and upload clear copies of your Aadhaar card and passbook for approval.
+                    Please provide your bank details and upload clear copies of
+                    your Aadhaar card and passbook for approval.
                   </p>
                 </div>
               </div>
@@ -881,7 +908,8 @@ const UserBankAccount = () => {
                     {/* Bank Holder Name */}
                     <div>
                       <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
-                        Bank Holder Name (As per Aadhaar) <span className="text-rose-500">*</span>
+                        Bank Holder Name (As per Aadhaar){" "}
+                        <span className="text-rose-500">*</span>
                       </label>
                       <div className="relative">
                         <UserCheck
@@ -1056,7 +1084,9 @@ const UserBankAccount = () => {
               <div className="mt-5 flex items-start gap-2.5 px-1">
                 <Lock size={15} className="text-slate-400 mt-0.5 shrink-0" />
                 <p className="text-[11px] leading-4 text-slate-400">
-                  Your Aadhaar and bank details are encrypted using banking-grade security and processed strictly for identity verification and payouts.
+                  Your Aadhaar and bank details are encrypted using
+                  banking-grade security and processed strictly for identity
+                  verification and payouts.
                 </p>
               </div>
             </div>

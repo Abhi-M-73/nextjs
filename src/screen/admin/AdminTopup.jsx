@@ -18,7 +18,7 @@ import {
 } from "../../api/admin.api";
 import toast from "react-hot-toast";
 
-const TOPUP_AMOUNT = 999;
+const TOPUP_AMOUNT = 1199;
 
 const AdminTopup = () => {
   const [query, setQuery] = useState("");
