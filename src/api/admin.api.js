@@ -107,6 +107,13 @@ export const getWithdrawalEligibleUsers = async (params = {}) => {
   return response;
 };
 
+export const getCashbackReceivedUsers = async (params = {}) => {
+  const response = await Axios.get(`${API_URL}/get-cashback-received-users`, {
+    params,
+  });
+  return response;
+};
+
 export const adminTopupUserWallet = async (payload) => {
   const response = await Axios.post(`${API_URL}/admin-topup`, payload);
   return response;

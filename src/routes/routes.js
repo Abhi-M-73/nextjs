@@ -15,6 +15,7 @@ import {
   Share2,
   Rocket,
   ShieldCheck,
+  BadgeIndianRupee,
 } from "lucide-react";
 
 import Login from "../screen/auth/Login";
@@ -39,6 +40,7 @@ import AdminReferralIncomeHistory from "../screen/admin/AdminReferralIncomeHisto
 import AdminReactivationCapHistory from "../screen/admin/AdminReactivationCapHistory";
 import UserBankAccount from "./UserBankAccount";
 import AdminWithdrawalEligibleUsers from "../screen/admin/AdminWithdrawalEligibleUsers";
+import AdminCashbackReceivedUsers from "../screen/admin/AdminCashbackReceivedUsers";
 import AdminWithdrawalRequests from "../screen/admin/AdminWithdrawalRequests";
 import AdminTopup from "../screen/admin/AdminTopup";
 import AdminKycRequests from "../screen/admin/AdminKycRequests";
@@ -131,6 +133,12 @@ export const adminRoutes = [
         icon: Rocket,
         path: "/reactivation-cap-history",
         element: AdminReactivationCapHistory,
+      },
+      {
+        name: "Cashback Received",
+        icon: BadgeIndianRupee,
+        path: "/cashback-received-users",
+        element: AdminCashbackReceivedUsers,
       },
       {
         name: "Withdrawal Eligible",

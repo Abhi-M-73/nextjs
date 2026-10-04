@@ -7,6 +7,11 @@ export const getUserInfo = async () => {
   return response;
 };
 
+export const getActiveDirectCount = async () => {
+  const response = await Axios.get(`${API_URL}/get-active-direct-count`);
+  return response;
+};
+
 export const getLevelWiseTeam = async () => {
   const response = await Axios.get(`${API_URL}/get-level-team`);
   return response;

@@ -27,15 +27,29 @@ import useFetchProfile from "../../hooks/useFetchProfile";
 import dashboardImage from "../../assets/dashboardImg.png";
 import { useDispatch, useSelector } from "react-redux";
 import { showSnackbar } from "../../redux/slices/snackbarSlice";
+import { getActiveDirectCount } from "../../api/user.api";
 
 const UserHome = () => {
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const { fetchUserInfo } = useFetchProfile();
   const navigate = useNavigate();
+  const [activeDirectCount, setActiveDirectCount] = useState(0);
+
+  const fetchActiveDirectCount = async () => {
+    try {
+      const response = await getActiveDirectCount();
+      if (response?.success) {
+        setActiveDirectCount(response?.data?.activeDirectCount ?? 0);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
     fetchUserInfo();
+    fetchActiveDirectCount();
   }, []);
 
   const today = new Date().toLocaleDateString("en-GB", {
@@ -188,7 +202,7 @@ const UserHome = () => {
     {
       label: " DIRECT ACTIVE USERS",
       sub: "Active Direct Referrals",
-      value: user?.directActiveReferrals ?? 0,
+      value: activeDirectCount,
       icon: UserCheck,
       gradient: "from-teal-500 to-teal-600",
       iconBg: "bg-teal-50",

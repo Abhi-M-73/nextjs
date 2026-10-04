@@ -49,7 +49,7 @@ const UserTeam = () => {
   );
   const totalActiveUsers = formattedData.reduce(
     (sum, team) =>
-      sum + (team.users?.filter((u) => u?.isVerified)?.length || 0),
+      sum + (team.users?.filter((u) => u?.isActive)?.length || 0),
     0,
   );
 
@@ -241,19 +241,19 @@ const UserTeam = () => {
                                 <div className="flex flex-row sm:flex-col justify-between sm:items-end gap-2 text-xs">
                                   <span
                                     className={`px-2.5 py-1 rounded-full font-semibold whitespace-nowrap flex items-center gap-1 ${
-                                      user?.isVerified
+                                      user?.isActive
                                         ? "bg-green-50 text-green-600"
                                         : "bg-red-50 text-red-500"
                                     }`}
                                   >
                                     <span
                                       className={`w-1.5 h-1.5 rounded-full ${
-                                        user?.isVerified
+                                        user?.isActive
                                           ? "bg-green-500"
                                           : "bg-red-400"
                                       }`}
                                     />
-                                    {user?.isVerified ? "Active" : "Inactive"}
+                                    {user?.isActive ? "Active" : "Inactive"}
                                   </span>
                                 </div>
                               </div>
