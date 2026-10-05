@@ -199,18 +199,18 @@ const UserHome = () => {
       onClick: () => navigate("/user/team"),
       type: "count",
     },
-    {
-      label: " DIRECT ACTIVE USERS",
-      sub: "Active Direct Referrals",
-      value: activeDirectCount,
-      icon: UserCheck,
-      gradient: "from-teal-500 to-teal-600",
-      iconBg: "bg-teal-50",
-      iconColor: "text-teal-600",
-      barGradient: "from-teal-400 to-teal-600",
-      onClick: () => navigate("/user/team"),
-      type: "count",
-    },
+    // {
+    //   label: " DIRECT ACTIVE USERS",
+    //   sub: "Active Direct Referrals",
+    //   value: activeDirectCount,
+    //   icon: UserCheck,
+    //   gradient: "from-teal-500 to-teal-600",
+    //   iconBg: "bg-teal-50",
+    //   iconColor: "text-teal-600",
+    //   barGradient: "from-teal-400 to-teal-600",
+    //   onClick: () => navigate("/user/team"),
+    //   type: "count",
+    // },
   ];
 
   const quickActions = [
