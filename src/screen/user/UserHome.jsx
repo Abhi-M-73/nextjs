@@ -27,7 +27,7 @@ import useFetchProfile from "../../hooks/useFetchProfile";
 import dashboardImage from "../../assets/dashboardImg.png";
 import { useDispatch, useSelector } from "react-redux";
 import { showSnackbar } from "../../redux/slices/snackbarSlice";
-import { getActiveDirectCount } from "../../api/user.api";
+// import { getActiveDirectCount } from "../../api/user.api";
 
 const UserHome = () => {
   const { user } = useSelector((state) => state.auth);
@@ -49,7 +49,7 @@ const UserHome = () => {
 
   useEffect(() => {
     fetchUserInfo();
-    fetchActiveDirectCount();
+    // fetchActiveDirectCount();
   }, []);
 
   const today = new Date().toLocaleDateString("en-GB", {
